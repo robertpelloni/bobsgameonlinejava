@@ -1,8 +1,9 @@
 package com.bobsgame.client.engine.game.gui.stuffMenu.subMenus;
 
 
-import org.lwjgl.input.Controller;
-import org.lwjgl.input.Controllers;
+//import org.lwjgl.input.Controller;
+//import org.lwjgl.input.Controllers;
+import org.lwjgl.glfw.GLFW;
 
 import com.bobsgame.client.engine.Engine;
 import com.bobsgame.client.engine.game.gui.stuffMenu.SubPanel;
@@ -12,6 +13,8 @@ import de.matthiasmann.twl.DialogLayout;
 import de.matthiasmann.twl.Label;
 import de.matthiasmann.twl.Widget;
 
+import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 
 
 //=========================================================================================================================
@@ -169,7 +172,8 @@ public class ControlsPanel extends SubPanel
 								boolean stop = false;
 								while(stop==false)
 								{
-									Controllers.poll();
+									//Controllers.poll();
+                                    // GLFW polling is done in ClientMain
 
 									try
 									{
@@ -191,179 +195,117 @@ public class ControlsPanel extends SubPanel
 									buttonValueLabel[threadi].setText("Waiting for Game Controller input: "+timer/1000);
 
 
+                                    for (int j = GLFW.GLFW_JOYSTICK_1; j <= GLFW.GLFW_JOYSTICK_LAST; j++) {
+                                        if (GLFW.glfwJoystickPresent(j)) {
+                                            FloatBuffer axes = GLFW.glfwGetJoystickAxes(j);
+                                            ByteBuffer buttons = GLFW.glfwGetJoystickButtons(j);
 
-									while(Controllers.next()==true)
-									{
+                                            if (axes == null || buttons == null) continue;
 
-										Controller c = Controllers.getEventSource();
+                                            float val = 0.0f;
 
+                                            // Left Analog X (0)
+                                            if (axes.capacity() > GLFW.GLFW_GAMEPAD_AXIS_LEFT_X) {
+                                                val = axes.get(GLFW.GLFW_GAMEPAD_AXIS_LEFT_X);
+                                                if(Math.abs(val)>0.5f&&Math.abs(val)<1.0f)
+                                                {
+                                                    if(val<0)val=-1.0f;
+                                                    if(val>0)val=1.0f;
 
+                                                    // Wait for release
+                                                    //while(c.getXAxisValue()!=0.0f){Controllers.clearEvents();Controllers.poll();}
 
-										float val = 0.0f;
+                                                    buttonValueLabel[threadi].setText("Left Analog X Axis "+val);
 
-										val = c.getXAxisValue();
-										if(Math.abs(val)>0.5f&&Math.abs(val)<1.0f)
-										{
-											if(val<0)val=-1.0f;
-											if(val>0)val=1.0f;
+                                                    if(val<0)setButton(threadi,Engine.ControlsManager().gameController_LeftAnalog_XAxis_Negative);
+                                                    else setButton(threadi,Engine.ControlsManager().gameController_LeftAnalog_XAxis_Positive);
 
-											while(c.getXAxisValue()!=0.0f){Controllers.clearEvents();Controllers.poll();}
+                                                    Engine.ControlsManager().controller=j;
 
-											buttonValueLabel[threadi].setText("Left Analog X Axis "+val);
+                                                    return;
+                                                }
+                                            }
 
-											if(val<0)setButton(threadi,Engine.ControlsManager().gameController_LeftAnalog_XAxis_Negative);
-											else setButton(threadi,Engine.ControlsManager().gameController_LeftAnalog_XAxis_Positive);
+                                            // Left Analog Y (1)
+                                            if (axes.capacity() > GLFW.GLFW_GAMEPAD_AXIS_LEFT_Y) {
+                                                val = axes.get(GLFW.GLFW_GAMEPAD_AXIS_LEFT_Y);
+                                                if(Math.abs(val)>0.5f&&Math.abs(val)<1.0f)
+                                                {
+                                                    if(val<0)val=-1.0f;
+                                                    if(val>0)val=1.0f;
 
-											Engine.ControlsManager().controller=c;
+                                                    buttonValueLabel[threadi].setText("Left Analog Y Axis "+val);
 
-											return;
-										}
+                                                    if(val<0)setButton(threadi,Engine.ControlsManager().gameController_LeftAnalog_YAxis_Negative);
+                                                    else setButton(threadi,Engine.ControlsManager().gameController_LeftAnalog_YAxis_Positive);
 
-										val = c.getYAxisValue();
-										if(Math.abs(val)>0.5f&&Math.abs(val)<1.0f)
-										{
-											if(val<0)val=-1.0f;
-											if(val>0)val=1.0f;
+                                                    Engine.ControlsManager().controller=j;
 
-											while(c.getYAxisValue()!=0.0f){Controllers.clearEvents();Controllers.poll();}
+                                                    return;
+                                                }
+                                            }
 
-											buttonValueLabel[threadi].setText("Left Analog Y Axis "+val);
+                                            // Right Analog X (2 or similar, depends on mapping, but usually 2 or 3)
+                                            // Using GLFW_GAMEPAD_AXIS_RIGHT_X = 2
+                                            if (axes.capacity() > GLFW.GLFW_GAMEPAD_AXIS_RIGHT_X) {
+                                                val = axes.get(GLFW.GLFW_GAMEPAD_AXIS_RIGHT_X);
+                                                if(Math.abs(val)>0.5f&&Math.abs(val)<1.0f)
+                                                {
+                                                    if(val<0)val=-1.0f;
+                                                    if(val>0)val=1.0f;
 
-											if(val<0)setButton(threadi,Engine.ControlsManager().gameController_LeftAnalog_YAxis_Negative);
-											else setButton(threadi,Engine.ControlsManager().gameController_LeftAnalog_YAxis_Positive);
+                                                    buttonValueLabel[threadi].setText("Right Analog X Axis "+val);
 
-											Engine.ControlsManager().controller=c;
+                                                    if(val<0)setButton(threadi,Engine.ControlsManager().gameController_RightAnalog_XAxis_Negative);
+                                                    else setButton(threadi,Engine.ControlsManager().gameController_RightAnalog_XAxis_Positive);
 
-											return;
-										}
+                                                    Engine.ControlsManager().controller=j;
 
-										val = c.getZAxisValue();
-										if(Math.abs(val)>0.5f&&Math.abs(val)<1.0f)
-										{
-											if(val<0)val=-1.0f;
-											if(val>0)val=1.0f;
+                                                    return;
+                                                }
+                                            }
 
-											while(c.getZAxisValue()!=0.0f){Controllers.clearEvents();Controllers.poll();}
+                                            // Right Analog Y (3)
+                                            // Using GLFW_GAMEPAD_AXIS_RIGHT_Y = 3
+                                            if (axes.capacity() > GLFW.GLFW_GAMEPAD_AXIS_RIGHT_Y) {
+                                                val = axes.get(GLFW.GLFW_GAMEPAD_AXIS_RIGHT_Y);
+                                                if(Math.abs(val)>0.5f&&Math.abs(val)<1.0f)
+                                                {
+                                                    if(val<0)val=-1.0f;
+                                                    if(val>0)val=1.0f;
 
-											buttonValueLabel[threadi].setText("Z Axis "+val);
+                                                    buttonValueLabel[threadi].setText("Right Analog Y Axis "+val);
 
-											if(val<0)setButton(threadi,Engine.ControlsManager().gameController_LeftAnalog_ZAxis_Negative);
-											else setButton(threadi,Engine.ControlsManager().gameController_LeftAnalog_ZAxis_Positive);
+                                                    if(val<0)setButton(threadi,Engine.ControlsManager().gameController_RightAnalog_YAxis_Negative);
+                                                    else setButton(threadi,Engine.ControlsManager().gameController_RightAnalog_YAxis_Positive);
 
-											Engine.ControlsManager().controller=c;
+                                                    Engine.ControlsManager().controller=j;
 
-											return;
-										}
+                                                    return;
+                                                }
+                                            }
 
-										val = c.getPovX();
-										if(Math.abs(val)>0.5f)
-										{
-											if(val<0)val=-1.0f;
-											if(val>0)val=1.0f;
+                                            // Buttons
+                                            for(int b=0;b<buttons.capacity();b++)
+                                            {
+                                                if(buttons.get(b) == GLFW.GLFW_PRESS)
+                                                {
+                                                    buttonValueLabel[threadi].setText("Button "+b);
 
-											while(c.getPovX()!=0.0f){Controllers.clearEvents();Controllers.poll();}
+                                                    // Wait for release
+                                                    //while(c.isButtonPressed(i)!=false){Controllers.clearEvents();Controllers.poll();}
 
-											buttonValueLabel[threadi].setText("Pov X "+val);
+                                                    setButton(threadi,b);
 
-											if(val<0)setButton(threadi,Engine.ControlsManager().gameController_POV_X_Negative);
-											else setButton(threadi,Engine.ControlsManager().gameController_POV_X_Positive);
+                                                    Engine.ControlsManager().controller=j;
 
-											Engine.ControlsManager().controller=c;
+                                                    return;
 
-											return;
-										}
+                                                }
 
-										val = c.getPovY();
-										if(Math.abs(val)>0.5f)
-										{
-											if(val<0)val=-1.0f;
-											if(val>0)val=1.0f;
-
-											while(c.getPovY()!=0.0f){Controllers.clearEvents();Controllers.poll();}
-
-											buttonValueLabel[threadi].setText("Pov Y "+val);
-
-											if(val<0)setButton(threadi,Engine.ControlsManager().gameController_POV_Y_Negative);
-											else setButton(threadi,Engine.ControlsManager().gameController_POV_Y_Positive);
-
-											Engine.ControlsManager().controller=c;
-
-											return;
-										}
-
-										val = c.getRXAxisValue();
-										if(Math.abs(val)>0.5f&&Math.abs(val)<1.0f)
-										{
-											if(val<0)val=-1.0f;
-											if(val>0)val=1.0f;
-
-											while(c.getRXAxisValue()!=0.0f){Controllers.clearEvents();Controllers.poll();}
-
-											buttonValueLabel[threadi].setText("Right Analog X Axis "+val);
-
-											if(val<0)setButton(threadi,Engine.ControlsManager().gameController_RightAnalog_XAxis_Negative);
-											else setButton(threadi,Engine.ControlsManager().gameController_RightAnalog_XAxis_Positive);
-
-											Engine.ControlsManager().controller=c;
-
-											return;
-										}
-
-										val = c.getRYAxisValue();
-										if(Math.abs(val)>0.5f&&Math.abs(val)<1.0f)
-										{
-											if(val<0)val=-1.0f;
-											if(val>0)val=1.0f;
-
-											while(c.getRYAxisValue()!=0.0f){Controllers.clearEvents();Controllers.poll();}
-
-											buttonValueLabel[threadi].setText("Right Analog Y Axis "+val);
-
-											if(val<0)setButton(threadi,Engine.ControlsManager().gameController_RightAnalog_YAxis_Negative);
-											else setButton(threadi,Engine.ControlsManager().gameController_RightAnalog_YAxis_Positive);
-
-											Engine.ControlsManager().controller=c;
-
-											return;
-										}
-
-										val = c.getRZAxisValue();
-										if(Math.abs(val)>0.5f&&Math.abs(val)<1.0f)
-										{
-											if(val<0)val=-1.0f;
-											if(val>0)val=1.0f;
-
-											while(c.getRZAxisValue()!=0.0f){Controllers.clearEvents();Controllers.poll();}
-
-											buttonValueLabel[threadi].setText("RZ Axis "+val);
-
-											if(val<0)setButton(threadi,Engine.ControlsManager().gameController_RightAnalog_ZAxis_Negative);
-											else setButton(threadi,Engine.ControlsManager().gameController_RightAnalog_ZAxis_Positive);
-
-											Engine.ControlsManager().controller=c;
-
-											return;
-										}
-
-
-										for(int i=0;i<c.getButtonCount();i++)
-										{
-											if(c.isButtonPressed(i)==true)
-											{
-												buttonValueLabel[threadi].setText("Button "+i);
-
-												while(c.isButtonPressed(i)!=false){Controllers.clearEvents();Controllers.poll();}
-
-												setButton(threadi,i);
-
-												Engine.ControlsManager().controller=c;
-
-												return;
-
-											}
-
-										}
-									}
+                                            }
+                                        }
+                                    }
 								}
 
 							}

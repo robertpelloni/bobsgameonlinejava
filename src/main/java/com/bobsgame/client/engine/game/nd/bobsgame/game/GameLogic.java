@@ -74,7 +74,7 @@ public class GameLogic extends EnginePart
 
 		int gameType = TETRID;
 
-		gameTypeRandomBag.remove(new Integer(gameType));
+		gameTypeRandomBag.remove(Integer.valueOf(gameType));
 		setGameType(gameType);//getGameTypeFromRandomBag();
 
 
@@ -106,7 +106,7 @@ public class GameLogic extends EnginePart
 		ArrayList<Integer> tempBag = new ArrayList<Integer>();
 		for(int i=0;i<gameCount;i++)
 		{
-			tempBag.add(new Integer(i));
+			tempBag.add(Integer.valueOf(i));
 		}
 
 		while(tempBag.size()>0)

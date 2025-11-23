@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import slick.ImageData;
 import slick.InternalTextureLoader;
-import slick.Texture;
+import com.bobsgame.client.Texture;
 
 import ch.qos.logback.classic.Logger;
 

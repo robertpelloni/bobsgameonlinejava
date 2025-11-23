@@ -3,17 +3,20 @@ package com.bobsgame.audio;
 import ch.qos.logback.classic.Logger;
 import com.bobsgame.shared.Utils;
 import org.lwjgl.BufferUtils;
-import org.lwjgl.Sys;
 import org.lwjgl.openal.AL;
 import org.lwjgl.openal.AL10;
 import org.lwjgl.openal.AL11;
-import org.lwjgl.openal.OpenALException;
+import org.lwjgl.openal.ALC;
+import org.lwjgl.openal.ALC10;
+import org.lwjgl.openal.ALCCapabilities;
+import org.lwjgl.openal.ALCapabilities;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.HashMap;
@@ -35,14 +38,21 @@ public class AudioUtils {
 	// The buffer used to set the position of a source
 	private static FloatBuffer sourcePos = BufferUtils.createFloatBuffer(3);
 
+    private static long device;
+    private static long context;
+
 	public AudioUtils() {
 		log.info("Init AL...");
 
-		try {
-			AL.create();
-		} catch (Exception e) {
-			log.error("Sound init failed: " + e.getMessage());
-		}
+        String defaultDeviceName = ALC10.alcGetString(0, ALC10.ALC_DEFAULT_DEVICE_SPECIFIER);
+        device = ALC10.alcOpenDevice(defaultDeviceName);
+
+        int[] attributes = {0};
+        context = ALC10.alcCreateContext(device, attributes);
+        ALC10.alcMakeContextCurrent(context);
+
+        ALCCapabilities alcCapabilities = ALC.createCapabilities(device);
+        ALCapabilities alCapabilities = AL.createCapabilities(alcCapabilities);
 
 		channelsAvailable = 0;
 		channels = BufferUtils.createIntBuffer(maximumChannels);
@@ -60,7 +70,7 @@ public class AudioUtils {
 						break;
 					}
 				}
-			} catch (OpenALException e) {
+			} catch (Exception e) {
 				// expected at the end
 				break;
 			}
@@ -87,9 +97,9 @@ public class AudioUtils {
 			listenerPos.flip();
 			listenerVel.flip();
 			listenerOri.flip();
-			AL10.alListener(AL10.AL_POSITION, listenerPos);
-			AL10.alListener(AL10.AL_VELOCITY, listenerVel);
-			AL10.alListener(AL10.AL_ORIENTATION, listenerOri);
+			AL10.alListenerfv(AL10.AL_POSITION, listenerPos);
+			AL10.alListenerfv(AL10.AL_VELOCITY, listenerVel);
+			AL10.alListenerfv(AL10.AL_ORIENTATION, listenerOri);
 		}
 
 		log.info("AL Complete.");
@@ -226,8 +236,8 @@ public class AudioUtils {
 		sourcePos.flip();
 		sourceVel.flip();
 
-		AL10.alSource(getChannelFromIndex(openChannelIndex), AL10.AL_POSITION, sourcePos);
-		AL10.alSource(getChannelFromIndex(openChannelIndex), AL10.AL_VELOCITY, sourceVel);
+		AL10.alSourcefv(getChannelFromIndex(openChannelIndex), AL10.AL_POSITION, sourcePos);
+		AL10.alSourcefv(getChannelFromIndex(openChannelIndex), AL10.AL_VELOCITY, sourceVel);
 
 		AL10.alSourcePlay(getChannelFromIndex(openChannelIndex));
 
@@ -291,7 +301,7 @@ public class AudioUtils {
 
 				WaveData data = WaveData.create(in);
 				AL10.alGenBuffers(buf);
-				AL10.alBufferData(buf.get(0),d ata.format, data.data, data.samplerate);
+				AL10.alBufferData(buf.get(0), data.format, data.data, data.samplerate);
 
 				loadedSoundHashMap.put(nameForSoundCache, new Integer(buf.get(0)));
 				openALBufferID = buf.get(0);
@@ -338,7 +348,6 @@ public class AudioUtils {
 				buffer = buf.get(0);
 			} catch (Exception e) {
 				log.error(e.getMessage());
-				Sys.alert("Error","Failed to load: " + nameForSoundCache + " - " + e.getMessage());
 				throw new IOException("Unable to load: " + nameForSoundCache);
 			}
 		}
@@ -349,4 +358,9 @@ public class AudioUtils {
 
 		return new AudioChannel(buffer);
 	}
+
+    public static void destroy() {
+        ALC10.alcDestroyContext(context);
+        ALC10.alcCloseDevice(device);
+    }
 }

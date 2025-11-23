@@ -1,6 +1,6 @@
 package com.bobsgame.client.state;
+import com.bobsgame.client.LWJGLUtils;
 
-import org.lwjgl.opengl.Display;
 
 import org.slf4j.LoggerFactory;
 
@@ -260,7 +260,7 @@ public class LegalScreen extends MenuPanel {
 
 	public void scrollDown() {
 		if (ticksSinceTurnedOff <= fadeOutTime) {
-			screenY = (float) (Easing.easeOutCubic(ticksSinceTurnedOff, 0, Display.getHeight(), fadeOutTime));
+			screenY = (float) (Easing.easeOutCubic(ticksSinceTurnedOff, 0, LWJGLUtils.SCREEN_SIZE_Y, fadeOutTime));
 			layout();
 		} else {
 			isActivated = false;

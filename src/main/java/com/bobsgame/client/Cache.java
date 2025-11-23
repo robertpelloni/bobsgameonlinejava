@@ -28,12 +28,11 @@ import java.util.zip.ZipInputStream;
 
 
 import com.bobsgame.ClientMain;
-import netscape.javascript.JSObject;
+//import netscape.javascript.JSObject;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.CountingOutputStream;
-import org.lwjgl.opengl.Display;
 
 import org.slf4j.LoggerFactory;
 
@@ -43,6 +42,7 @@ import com.bobsgame.client.console.Console;
 import com.bobsgame.client.console.ConsoleText;
 import com.bobsgame.net.BobNet;
 import com.bobsgame.shared.Utils;
+import com.bobsgame.shared.BobColor;
 //===============================================================================================
 public class Cache
 {//===============================================================================================
@@ -230,16 +230,18 @@ public class Cache
 
 		String data = "test";
 		String cookiename = "fooCookie";
-		JSObject win = ClientMain.browser;
-		JSObject doc = (JSObject) win.getMember("document");
+        // Removed JSObject usage
+		//JSObject win = ClientMain.browser;
+		//JSObject doc = (JSObject) win.getMember("document");
 
 		String cookie = cookiename + "=" + data + "; path=/; expires=Thu, 31-Dec-2019 12:00:00 GMT";
 
-		doc.setMember("cookie", cookie);
+		//doc.setMember("cookie", cookie);
 
 
 		//TODO: Don't forget to encode your data in Base64.
 
+        /*
 		if(ClientMain.browser!=null)
 		{
 			try
@@ -253,6 +255,7 @@ public class Cache
 
 			}
 		}
+        */
 
 	}
 
@@ -262,6 +265,7 @@ public class Cache
 	public StringBuffer readCookies()
 	{//===============================================================================================
 
+        /*
 		if(ClientMain.browser!=null)
 		{
 
@@ -286,6 +290,7 @@ public class Cache
 			}
 
 		}
+        */
 
 
 
@@ -296,6 +301,7 @@ public class Cache
 		StringBuffer cookieStringBuffer=new StringBuffer();
 
 
+        /*
 		if(ClientMain.browser!=null)
 		{
 
@@ -321,6 +327,7 @@ public class Cache
 
 			}
 		}
+        */
 
 
 		return cookieStringBuffer;
@@ -375,10 +382,10 @@ public class Cache
 	{//===============================================================================================
 
 
-		if(statusConsoleText==null)statusConsoleText = Console.add("",Display.getWidth()/2-50,Display.getHeight()/2-10);
+		if(statusConsoleText==null)statusConsoleText = Console.add("",LWJGLUtils.SCREEN_SIZE_X/2-50,LWJGLUtils.SCREEN_SIZE_Y/2-10);
 
-		statusConsoleText.x = Display.getWidth()/2-((GLUtils.font.getWidth(text)+3)/2);
-		statusConsoleText.y = Display.getHeight()/2-10;
+		statusConsoleText.x = LWJGLUtils.SCREEN_SIZE_X/2-((text.length() * 16)/2); // Approximation as we don't have font width
+		statusConsoleText.y = LWJGLUtils.SCREEN_SIZE_Y/2-10;
 
 		statusConsoleText.text=text;
 
@@ -386,7 +393,8 @@ public class Cache
 
 		ClientMain.clientMain.console.render();
 
-		Display.update();
+		//Display.update();
+        LWJGLUtils.updateDisplay();
 
 	}
 
@@ -398,8 +406,8 @@ public class Cache
 		if(statusConsoleText!=null)
 		{
 			statusConsoleText.text="";
-			statusConsoleText.x = Display.getWidth();
-			statusConsoleText.y = Display.getHeight();
+			statusConsoleText.x = LWJGLUtils.SCREEN_SIZE_X;
+			statusConsoleText.y = LWJGLUtils.SCREEN_SIZE_Y;
 
 			statusConsoleText.ticks=1;//will be deleted from the console after 1 tick
 
@@ -407,7 +415,8 @@ public class Cache
 
 			glClear(GL_COLOR_BUFFER_BIT);
 			ClientMain.clientMain.console.render();
-			Display.update();
+			//Display.update();
+            LWJGLUtils.updateDisplay();
 		}
 
 	}
@@ -927,11 +936,4 @@ public class Cache
 			e.printStackTrace();
 		}
 	}
-
-
-
-
-
-
-
 }

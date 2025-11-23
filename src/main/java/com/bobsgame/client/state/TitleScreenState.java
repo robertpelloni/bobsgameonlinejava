@@ -1,7 +1,7 @@
 package com.bobsgame.client.state;
+import com.bobsgame.client.LWJGLUtils;
 
-import org.lwjgl.opengl.Display;
-import slick.Texture;
+import com.bobsgame.client.Texture;
 import com.bobsgame.ClientMain;
 import com.bobsgame.client.GLUtils;
 
@@ -39,8 +39,8 @@ public class TitleScreenState extends State {
 
 		Texture over = ClientMain.glowTileBackground.glowTileFramesTexture[frame];
 
-		float screenWidth = Display.getWidth();
-		float screenHeight = Display.getHeight();
+		float screenWidth = LWJGLUtils.SCREEN_SIZE_X;
+		float screenHeight = LWJGLUtils.SCREEN_SIZE_Y;
 
 		float scale = 2.0f;
 
