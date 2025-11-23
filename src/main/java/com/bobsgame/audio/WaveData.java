@@ -9,15 +9,14 @@ import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.ShortBuffer;
-import java.util.List;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
 
 import org.lwjgl.openal.AL10;
 
-import com.sun.media.sound.WaveFileReader;
+//import com.sun.media.sound.WaveFileReader; // Removed - internal API
+import javax.sound.sampled.AudioSystem; // Standard Java Sound API
 
 /**
  *
@@ -68,13 +67,12 @@ public class WaveData {
 	{
 		try
 		{
-
-			WaveFileReader reader = new WaveFileReader();
-
-			return create(
-				reader.getAudioInputStream(new BufferedInputStream(path.openStream())));
+			//WaveFileReader reader = new WaveFileReader();
+			//return create(reader.getAudioInputStream(new BufferedInputStream(path.openStream())));
+            return create(AudioSystem.getAudioInputStream(new BufferedInputStream(path.openStream())));
 		} catch (Exception e) {
-			org.lwjgl.LWJGLUtil.log("Unable to create from: " + path);
+            //org.lwjgl.LWJGLUtil.log("Unable to create from: " + path);
+            System.err.println("Unable to create from: " + path);
 			e.printStackTrace();
 			return null;
 		}
@@ -97,17 +95,14 @@ public class WaveData {
 	 * @return WaveData containing data, or null if a failure occured
 	 */
 	public static WaveData create(InputStream is) {
-
-
-
-
 		try
 		{
-			WaveFileReader reader = new WaveFileReader();
-
-			return create(reader.getAudioInputStream(is));
+			//WaveFileReader reader = new WaveFileReader();
+			//return create(reader.getAudioInputStream(is));
+            return create(AudioSystem.getAudioInputStream(is));
 		} catch (Exception e) {
-			org.lwjgl.LWJGLUtil.log("Unable to create from inputstream");
+            //org.lwjgl.LWJGLUtil.log("Unable to create from inputstream");
+            System.err.println("Unable to create from inputstream");
 			e.printStackTrace();
 			return null;
 		}
@@ -122,9 +117,9 @@ public class WaveData {
 	public static WaveData create(byte[] buffer) {
 		try {
 
-			WaveFileReader reader = new WaveFileReader();
-
-			return create(reader.getAudioInputStream(new BufferedInputStream(new ByteArrayInputStream(buffer))));
+			//WaveFileReader reader = new WaveFileReader();
+			//return create(reader.getAudioInputStream(new BufferedInputStream(new ByteArrayInputStream(buffer))));
+            return create(AudioSystem.getAudioInputStream(new BufferedInputStream(new ByteArrayInputStream(buffer))));
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;

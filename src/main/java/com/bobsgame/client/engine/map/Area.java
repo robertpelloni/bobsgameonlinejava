@@ -3,7 +3,7 @@ package com.bobsgame.client.engine.map;
 import java.util.Enumeration;
 import java.util.ArrayList;
 
-import slick.Texture;
+import com.bobsgame.client.Texture;
 
 import com.bobsgame.client.GLUtils;
 import com.bobsgame.client.engine.Engine;

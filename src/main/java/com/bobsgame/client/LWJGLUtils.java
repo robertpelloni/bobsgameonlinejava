@@ -19,18 +19,17 @@ import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 
 import com.bobsgame.ClientMain;
-import org.lwjgl.LWJGLException;
-import org.lwjgl.input.Controller;
-import org.lwjgl.input.Controllers;
-import org.lwjgl.input.Mouse;
-import org.lwjgl.opengl.Display;
-import org.lwjgl.opengl.DisplayMode;
-import org.lwjgl.opengl.GLContext;
-import org.lwjgl.opengl.OpenGLException;
-import org.lwjgl.opengl.Util;
+import de.matthiasmann.twl.input.Input;
+import de.matthiasmann.twl.input.lwjgl.LWJGLInput;
+import org.lwjgl.PointerBuffer;
+import org.lwjgl.glfw.GLFW;
+import org.lwjgl.glfw.GLFWVidMode;
+import org.lwjgl.opengl.*;
+import org.lwjgl.system.MemoryStack;
 import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.classic.Logger;
@@ -49,7 +48,8 @@ public class LWJGLUtils
 
 
 	public static Logger log = (Logger) LoggerFactory.getLogger(LWJGLUtils.class);
-
+    public static long window;
+    public static LWJGLInput twlInput;
 
 
 	//=========================================================================================================================
@@ -67,60 +67,7 @@ public class LWJGLUtils
 	 * @param fullscreen True if we want fullscreen mode
 	 */
 	public static void setFullscreenCompatibleDisplayMode(int width, int height, boolean fullscreen) {
-		// return if requested DisplayMode is already set
-		if ((Display.getDisplayMode().getWidth() == width)
-				&& (Display.getDisplayMode().getHeight() == height)
-				&& (Display.isFullscreen() == fullscreen)
-		) {
-			return;
-		}
-
-		try
-		{
-			DisplayMode targetDisplayMode = null;
-
-			//if(fullscreen)
-			{
-				DisplayMode[] modes = Display.getAvailableDisplayModes();
-
-				int freq = 0;
-				for (int i = 0; i < modes.length; i++) {
-					DisplayMode current = modes[i];
-
-					if ((current.getWidth() == width) && (current.getHeight() == height)) {
-						if ((targetDisplayMode == null) || (current.getFrequency() >= freq)) {
-							if ((targetDisplayMode == null) || (current.getBitsPerPixel() > targetDisplayMode.getBitsPerPixel())) {
-								targetDisplayMode = current;
-								freq = targetDisplayMode.getFrequency();
-							}
-						}
-
-						// if we've found a match for bpp and frequence against the original display mode
-						// then it's probably best to go for this one since it's most likely compatible with the monitor
-						if ((current.getBitsPerPixel() == Display.getDesktopDisplayMode().getBitsPerPixel())
-								&& (current.getFrequency() == Display.getDesktopDisplayMode().getFrequency())
-						) {
-							targetDisplayMode = current;
-							break;
-						}
-					}
-				}
-			}
-			//else
-			//{
-				//targetDisplayMode = new DisplayMode(width, height);
-			//}
-
-			if (targetDisplayMode == null) {
-				log.warn("Could not find video mode : " + width + "x" + height + " fullscreen: " + fullscreen);
-				return;
-			}
-
-			Display.setDisplayMode(targetDisplayMode);
-			Display.setFullscreen(fullscreen);
-		} catch (LWJGLException e) {
-			log.warn("Could not set video mode: " + width + "x" + height + " fullscreen: " + fullscreen + e);
-		}
+        // TODO: Implement GLFW window resize/fullscreen toggle if needed
 	}
 
 	public static int SCREEN_SIZE_X = 1280;
@@ -177,58 +124,17 @@ public class LWJGLUtils
 	public static int desktopDisplayFreq = 0;
 
 	public static void setDisplayMode() {
-		DisplayMode[] modes = null;
+        if (!GLFW.glfwInit()) {
+            throw new IllegalStateException("Unable to initialize GLFW");
+        }
 
-		try {
-			modes = Display.getAvailableDisplayModes();
-		} catch (LWJGLException e) {
-			e.printStackTrace();
-		}
-
-		for (int i = 0; i < modes.length; i++) {
-			DisplayMode m = modes[i];
-			//log.debug(m.getWidth() + "x" + m.getHeight() + " BPP: " + m.getBitsPerPixel() + " Frequency: " + m.getFrequency() + "Hz");
-		}
-
-		// TODO: get the browser window/current frame size using javascript
-		// set the applet size to this using javascript
-		// set the windowed display to this
-
-		// get list of display modes
-		// get desktop resolution
-		desktopDisplayWidth = Display.getDesktopDisplayMode().getWidth();
-		desktopDisplayHeight = Display.getDesktopDisplayMode().getHeight();
-		desktopDisplayBPP = Display.getDesktopDisplayMode().getBitsPerPixel();
-		desktopDisplayFreq = Display.getDesktopDisplayMode().getFrequency();
-
-		int halfSizeWidth = desktopDisplayWidth / 2;
-		int halfSizeHeight = desktopDisplayHeight / 2;
-
-		// get monitor resolution ??
-
-		//get cpu, gpu, ram
-		//if fast enough, set to full resolution fullscreen
-
-		//if not so fast, set to half resolution fullscreen
-
-		//***********
-		//using the "normal" LWJGL "new DisplayMode()" does not validate this mode as being fullscreen compatible as it has no bpp or freq set.
-		//to make a fullscreen supported DisplayMode you MUST use one of the modes from getAvailableDisplayModes()
-		//***********
-		//Display.setDisplayMode(new DisplayMode(SCREEN_SIZE_X,SCREEN_SIZE_Y));
-		setFullscreenCompatibleDisplayMode(SCREEN_SIZE_X, SCREEN_SIZE_Y, false);
-		//Display.setFullscreen(true);
-
-		//boolean useHalfSizeRes = true;
-
-		//if(useHalfSizeRes)setFullscreenCompatibleDisplayMode(halfSizeWidth, halfSizeHeight, false);
-
-		//SCREEN_SIZE_X = halfSizeWidth;
-		//SCREEN_SIZE_Y = halfSizeHeight;
-
-		//else
-		//setFullscreenCompatibleDisplayMode(desktopDisplayWidth, desktopDisplayHeight, false);
-		//Display.setFullscreen(true);
+        GLFWVidMode vidMode = GLFW.glfwGetVideoMode(GLFW.glfwGetPrimaryMonitor());
+        if (vidMode != null) {
+            desktopDisplayWidth = vidMode.width();
+            desktopDisplayHeight = vidMode.height();
+            desktopDisplayBPP = vidMode.redBits() + vidMode.greenBits() + vidMode.blueBits();
+            desktopDisplayFreq = vidMode.refreshRate();
+        }
 	}
 
 	public static void setViewport() {
@@ -238,52 +144,41 @@ public class LWJGLUtils
 	}
 
 	public static void initGL(String windowName) {
-		//-----------------------------------
-		//opens another frame window, could be used as a debug console or something!
-		//-----------------------------------
-		/*setTitle("Canvas Test");
-		setSize(640, 480);
-		try
-		{
-			canvas = new AWTGLCanvas();
-		}
-		catch (LWJGLException e1)
-		{
-			e1.printStackTrace();
-		}
 
-		canvas.setSize(640, 480);
-		add(canvas);
-		addWindowListener(new WindowAdapter() {
-			public void windowClosing(WindowEvent e) {
-				dispose();
-				ClientMain.exit();
-			}
-		});
+        GLFW.glfwDefaultWindowHints();
+        GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, GLFW.GLFW_FALSE);
+        GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GLFW.GLFW_TRUE);
 
-		setResizable(true);
-		pack();
-		setVisible(true);*/
+        window = GLFW.glfwCreateWindow(SCREEN_SIZE_X, SCREEN_SIZE_Y, windowName, 0, 0);
+        if (window == 0) {
+            throw new RuntimeException("Failed to create the GLFW window");
+        }
 
-		try {
-			Display.setResizable(true);
-			//TODO: we want vsync be default in fullscreen, or if we can detect aero is off (win 7 no accel, windows xp, linux, mac)
-			//TODO: if we are a window, we want 1280x900 or whatever, resizeable.
-			//if we are an applet, we want to resize based on the applet size, which is resized by javascript
-			//if we go fullscreen, we want to go full or half monitor resolution and turn on vsync
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            IntBuffer pWidth = stack.mallocInt(1);
+            IntBuffer pHeight = stack.mallocInt(1);
 
-			if (vsync == true) Display.setVSyncEnabled(true);
-			Display.setTitle(windowName);//ULTRA \"bob's game\" ONLINE");//world of \"bob's game\"");
+            GLFW.glfwGetWindowSize(window, pWidth, pHeight);
 
-			// if we want to disable deprecated GL functions below GL 3.3
-//			ContextAttribs ctxAttr = new ContextAttribs(3, 3);
-//			ctxAttr = ctxAttr.withForwardCompatible(true);
-//			ctxAttr = ctxAttr.withProfileCore(true);
-//			ctxAttr = ctxAttr.withProfileCompatibility(false);
-//			ctxAttr = ctxAttr.withDebug(true);
+            GLFWVidMode vidmode = GLFW.glfwGetVideoMode(GLFW.glfwGetPrimaryMonitor());
 
-			Display.create(); //new PixelFormat(),ctxAttr);
+            GLFW.glfwSetWindowPos(
+                    window,
+                    (vidmode.width() - pWidth.get(0)) / 2,
+                    (vidmode.height() - pHeight.get(0)) / 2
+            );
+        }
 
+        GLFW.glfwMakeContextCurrent(window);
+        if (vsync) {
+            GLFW.glfwSwapInterval(1);
+        } else {
+            GLFW.glfwSwapInterval(0);
+        }
+
+        GLFW.glfwShowWindow(window);
+
+        GL.createCapabilities();
 
 			log.info("Setting up GL...");
 
@@ -293,54 +188,32 @@ public class LWJGLUtils
 			log.info("Shader version: " + glGetString(GL_SHADING_LANGUAGE_VERSION));
 			log.info("Extensions: " + glGetString(GL_EXTENSIONS));
 
-			//Display.setSwapInterval(120);
 
-
-			//if (isApplication) {
-				//Mouse.setGrabbed(true);
-			//}
-
-			//glEnable(GL_TEXTURE_2D);
 			glEnable(GL_BLEND);
-			//glEnable(GL_LINE_SMOOTH);
-			//glShadeModel(GL_SMOOTH);
 
-			//glColor4f(0.0f,0.0f,0.0f,0.0f);
-			//glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
-			//glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			//LWJGLUtils.setBlendMode(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
 			glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-			//glClearDepth(1);
+
 
 			glDisable(GL_SCISSOR_TEST);
 			glDisable(GL_DEPTH_TEST);
 			glDisable(GL_LIGHTING);
 
-			//glPushAttrib(GL_ENABLE_BIT|GL_TRANSFORM_BIT|GL_HINT_BIT|GL_COLOR_BUFFER_BIT|GL_SCISSOR_BIT|GL_LINE_BIT|GL_TEXTURE_BIT);
-
-			//glMatrixMode(GL_PROJECTION);
-			//glPushMatrix();
-			//glLoadIdentity();
 
 			setViewport();
 
-			//glMatrixMode(GL_MODELVIEW);
-			//glPushMatrix();
-			//glLoadIdentity();
-			//glViewport(0, 0, SCREEN_SIZE_X, SCREEN_SIZE_Y);
 
 			log.info("Setting up FBO...");
 
 			// check if GL_ARB_framebuffer_object can be use on this system
 
-			if (GLContext.getCapabilities().GL_EXT_framebuffer_object) {
+			if (GL.getCapabilities().GL_EXT_framebuffer_object) {
 				useFBO = true;
 				ARBFBO = false;
 				log.info("EXT FBO supported.");
-			} else if (GLContext.getCapabilities().GL_ARB_framebuffer_object) {
+			} else if (GL.getCapabilities().GL_ARB_framebuffer_object) {
 				useFBO = true;
 				ARBFBO = true;
 				log.info("EXT FBO not supported. Using ARB FBO.");
@@ -350,10 +223,11 @@ public class LWJGLUtils
 
 				new GLUtils();
 
-				GLUtils.drawFilledRect(0, 0, 0, 0, Display.getWidth(), 0, Display.getHeight(), 0.5f);
-				GLUtils.drawOutlinedString("Your graphics card is not supported yet. (Needs FBO support.)", Display.getWidth() / 2 - 100, Display.getHeight() / 2 - 12, BobColor.white);
+				GLUtils.drawFilledRect(0, 0, 0, 0, 1280, 0, 720, 0.5f);
+				GLUtils.drawOutlinedString("Your graphics card is not supported yet. (Needs FBO support.)", 1280 / 2 - 100, 720 / 2 - 12, BobColor.white);
 
-				Display.update();
+				//Display.update();
+                updateDisplay();
 
 				try {
 					Thread.sleep(5000);
@@ -427,13 +301,13 @@ public class LWJGLUtils
 			//String shaderVersion = glGetString(GL_SHADING_LANGUAGE_VERSION);
 			//String glExtensions = glGetString(GL_EXTENSIONS);
 
-			boolean hasARBShadingLanguage100 = GLContext.getCapabilities().GL_ARB_shading_language_100;
-			boolean hasARBFragmentShader = GLContext.getCapabilities().GL_ARB_fragment_shader;
-			boolean hasARBVertexShader = GLContext.getCapabilities().GL_ARB_vertex_shader;
-			boolean hasARBShaderObjects = GLContext.getCapabilities().GL_ARB_shader_objects;
-			boolean hasARBFragmentProgram = GLContext.getCapabilities().GL_ARB_fragment_program;
-			boolean hasNVVertexProgram3 = GLContext.getCapabilities().GL_NV_vertex_program3;
-			boolean hasNVGPUProgram4 = GLContext.getCapabilities().GL_NV_gpu_program4;
+			boolean hasARBShadingLanguage100 = GL.getCapabilities().GL_ARB_shading_language_100;
+			boolean hasARBFragmentShader = GL.getCapabilities().GL_ARB_fragment_shader;
+			boolean hasARBVertexShader = GL.getCapabilities().GL_ARB_vertex_shader;
+			boolean hasARBShaderObjects = GL.getCapabilities().GL_ARB_shader_objects;
+			boolean hasARBFragmentProgram = GL.getCapabilities().GL_ARB_fragment_program;
+			//boolean hasNVVertexProgram3 = GL.getCapabilities().GL_NV_vertex_program3;
+			//boolean hasNVGPUProgram4 = GL.getCapabilities().GL_NV_gpu_program4;
 
 //			boolean extensionsStringHasARBShadingLanguage = glExtensions.contains("GL_ARB_shading_language_100");
 //			boolean extensionsStringHasARBFragmentShader = glExtensions.contains("GL_ARB_fragment_shader");
@@ -459,8 +333,8 @@ public class LWJGLUtils
 			log.info("shadingVersionExists (GLSL 1.051):" + (glGetString(GL_SHADING_LANGUAGE_VERSION).equals("0") == false));
 
 			log.info("hasARBFragmentProgram (SM 2):" + hasARBFragmentProgram);
-			log.info("hasNVVertexProgram3 (SM 3):" + hasNVVertexProgram3);
-			log.info("hasNVGPUProgram4 (SM 4):" + hasNVGPUProgram4);
+			//log.info("hasNVVertexProgram3 (SM 3):" + hasNVVertexProgram3);
+			//log.info("hasNVGPUProgram4 (SM 4):" + hasNVGPUProgram4);
 //			log.info("extensionsStringHasARBShadingLanguage:"+extensionsStringHasARBShadingLanguage);
 //			log.info("extensionsStringHasARBFragmentShader:"+extensionsStringHasARBFragmentShader);
 //			log.info("extensionsStringHasARBVertexShader:"+extensionsStringHasARBVertexShader);
@@ -512,10 +386,7 @@ public class LWJGLUtils
 			if (useShader == false) {
 				log.warn("Shaders not supported.");
 			}
-		} catch (LWJGLException e) {
-			e.printStackTrace();
-			ClientMain.exit();
-		}
+
 
 		log.info("GL Complete.");
 	}
@@ -760,11 +631,10 @@ public class LWJGLUtils
 	}
 
 	public static void checkForGLError() {
-		try {
-			Util.checkGLError();
-		} catch (OpenGLException e) {
-			e.printStackTrace();
-		}
+        int err = glGetError();
+        if (err != GL_NO_ERROR) {
+            log.error("GL Error: " + err);
+        }
 	}
 
 	public static void useShader(int shader) {
@@ -782,10 +652,9 @@ public class LWJGLUtils
 	public static void initTWL() {
 		log.info("Init TWL...");
 		try {
-			Mouse.destroy();
 			TWLrenderer = new LWJGLRenderer();
-			Mouse.create();
-		} catch (LWJGLException e) {
+            twlInput = (LWJGLInput)TWLrenderer.getInput();
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
@@ -802,61 +671,41 @@ public class LWJGLUtils
 	public static String controllerNames = "";
 
 	public static void initControllers() {
+        // Joystick support in GLFW is handled differently.
+        // We can check present joysticks.
 		log.info("Init Controllers...");
-		try
-		{
-			Controllers.create();
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
 
-		numControllers = Controllers.getControllerCount();
+		numControllers = 0;
+		controllerNames = "";
+
+        for (int i = GLFW.GLFW_JOYSTICK_1; i <= GLFW.GLFW_JOYSTICK_LAST; i++) {
+            if (GLFW.glfwJoystickPresent(i)) {
+                numControllers++;
+                String name = GLFW.glfwGetJoystickName(i);
+                log.info("Joystick " + i + ": " + name);
+                if (controllerNames.length() > 0) controllerNames += "," + name;
+                else controllerNames += name;
+            }
+        }
+
 		log.info(numControllers+" Controllers Found");
-
-		for(int n=0;n<numControllers;n++)
-		{
-			Controller controller = Controllers.getController(n);
-			log.info(controller.getName());
-
-			if(controllerNames.length()>0)controllerNames = controllerNames.concat(","+controller.getName());
-			else controllerNames = controllerNames.concat(controller.getName());
-
-
-			for(int i=0;i<controller.getButtonCount();i++)
-			{
-
-			}
-			for(int i=0;i<controller.getAxisCount();i++)
-			{
-				//controller.setDeadZone(i, -1.0f);
-			}
-		}
-
 		log.info("Controllers Loaded.");
 	}
 
 	public static void doResize() {
-		SCREEN_SIZE_X = Display.getWidth();
-		SCREEN_SIZE_Y = Display.getHeight();
-
-		//SCREEN_SIZE_X = getWidth();
-		//SCREEN_SIZE_Y = getHeight();
-
-		//glMatrixMode(GL_MODELVIEW);//worldview transform (how far from 0,0,0 are we)
-		//glLoadIdentity();//reset selected transform matrix
-		//glMatrixMode(GL_PROJECTION);//perspective transform matrix (for 3f->2f perspective, etc)
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            IntBuffer width = stack.mallocInt(1);
+            IntBuffer height = stack.mallocInt(1);
+            GLFW.glfwGetWindowSize(window, width, height);
+            SCREEN_SIZE_X = width.get(0);
+            SCREEN_SIZE_Y = height.get(0);
+        }
 
 		//order does matter
 		glLoadIdentity();//reset selected transform matrix
 		glOrtho(0, SCREEN_SIZE_X, SCREEN_SIZE_Y, 0, -1, 1);
 
 		glViewport(0, 0, SCREEN_SIZE_X, SCREEN_SIZE_Y);//order doesn't matter
-
-		//glMatrixMode(GL_MODELVIEW);
-		//glPushMatrix();
-
 
 		//fix FBO sizes
 
@@ -875,6 +724,16 @@ public class LWJGLUtils
 
 		TWLrenderer.syncViewportSize();
 	}
+
+    public static void updateDisplay() {
+        GLFW.glfwSwapBuffers(window);
+        GLFW.glfwPollEvents();
+    }
+
+    public static void destroy() {
+        GLFW.glfwDestroyWindow(window);
+        GLFW.glfwTerminate();
+    }
 
 	public static void setBlendMode(int src,int dst) {
 		//if(Keyboard.isKeyDown(Keyboard.KEY_COMMA))glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

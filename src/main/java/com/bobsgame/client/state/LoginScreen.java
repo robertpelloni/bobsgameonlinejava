@@ -12,6 +12,7 @@ import com.bobsgame.client.engine.game.gui.MenuPanel;
 import de.matthiasmann.twl.Button;
 import de.matthiasmann.twl.DialogLayout;
 import de.matthiasmann.twl.EditField;
+import de.matthiasmann.twl.EditField.Callback;
 import de.matthiasmann.twl.Event;
 import de.matthiasmann.twl.GUI;
 import de.matthiasmann.twl.Label;
@@ -508,10 +509,11 @@ public class LoginScreen extends MenuPanel
 
 
 					//connect through JSObject and get these from browser
-					if(ClientMain.browser!=null)
+                    // Removed JSObject code
+					/*if(ClientMain.browser!=null)
 					{
 						ClientMain.browser.eval("loginWithFacebook();");
-					}
+					}*/
 
 
 					//this will use the Facebook JS SDK to open an OAuth dialog
@@ -612,7 +614,7 @@ public class LoginScreen extends MenuPanel
 					{
 
 						errorLabel.setText(" ");
-						statusLabel.setText("Login with Facebook successful!");
+						statusLabel.setText("Login successful!");
 
 						try{Thread.sleep(1000);}catch (Exception e){e.printStackTrace();}
 

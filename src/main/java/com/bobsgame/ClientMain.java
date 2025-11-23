@@ -21,24 +21,18 @@ import com.bobsgame.net.ClientStats;
 import com.bobsgame.shared.BobColor;
 import com.bobsgame.shared.Utils;
 import de.matthiasmann.twl.GUI;
-import netscape.javascript.JSObject;
+//import netscape.javascript.JSObject;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.net.ntp.NTPUDPClient;
 import org.apache.commons.net.ntp.NtpV3Packet;
 import org.apache.commons.net.ntp.TimeInfo;
 import org.apache.commons.net.ntp.TimeStamp;
 import org.lwjgl.BufferUtils;
-import org.lwjgl.LWJGLException;
-import org.lwjgl.LWJGLUtil;
-import org.lwjgl.Sys;
-import org.lwjgl.input.Keyboard;
+import org.lwjgl.glfw.GLFW;
 import org.lwjgl.openal.AL;
-import org.lwjgl.opengl.Display;
 import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
-import java.applet.Applet;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.InetAddress;
@@ -51,13 +45,10 @@ import java.util.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL20.*;
 
-public class ClientMain extends Applet {
+public class ClientMain {
 	public static ClientMain clientMain;
 
 	public static void main(String[] args) {
-		//TODO: could download natives into home dir/.bobsGame/native and then set to it for applet and desktop both
-		//System.setProperty("org.lwjgl.librarypath","\\res");
-
 		try {
 			Thread.currentThread().setName("ClientMain_main");
 		} catch (SecurityException e) {
@@ -81,200 +72,30 @@ public class ClientMain extends Applet {
 		}
 
 		ClientMain.exit();
-
-		//for(int i=0;i<100000;i++)
-		//bg.clientUDP.sendDatagramToServer(i);
-		//bg.quit();
 	}
-
-	static Canvas appletCanvas = null; //TODO: try using JComponent?
 
 	static int lastWidth = 0;
 	static int lastHeight = 0;
 	static int lastDisplayWidth = 0;
 	static int lastDisplayHeight = 0;
-	static int lastAppletCanvasWidth = 0;
-	static int lastAppletCanvasHeight = 0;
 	static int canvasWidth = 0;
 	static int canvasHeight = 0;
 
 	static Thread gameThread = null;
 	static Runnable gameRunnable = null;
-	public static JSObject browser = null;
+    // Removed JSObject dependency
+	//public static JSObject browser = null;
 
 	static boolean started = false;
 
-	@Override
-	public void init() {
-		String host = getCodeBase().toString();
-		log.debug(host);
-
-		if (host.startsWith("https://bobsgame.com/") == false &&
-			host.startsWith("https://www.bobsgame.com/") == false &&
-			host.startsWith("http://bobsgame.com/") == false &&
-			host.startsWith("http://www.bobsgame.com/") == false &&
-			host.startsWith("bobsgame.com/") == false &&
-			host.startsWith("www.bobsgame.com/") == false &&
-			host.startsWith("http://s3.amazonaws.com/bobsgame/client/") == false &&
-			host.startsWith("https://s3.amazonaws.com/bobsgame/client") == false &&
-			host.startsWith("s3.amazonaws.com/bobsgame/client/") == false &&
-			host.startsWith("bobsgame.s3.amazonaws.com/client/") == false &&
-			host.startsWith("http://bobsgame.s3.amazonaws.com/client/") == false &&
-			host.startsWith("https://bobsgame.s3.amazonaws.com/client/") == false
-		) {
-			ClientMain.exit();
-		}
-	}
-
-	@Override
-	public void start() {
-		if (started == true) {
-			return;
-		}
-
-		clientMain = this;
-
-		try {
-			Thread.currentThread().setName("ClientMain_start");
-		} catch (SecurityException e) {
-			e.printStackTrace();
-		}
-
-		isApplet = true;
-
-		if (BobNet.debugMode == true) {
-			setBackground(java.awt.Color.RED);
-		} else {
-			setBackground(java.awt.Color.BLACK);
-		}
-
-		setLayout(new BorderLayout());
-
-		try {
-			appletCanvas = new Canvas() {
-				@Override
-				public void addNotify() {
-					super.addNotify();
-
-					gameRunnable = new Runnable() {
-						@Override
-						public void run() {
-							try {
-								Thread.currentThread().setName("ClientMain_mainLoop");
-							} catch (SecurityException e) {
-								e.printStackTrace();
-							}
-
-							started = true;
-
-							mainInit();
-
-							try {
-								mainLoop();
-							} catch(Exception e) {
-								e.printStackTrace();
-							}
-
-							try {
-								cleanup();
-							} catch (Exception e) {
-								e.printStackTrace();
-							}
-						}
-					};
-
-					gameThread = new Thread(gameRunnable);
-					gameThread.start();
-				}
-			};
-
-			if (BobNet.debugMode == true) {
-				appletCanvas.setBackground(java.awt.Color.GREEN);
-			} else {
-				appletCanvas.setBackground(java.awt.Color.BLACK);
-			}
-
-			appletCanvas.setSize(getWidth(),getHeight());
-
-			add(appletCanvas, BorderLayout.CENTER);
-
-			this.setFocusable(true);
-
-			appletCanvas.setFocusable(true);
-			appletCanvas.requestFocus();
-
-			appletCanvas.setIgnoreRepaint(true);
-			setVisible(true);
-
-			validate();
-
-			canvasWidth = appletCanvas.getWidth();
-			canvasHeight = appletCanvas.getHeight();
-		} catch (Exception e) {
-			log.error(e.getMessage());
-			e.printStackTrace();
-			throw new RuntimeException("Unable to create display");
-		}
-	}
-
-	@Override
-	public void stop() {
-	}
-
-	@Override
-	public void destroy() {
-		log.debug("destroy()");
-
-		log.debug("exit=true");
-		clientMain.exit = true; // this will end ghost thread, game thread break out of loop, call quit() and exit.
-		this.exit = true;
-
-		log.debug("Waiting for gameThread.join()");
-		try {
-			gameThread.join();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		log.debug("gameThread.join() complete.");
-
-		log.debug("Remove canvas");
-		remove(appletCanvas);
-
-		super.destroy();
-	}
-
 	public static void exit() {
-		if (isApplet) {
-			clientMain.destroy();
-		} else {
-			System.exit(0);
-		}
+		System.exit(0);
 	}
 
 	public ClientStats clientInfo = new ClientStats();
 
 	public void initClientInfo() {
 		Properties systemProperties = System.getProperties();
-
-		if (isApplet == true) {
-			//connect through JSObject and get these from browser
-			if (browser != null) {
-				clientInfo.browserUserAgentString = (String) browser.eval("getUserAgentString();");
-				clientInfo.browserAppNameVersionString = (String) browser.eval("getAppNameString();");
-				clientInfo.browserReferrerString = (String) browser.eval("getReferrerString();");
-			}
-
-			//Console.debug(clientInfo.browserUserAgentString);
-			//Console.debug(clientInfo.browserAppNameVersionString);
-			//Console.debug(clientInfo.browserReferrerString);
-		}
-
-
-		//add to DB, add to clientConnection object, add to debug console.
-		//log.debug(System.getenv("PROCESSOR_IDENTIFIER"));//will only work for windows!
-		//log.debug(System.getenv("PROCESSOR_ARCHITECTURE"));
-		//log.debug(System.getenv("PROCESSOR_ARCHITEW6432"));
-		//log.debug(System.getenv("NUMBER_OF_PROCESSORS"));
 
 		clientInfo.getEnvProcessorIdentifier = System.getenv("PROCESSOR_IDENTIFIER");
 		clientInfo.getEnvProcessorArchitecture = System.getenv("PROCESSOR_ARCHITECTURE");
@@ -283,23 +104,13 @@ public class ClientMain extends Applet {
 
 		clientInfo.jreVersion			= systemProperties.getProperty("java.version");
 		clientInfo.jreVendor			= systemProperties.getProperty("java.vendor");
-		//clientInfo.jreVendorURL			= systemProperties.getProperty("java.vendor.url");
 		clientInfo.jreHomeDir			= systemProperties.getProperty("java.home");
-		//clientInfo.jvmSpecVersion		= systemProperties.getProperty("java.vm.specification.version");
-		//clientInfo.jvmSpecVendor		= systemProperties.getProperty("java.vm.specification.vendor");
-		//clientInfo.jvmSpecName			= systemProperties.getProperty("java.vm.specification.name");
 		clientInfo.jvmVersion			= systemProperties.getProperty("java.vm.version");
-		//clientInfo.jvmVendor			= systemProperties.getProperty("java.vm.vendor");
 		clientInfo.jvmName				= systemProperties.getProperty("java.vm.name");
-		//clientInfo.jreSpecVersion		= systemProperties.getProperty("java.specification.version");
-		//clientInfo.jreSpecVendor		= systemProperties.getProperty("java.specification.vendor");
-		//clientInfo.jreSpecName			= systemProperties.getProperty("java.specification.name");
 		clientInfo.javaClassVersion		= systemProperties.getProperty("java.class.version");
 		clientInfo.javaClassPath		= systemProperties.getProperty("java.class.path");
 		clientInfo.javaLibraryPath		= systemProperties.getProperty("java.library.path");
 		clientInfo.javaTempDir			= systemProperties.getProperty("java.io.tmpdir");
-		//clientInfo.javaJITCompiler		= systemProperties.getProperty("java.compiler");
-		//clientInfo.javaExtensionPath	= systemProperties.getProperty("java.ext.dirs");
 		clientInfo.osName				= systemProperties.getProperty("os.name");
 		clientInfo.osArch				= systemProperties.getProperty("os.arch");
 		clientInfo.osVersion			= systemProperties.getProperty("os.version");
@@ -307,20 +118,21 @@ public class ClientMain extends Applet {
 		clientInfo.osHomeDir			= systemProperties.getProperty("user.home");
 		clientInfo.workingDir			= systemProperties.getProperty("user.dir");
 
-		clientInfo.displayWidth = Display.getDesktopDisplayMode().getWidth();
-		clientInfo.displayHeight = Display.getDesktopDisplayMode().getHeight();
-		clientInfo.displayBPP = Display.getDesktopDisplayMode().getBitsPerPixel();
-		clientInfo.displayFreq = Display.getDesktopDisplayMode().getFrequency();
+		// TODO: Update display info using GLFW
+		//clientInfo.displayWidth = Display.getDesktopDisplayMode().getWidth();
+		//clientInfo.displayHeight = Display.getDesktopDisplayMode().getHeight();
+		//clientInfo.displayBPP = Display.getDesktopDisplayMode().getBitsPerPixel();
+		//clientInfo.displayFreq = Display.getDesktopDisplayMode().getFrequency();
 
 		clientInfo.shaderCompiled = LWJGLUtils.useShader;
 		clientInfo.canUseFBO = LWJGLUtils.useFBO;
 		clientInfo.usingVSync = LWJGLUtils.vsync;
 
-		clientInfo.displayAdapter = Display.getAdapter();
-		clientInfo.displayDriver = Display.getVersion();
-		clientInfo.lwjglVersion = Sys.getVersion();
-		clientInfo.lwjglIs64Bit = Sys.is64Bit();
-		clientInfo.lwjglPlatformName = LWJGLUtil.getPlatformName();
+		//clientInfo.displayAdapter = Display.getAdapter();
+		//clientInfo.displayDriver = Display.getVersion();
+		//clientInfo.lwjglVersion = Sys.getVersion();
+		//clientInfo.lwjglIs64Bit = Sys.is64Bit();
+		//clientInfo.lwjglPlatformName = LWJGLUtil.getPlatformName();
 
 		clientInfo.numCPUs = StatsUtils.rt.availableProcessors();
 		clientInfo.totalMemory = StatsUtils.totalMemory / 1024 / 1024;
@@ -338,8 +150,6 @@ public class ClientMain extends Applet {
 		clientInfo.glExtensions = glGetString(GL_EXTENSIONS);
 
 		clientInfo.log();
-		log.info("CurrentDisplayWidth:" + Display.getWidth());
-		log.info("CurrentDisplayHeight:" + Display.getHeight());
 	}
 
 	public float timeZoneGMTOffset = 0.0f;
@@ -509,18 +319,19 @@ public class ClientMain extends Applet {
 					legalScreen.update();
 					legalScreenGUI.update();
 
-					if((Display.isCloseRequested() || (BobNet.debugMode == true && Keyboard.isKeyDown(Keyboard.KEY_ESCAPE)))
+					if((GLFW.glfwWindowShouldClose(LWJGLUtils.window) || (BobNet.debugMode == true && GLFW.glfwGetKey(LWJGLUtils.window, GLFW.GLFW_KEY_ESCAPE) == GLFW.GLFW_PRESS))
 							|| legalScreen.clickedCancel_S() == true
 					) {
 						legalScreen.destroy();
 						LWJGLUtils.TWLthemeManager.destroy();
-						Display.destroy();
-						AL.destroy();
+						//Display.destroy();
+						//AL.destroy();
 						ClientMain.exit();
 					}
 
-					Display.sync(60);
-					Display.update();
+					//Display.sync(60);
+					//Display.update();
+                    LWJGLUtils.updateDisplay();
 					doResizeCheck();
 				}
 
@@ -549,8 +360,9 @@ public class ClientMain extends Applet {
 					keyboardScreen.update();
 					keyboardScreenGUI.update();
 
-					Display.sync(60);
-					Display.update();
+					//Display.sync(60);
+					//Display.update();
+                    LWJGLUtils.updateDisplay();
 				}
 				keyboardScreen.destroy();
 				glClear(GL_COLOR_BUFFER_BIT);
@@ -743,15 +555,7 @@ public class ClientMain extends Applet {
 
 		lwjglUtils = new LWJGLUtils();
 
-		if (isApplet == false) {
-			LWJGLUtils.setDisplayMode();
-		} else if (isApplet == true) {
-			try {
-				Display.setParent(appletCanvas);
-			} catch (LWJGLException e) {
-				e.printStackTrace();
-			}
-		}
+		LWJGLUtils.setDisplayMode();
 
 		// this is done before init game so we can put debug stuff
 		console = new Console();
@@ -867,12 +671,12 @@ public class ClientMain extends Applet {
 	public void focus() {
 		resize = true;
 
-		this.requestFocus();
+		//this.requestFocus();
 
-		if (isApplet == true) {
-			appletCanvas.requestFocus();
-			appletCanvas.requestFocusInWindow();
-		}
+		//if (isApplet == true) {
+		//	appletCanvas.requestFocus();
+		//	appletCanvas.requestFocusInWindow();
+		//}
 	}
 
 	// this is called from the browser javascript on window.blur
@@ -907,7 +711,7 @@ public class ClientMain extends Applet {
 		log.info("Begin Main Loop...");
 
 		while (exit == false) {
-			if (Display.isCloseRequested() || (BobNet.debugMode == true && Keyboard.isKeyDown(Keyboard.KEY_ESCAPE))) {
+			if (GLFW.glfwWindowShouldClose(LWJGLUtils.window) || (BobNet.debugMode == true && GLFW.glfwGetKey(LWJGLUtils.window, GLFW.GLFW_KEY_ESCAPE) == GLFW.GLFW_PRESS)) {
 				exit = true;
 			}
 
@@ -931,21 +735,25 @@ public class ClientMain extends Applet {
 			}
 
 			if (serversAreShuttingDown) {
-				GLUtils.drawFilledRect(0, 0, 0, 0, Display.getWidth(), 0, Display.getHeight(), 0.2f);
-				GLUtils.drawOutlinedString("The servers are shutting down soon for updating.", Display.getWidth()/2-60, Display.getHeight()/2-12, BobColor.white);
+                // TODO: fix display width/height
+				GLUtils.drawFilledRect(0, 0, 0, 0, 1280, 0, 720, 0.2f);
+				GLUtils.drawOutlinedString("The servers are shutting down soon for updating.", 1280/2-60, 720/2-12, BobColor.white);
 			}
 
-			if (Display.isActive() == false && BobNet.debugMode == false) {
-				GLUtils.drawFilledRect(0, 0, 0, 0, Display.getWidth(), 0, Display.getHeight(), 0.5f);
-				GLUtils.drawOutlinedString("Low power mode. Click to resume.", Display.getWidth() / 2 - 70, Display.getHeight()/  2 - 12, BobColor.white);
+            // TODO: Check window focus
+			if (false && BobNet.debugMode == false) {
+				GLUtils.drawFilledRect(0, 0, 0, 0, 1280, 0, 720, 0.5f);
+				GLUtils.drawOutlinedString("Low power mode. Click to resume.", 1280 / 2 - 70, 720/  2 - 12, BobColor.white);
 
-				Display.sync(10);
+				//Display.sync(10);
+                // TODO: sleep
 
-				if (Display.isVisible()) {
+				/*if (Display.isVisible()) {
 					Display.update();
 				} else {
 					Display.processMessages();
-				}
+				}*/
+                LWJGLUtils.updateDisplay();
 
 				//Display.update();
 			} else {
@@ -961,7 +769,7 @@ public class ClientMain extends Applet {
 				} else if (LWJGLUtils.vsync == false) {
 					//Display.sync(240);
 					//Display.sync(90);
-					Display.sync(60);
+					//Display.sync(60);
 
 					//sync() only seems to work properly with ghost thread
 
@@ -1001,7 +809,8 @@ public class ClientMain extends Applet {
 
 					}catch(Exception e){e.printStackTrace();}*/
 				}
-				Display.update();
+				//Display.update();
+                LWJGLUtils.updateDisplay();
 			}
 			doScreenShotCheck();
 			doResizeCheck();
@@ -1013,39 +822,7 @@ public class ClientMain extends Applet {
 		// log.info("Display.getWidth() x Display.getHeight():"+Display.getWidth()+" x "+Display.getHeight());
 		// log.info("getWidth() x getHeight():"+getWidth()+" x "+getHeight());
 
-		if (isApplet == true) {
-			//appletCanvas.notify();
-			//appletCanvas.setSize(500,500);
-			//invalidate();
-			//appletCanvas.invalidate();
-			//resize=true;
-
-			//validate();
-
-			if (Display.getWidth() != lastDisplayWidth
-					|| Display.getHeight() != lastDisplayHeight
-					|| getWidth() != lastWidth
-					|| getHeight() != lastHeight
-					|| appletCanvas.getWidth() != lastAppletCanvasWidth
-					|| appletCanvas.getHeight() != lastAppletCanvasHeight
-			) {
-				log.info("Resized applet.");
-
-				resize = true;
-
-				canvasWidth = Display.getWidth();
-				canvasHeight = Display.getHeight();
-
-				// TODO: resize to browser window
-				//appletCanvas.setSize(canvasWidth,canvasHeight);
-				//appletCanvas.validate();
-				//remove(appletCanvas);
-				//add(appletCanvas);
-				//validate();
-			}
-		}
-
-		if (Display.wasResized() == true || resize == true) {
+		/*if (Display.wasResized() == true || resize == true) {
 			resize = false;
 
 			// reset GL model matrix, etc.
@@ -1053,8 +830,8 @@ public class ClientMain extends Applet {
 
 			lastDisplayWidth = Display.getWidth();
 			lastDisplayHeight = Display.getHeight();
-			lastWidth = getWidth();
-			lastHeight = getHeight();
+			//lastWidth = getWidth();
+			//lastHeight = getHeight();
 
 			if (isApplet) {
 				lastAppletCanvasWidth = appletCanvas.getWidth();
@@ -1062,13 +839,13 @@ public class ClientMain extends Applet {
 			}
 
 			LWJGLUtils.doResize();
-		}
+		}*/
 	}
 
 	public void doScreenShotCheck() {
 		boolean takeScreenShot = false;
 
-		if (Keyboard.isKeyDown(Keyboard.KEY_F12)) {
+		if (GLFW.glfwGetKey(LWJGLUtils.window, GLFW.GLFW_KEY_F12) == GLFW.GLFW_PRESS) {
 			if (screenShotKeyPressed == false) {
 				screenShotKeyPressed = true;
 				takeScreenShot = true;
@@ -1093,10 +870,10 @@ public class ClientMain extends Applet {
 
 			glReadBuffer(GL_FRONT);
 
-			int width = Display.getWidth();
-			int height = Display.getHeight();
+			int width = 1280; //Display.getWidth();
+			int height = 720; //Display.getHeight();
 
-			int bytesPerPixel = Display.getDisplayMode().getBitsPerPixel() / 8; // Assuming a 32-bit display with a byte each for red, green, blue, and alpha.
+			int bytesPerPixel = 4; //Display.getDisplayMode().getBitsPerPixel() / 8; // Assuming a 32-bit display with a byte each for red, green, blue, and alpha.
 
 			ByteBuffer buffer = BufferUtils.createByteBuffer(width * height * bytesPerPixel);
 			glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
@@ -1124,7 +901,7 @@ public class ClientMain extends Applet {
 
 		boolean printLog = false;
 
-		if (Keyboard.isKeyDown(Keyboard.KEY_F11)) {
+		if (GLFW.glfwGetKey(LWJGLUtils.window, GLFW.GLFW_KEY_F11) == GLFW.GLFW_PRESS) {
 			if (debugKeyPressed == false) {
 				debugKeyPressed = true;
 				printLog = true;
@@ -1166,13 +943,13 @@ public class ClientMain extends Applet {
 		log.info("Cleaning up...");
 
 		try {
-			Display.setParent(null);
-		} catch (LWJGLException e) {
+			//Display.setParent(null);
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
 		try {
-			AL.destroy();
+			//AL.destroy();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -1199,7 +976,8 @@ public class ClientMain extends Applet {
 		//glowTileBackground.cleanup();
 
 		try{
-			Display.destroy();
+			//Display.destroy();
+            LWJGLUtils.destroy();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -92,9 +92,10 @@ public class InternalTextureLoader {
 	 */
 	public static int createTextureID()
 	{
-	IntBuffer tmp = createIntBuffer(1);
-	GL11.glGenTextures(tmp);
-	return tmp.get(0);
+	//IntBuffer tmp = createIntBuffer(1);
+	//GL11.glGenTextures(tmp);
+	//return tmp.get(0);
+    return GL11.glGenTextures();
 	}
 
 	/**
@@ -274,9 +275,12 @@ public class InternalTextureLoader {
 		texWidth = texture.getTextureWidth();
 		texHeight = texture.getTextureHeight();
 
-		IntBuffer temp = BufferUtils.createIntBuffer(16);
-		GL11.glGetInteger(GL11.GL_MAX_TEXTURE_SIZE, temp);
-		int max = temp.get(0);
+        // LWJGL 3 uses separate call for glGetInteger with return value
+		//IntBuffer temp = BufferUtils.createIntBuffer(16);
+		//GL11.glGetInteger(GL11.GL_MAX_TEXTURE_SIZE, temp);
+		//int max = temp.get(0);
+        int max = GL11.glGetInteger(GL11.GL_MAX_TEXTURE_SIZE);
+
 		if ((texWidth > max) || (texHeight > max)) {
 			throw new IOException("Attempt to allocate a texture too big for the current hardware");
 		}
@@ -382,9 +386,11 @@ public class InternalTextureLoader {
 		texture.setHeight(height);
 		texture.setAlpha(hasAlpha);
 
-		IntBuffer temp = BufferUtils.createIntBuffer(16);
-		GL11.glGetInteger(GL11.GL_MAX_TEXTURE_SIZE, temp);
-		int max = temp.get(0);
+		//IntBuffer temp = BufferUtils.createIntBuffer(16);
+		//GL11.glGetInteger(GL11.GL_MAX_TEXTURE_SIZE, temp);
+		//int max = temp.get(0);
+        int max = GL11.glGetInteger(GL11.GL_MAX_TEXTURE_SIZE);
+
 		if ((texWidth > max) || (texHeight > max)) {
 			throw new IOException("Attempt to allocate a texture too big for the current hardware");
 		}

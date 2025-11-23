@@ -244,11 +244,12 @@ public class Texture
 	 * @see org.newdawn.slick.opengl.Texture#release()
 	 */
 	public void release() {
-		IntBuffer texBuf = createIntBuffer(1);
-		texBuf.put(textureID);
-		texBuf.flip();
+		//IntBuffer texBuf = createIntBuffer(1);
+		//texBuf.put(textureID);
+		//texBuf.flip();
 
-		glDeleteTextures(texBuf);
+		//glDeleteTextures(texBuf);
+        glDeleteTextures(textureID); // LWJGL 3 simplified this
 
 		if (lastBind == this) {
 			bindNone();

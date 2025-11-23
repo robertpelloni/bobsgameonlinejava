@@ -2,7 +2,7 @@ package com.bobsgame.client.engine.game.nd.ndmenu;
 
 import java.util.ArrayList;
 
-import slick.Texture;
+import com.bobsgame.client.Texture;
 
 import com.bobsgame.client.GLUtils;
 import com.bobsgame.client.engine.Engine;

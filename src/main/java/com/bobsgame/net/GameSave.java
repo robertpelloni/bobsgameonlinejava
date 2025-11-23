@@ -366,8 +366,8 @@ public class GameSave
 		else if(variableName.equals("isoCountryCode"))				{isoCountryCode = new String(value); return isoCountryCode;}
 		else if(variableName.equals("placeName"))					{placeName = new String(value); return placeName;}
 		else if(variableName.equals("stateName"))					{stateName = new String(value); return stateName;}
-		else if(variableName.equals("lat"))						{try{lat = Float.parseFloat(value);}catch(NumberFormatException ex){return null;} return new Float(lat);}
-		else if(variableName.equals("lon"))						{try{lon = Float.parseFloat(value);}catch(NumberFormatException ex){return null;} return new Float(lon);}
+		else if(variableName.equals("lat"))						{try{lat = Float.parseFloat(value);}catch(NumberFormatException ex){return null;} return Float.valueOf(lat);}
+		else if(variableName.equals("lon"))						{try{lon = Float.parseFloat(value);}catch(NumberFormatException ex){return null;} return Float.valueOf(lon);}
 
 
 		else if(variableName.equals("notes"))						{notes = new String(value); return notes;}
@@ -376,33 +376,33 @@ public class GameSave
 		else if(variableName.equals("avatarIcon"))					{avatarIcon = new String(value); return avatarIcon;}
 
 		else if(variableName.equals("lastKnownRoom"))				{lastKnownRoom = new String(value); return lastKnownRoom;}
-		else if(variableName.equals("lastKnownX"))					{try{lastKnownX = Integer.parseInt(value);}catch(NumberFormatException ex){return null;} return new Integer(lastKnownX);}
-		else if(variableName.equals("lastKnownY"))					{try{lastKnownY = Integer.parseInt(value);}catch(NumberFormatException ex){return null;} return new Integer(lastKnownY);}
+		else if(variableName.equals("lastKnownX"))					{try{lastKnownX = Integer.parseInt(value);}catch(NumberFormatException ex){return null;} return Integer.valueOf(lastKnownX);}
+		else if(variableName.equals("lastKnownY"))					{try{lastKnownY = Integer.parseInt(value);}catch(NumberFormatException ex){return null;} return Integer.valueOf(lastKnownY);}
 		else if(variableName.equals("startingRoom"))				{startingRoom = new String(value); return startingRoom;}
-		else if(variableName.equals("timePlayed"))					{try{timePlayed = Long.parseLong(value);}catch(NumberFormatException ex){return null;} return new Long(timePlayed);}
-		else if(variableName.equals("pixelsWalked"))				{try{pixelsWalked = Long.parseLong(value);}catch(NumberFormatException ex){return null;} return new Long(pixelsWalked);}
+		else if(variableName.equals("timePlayed"))					{try{timePlayed = Long.parseLong(value);}catch(NumberFormatException ex){return null;} return Long.valueOf(timePlayed);}
+		else if(variableName.equals("pixelsWalked"))				{try{pixelsWalked = Long.parseLong(value);}catch(NumberFormatException ex){return null;} return Long.valueOf(pixelsWalked);}
 
 
 		//else if(variableName.equals("accountType"))				{try{accountType = Integer.parseInt(value);}catch(NumberFormatException ex){return null;} return new Integer(money);}
 		//else if(variableName.equals("money"))						{try{money = Float.parseFloat(value);}catch(NumberFormatException ex){return null;} return new Float(money);}
 		//else if(variableName.equals("moneyPurchased"))			{try{moneyPurchased = Float.parseFloat(value);}catch(NumberFormatException ex){return null;} return new Float(moneyPurchased);}
-		else if(variableName.equals("realWorldTransactions"))		{try{realWorldTransactions = Integer.parseInt(value);}catch(NumberFormatException ex){return null;} return new Integer(realWorldTransactions);}
-		else if(variableName.equals("inGameTransactions"))			{try{inGameTransactions = Integer.parseInt(value);}catch(NumberFormatException ex){return null;} return new Integer(inGameTransactions);}
-		else if(variableName.equals("timesTalkedToNPCs"))			{try{timesTalkedToNPCs = Integer.parseInt(value);}catch(NumberFormatException ex){return null;} return new Integer(timesTalkedToNPCs);}
-		else if(variableName.equals("timesTalkedToOtherPlayers"))	{try{timesTalkedToOtherPlayers = Integer.parseInt(value);}catch(NumberFormatException ex){return null;} return new Integer(timesTalkedToOtherPlayers);}
+		else if(variableName.equals("realWorldTransactions"))		{try{realWorldTransactions = Integer.parseInt(value);}catch(NumberFormatException ex){return null;} return Integer.valueOf(realWorldTransactions);}
+		else if(variableName.equals("inGameTransactions"))			{try{inGameTransactions = Integer.parseInt(value);}catch(NumberFormatException ex){return null;} return Integer.valueOf(inGameTransactions);}
+		else if(variableName.equals("timesTalkedToNPCs"))			{try{timesTalkedToNPCs = Integer.parseInt(value);}catch(NumberFormatException ex){return null;} return Integer.valueOf(timesTalkedToNPCs);}
+		else if(variableName.equals("timesTalkedToOtherPlayers"))	{try{timesTalkedToOtherPlayers = Integer.parseInt(value);}catch(NumberFormatException ex){return null;} return Integer.valueOf(timesTalkedToOtherPlayers);}
 		else if(variableName.equals("characterAppearance"))		{characterAppearance = new String(value); return characterAppearance;}
 		else if(variableName.equals("characterName"))				{characterName = new String(value); return characterName;}
 		else if(variableName.equals("itemsHeld"))					{itemsHeld = addOrUpdateValueToCommaSeparatedList(itemsHeld, value);return itemsHeld;}
 		else if(variableName.equals("itemsTotalCollected"))		{itemsTotalCollected = new String(value); return itemsTotalCollected;}
 		else if(variableName.equals("itemsPurchased"))				{itemsPurchased = new String(value); return itemsPurchased;}
 
-		else if(variableName.equals("miniGamesTimesPlayed"))		{try{miniGamesTimesPlayed = Integer.parseInt(value);}catch(NumberFormatException ex){return null;} return new Integer(miniGamesTimesPlayed);}
-		else if(variableName.equals("miniGamesTimesBattled"))		{try{miniGamesTimesBattled = Integer.parseInt(value);}catch(NumberFormatException ex){return null;} return new Integer(miniGamesTimesBattled);}
-		else if(variableName.equals("miniGamesTimesChallenged"))	{try{miniGamesTimesChallenged = Integer.parseInt(value);}catch(NumberFormatException ex){return null;} return new Integer(miniGamesTimesChallenged);}
-		else if(variableName.equals("miniGamesTimesChallenger"))	{try{miniGamesTimesChallenger = Integer.parseInt(value);}catch(NumberFormatException ex){return null;} return new Integer(miniGamesTimesChallenger);}
-		else if(variableName.equals("miniGamesTimesWon"))			{try{miniGamesTimesWon = Integer.parseInt(value);}catch(NumberFormatException ex){return null;} return new Integer(miniGamesTimesWon);}
-		else if(variableName.equals("miniGamesTimesLost"))			{try{miniGamesTimesLost = Integer.parseInt(value);}catch(NumberFormatException ex){return null;} return new Integer(miniGamesTimesLost);}
-		else if(variableName.equals("miniGamesTimesTied"))			{try{miniGamesTimesTied = Integer.parseInt(value);}catch(NumberFormatException ex){return null;} return new Integer(miniGamesTimesTied);}
+		else if(variableName.equals("miniGamesTimesPlayed"))		{try{miniGamesTimesPlayed = Integer.parseInt(value);}catch(NumberFormatException ex){return null;} return Integer.valueOf(miniGamesTimesPlayed);}
+		else if(variableName.equals("miniGamesTimesBattled"))		{try{miniGamesTimesBattled = Integer.parseInt(value);}catch(NumberFormatException ex){return null;} return Integer.valueOf(miniGamesTimesBattled);}
+		else if(variableName.equals("miniGamesTimesChallenged"))	{try{miniGamesTimesChallenged = Integer.parseInt(value);}catch(NumberFormatException ex){return null;} return Integer.valueOf(miniGamesTimesChallenged);}
+		else if(variableName.equals("miniGamesTimesChallenger"))	{try{miniGamesTimesChallenger = Integer.parseInt(value);}catch(NumberFormatException ex){return null;} return Integer.valueOf(miniGamesTimesChallenger);}
+		else if(variableName.equals("miniGamesTimesWon"))			{try{miniGamesTimesWon = Integer.parseInt(value);}catch(NumberFormatException ex){return null;} return Integer.valueOf(miniGamesTimesWon);}
+		else if(variableName.equals("miniGamesTimesLost"))			{try{miniGamesTimesLost = Integer.parseInt(value);}catch(NumberFormatException ex){return null;} return Integer.valueOf(miniGamesTimesLost);}
+		else if(variableName.equals("miniGamesTimesTied"))			{try{miniGamesTimesTied = Integer.parseInt(value);}catch(NumberFormatException ex){return null;} return Integer.valueOf(miniGamesTimesTied);}
 		else if(variableName.equals("dialoguesDone"))				{dialoguesDone = addOrUpdateValueToCommaSeparatedList(dialoguesDone, value);return dialoguesDone;}
 		else if(variableName.equals("flagsSet"))					{flagsSet = addOrUpdateValueToCommaSeparatedList(flagsSet, value);return flagsSet;}
 		else if(variableName.equals("skillValues"))				{skillValues = addOrUpdateValueToCommaSeparatedList(skillValues, value);return skillValues;}
@@ -930,7 +930,7 @@ public class GameSave
 
 
 
-	static public String getCountryStringFromCode(String countryCode)
+	static public String getCountryCodeFromCountryString(String countryCode)
 	{
 
 		String countryString = "United States";
@@ -1188,281 +1188,17 @@ public class GameSave
 		if(countryCode=="CS")countryString="Serbia and Montenegro";
 		if(countryCode=="AN")countryString="Netherlands Antilles";
 
-		return countryString;
-	}
-
-
-
-
-
-
-
-
-
-
-	static public String getCountryCodeFromCountryString(String countryString)
-	{
-
-		String countryCode = "US";
-
-		if(countryString=="Andorra")                                     countryCode="AD";
-		if(countryString=="United Arab Emirates")                        countryCode="AE";
-		if(countryString=="Afghanistan")                                 countryCode="AF";
-		if(countryString=="Antigua and Barbuda")                         countryCode="AG";
-		if(countryString=="Anguilla")                                    countryCode="AI";
-		if(countryString=="Albania")                                     countryCode="AL";
-		if(countryString=="Armenia")                                     countryCode="AM";
-		if(countryString=="Angola")                                      countryCode="AO";
-		if(countryString=="Antarctica")                                  countryCode="AQ";
-		if(countryString=="Argentina")                                   countryCode="AR";
-		if(countryString=="American Samoa")                              countryCode="AS";
-		if(countryString=="Austria")                                     countryCode="AT";
-		if(countryString=="Australia")                                   countryCode="AU";
-		if(countryString=="Aruba")                                       countryCode="AW";
-		if(countryString=="Aland Islands")                               countryCode="AX";
-		if(countryString=="Azerbaijan")                                  countryCode="AZ";
-		if(countryString=="Bosnia and Herzegovina")                      countryCode="BA";
-		if(countryString=="Barbados")                                    countryCode="BB";
-		if(countryString=="Bangladesh")                                  countryCode="BD";
-		if(countryString=="Belgium")                                     countryCode="BE";
-		if(countryString=="Burkina Faso")                                countryCode="BF";
-		if(countryString=="Bulgaria")                                    countryCode="BG";
-		if(countryString=="Bahrain")                                     countryCode="BH";
-		if(countryString=="Burundi")                                     countryCode="BI";
-		if(countryString=="Benin")                                       countryCode="BJ";
-		if(countryString=="Saint Barthelemy")                            countryCode="BL";
-		if(countryString=="Bermuda")                                     countryCode="BM";
-		if(countryString=="Brunei")                                      countryCode="BN";
-		if(countryString=="Bolivia")                                     countryCode="BO";
-		if(countryString=="Bonaire- Saint Eustatius and Saba")           countryCode="BQ";
-		if(countryString=="Brazil")                                      countryCode="BR";
-		if(countryString=="Bahamas")                                     countryCode="BS";
-		if(countryString=="Bhutan")                                      countryCode="BT";
-		if(countryString=="Bouvet Island")                               countryCode="BV";
-		if(countryString=="Botswana")                                    countryCode="BW";
-		if(countryString=="Belarus")                                     countryCode="BY";
-		if(countryString=="Belize")                                      countryCode="BZ";
-		if(countryString=="Canada")                                      countryCode="CA";
-		if(countryString=="Cocos Islands")                               countryCode="CC";
-		if(countryString=="Democratic Republic of the Congo")            countryCode="CD";
-		if(countryString=="Central African Republic")                    countryCode="CF";
-		if(countryString=="Republic of the Congo")                       countryCode="CG";
-		if(countryString=="Switzerland")                                 countryCode="CH";
-		if(countryString=="Ivory Coast")                                 countryCode="CI";
-		if(countryString=="Cook Islands")                                countryCode="CK";
-		if(countryString=="Chile")                                       countryCode="CL";
-		if(countryString=="Cameroon")                                    countryCode="CM";
-		if(countryString=="China")                                       countryCode="CN";
-		if(countryString=="Colombia")                                    countryCode="CO";
-		if(countryString=="Costa Rica")                                  countryCode="CR";
-		if(countryString=="Cuba")                                        countryCode="CU";
-		if(countryString=="Cape Verde")                                  countryCode="CV";
-		if(countryString=="Curacao")                                     countryCode="CW";
-		if(countryString=="Christmas Island")                            countryCode="CX";
-		if(countryString=="Cyprus")                                      countryCode="CY";
-		if(countryString=="Czech Republic")                              countryCode="CZ";
-		if(countryString=="Germany")                                     countryCode="DE";
-		if(countryString=="Djibouti")                                    countryCode="DJ";
-		if(countryString=="Denmark")                                     countryCode="DK";
-		if(countryString=="Dominica")                                    countryCode="DM";
-		if(countryString=="Dominican Republic")                          countryCode="DO";
-		if(countryString=="Algeria")                                     countryCode="DZ";
-		if(countryString=="Ecuador")                                     countryCode="EC";
-		if(countryString=="Estonia")                                     countryCode="EE";
-		if(countryString=="Egypt")                                       countryCode="EG";
-		if(countryString=="Western Sahara")                              countryCode="EH";
-		if(countryString=="Eritrea")                                     countryCode="ER";
-		if(countryString=="Spain")                                       countryCode="ES";
-		if(countryString=="Ethiopia")                                    countryCode="ET";
-		if(countryString=="Finland")                                     countryCode="FI";
-		if(countryString=="Fiji")                                        countryCode="FJ";
-		if(countryString=="Falkland Islands")                            countryCode="FK";
-		if(countryString=="Micronesia")                                  countryCode="FM";
-		if(countryString=="Faroe Islands")                               countryCode="FO";
-		if(countryString=="France")                                      countryCode="FR";
-		if(countryString=="Gabon")                                       countryCode="GA";
-		if(countryString=="United Kingdom")                              countryCode="GB";
-		if(countryString=="Grenada")                                     countryCode="GD";
-		if(countryString=="Georgia")                                     countryCode="GE";
-		if(countryString=="French Guiana")                               countryCode="GF";
-		if(countryString=="Guernsey")                                    countryCode="GG";
-		if(countryString=="Ghana")                                       countryCode="GH";
-		if(countryString=="Gibraltar")                                   countryCode="GI";
-		if(countryString=="Greenland")                                   countryCode="GL";
-		if(countryString=="Gambia")                                      countryCode="GM";
-		if(countryString=="Guinea")                                      countryCode="GN";
-		if(countryString=="Guadeloupe")                                  countryCode="GP";
-		if(countryString=="Equatorial Guinea")                           countryCode="GQ";
-		if(countryString=="Greece")                                      countryCode="GR";
-		if(countryString=="South Georgia and the South Sandwich Islands")countryCode="GS";
-		if(countryString=="Guatemala")                                   countryCode="GT";
-		if(countryString=="Guam")                                        countryCode="GU";
-		if(countryString=="Guinea-Bissau")                               countryCode="GW";
-		if(countryString=="Guyana")                                      countryCode="GY";
-		if(countryString=="Hong Kong")                                   countryCode="HK";
-		if(countryString=="Heard Island and McDonald Islands")           countryCode="HM";
-		if(countryString=="Honduras")                                    countryCode="HN";
-		if(countryString=="Croatia")                                     countryCode="HR";
-		if(countryString=="Haiti")                                       countryCode="HT";
-		if(countryString=="Hungary")                                     countryCode="HU";
-		if(countryString=="Indonesia")                                   countryCode="ID";
-		if(countryString=="Ireland")                                     countryCode="IE";
-		if(countryString=="Israel")                                      countryCode="IL";
-		if(countryString=="Isle of Man")                                 countryCode="IM";
-		if(countryString=="India")                                       countryCode="IN";
-		if(countryString=="British Indian Ocean Territory")              countryCode="IO";
-		if(countryString=="Iraq")                                        countryCode="IQ";
-		if(countryString=="Iran")                                        countryCode="IR";
-		if(countryString=="Iceland")                                     countryCode="IS";
-		if(countryString=="Italy")                                       countryCode="IT";
-		if(countryString=="Jersey")                                      countryCode="JE";
-		if(countryString=="Jamaica")                                     countryCode="JM";
-		if(countryString=="Jordan")                                      countryCode="JO";
-		if(countryString=="Japan")                                       countryCode="JP";
-		if(countryString=="Kenya")                                       countryCode="KE";
-		if(countryString=="Kyrgyzstan")                                  countryCode="KG";
-		if(countryString=="Cambodia")                                    countryCode="KH";
-		if(countryString=="Kiribati")                                    countryCode="KI";
-		if(countryString=="Comoros")                                     countryCode="KM";
-		if(countryString=="Saint Kitts and Nevis")                       countryCode="KN";
-		if(countryString=="North Korea")                                 countryCode="KP";
-		if(countryString=="South Korea")                                 countryCode="KR";
-		if(countryString=="Kosovo")                                      countryCode="XK";
-		if(countryString=="Kuwait")                                      countryCode="KW";
-		if(countryString=="Cayman Islands")                              countryCode="KY";
-		if(countryString=="Kazakhstan")                                  countryCode="KZ";
-		if(countryString=="Laos")                                        countryCode="LA";
-		if(countryString=="Lebanon")                                     countryCode="LB";
-		if(countryString=="Saint Lucia")                                 countryCode="LC";
-		if(countryString=="Liechtenstein")                               countryCode="LI";
-		if(countryString=="Sri Lanka")                                   countryCode="LK";
-		if(countryString=="Liberia")                                     countryCode="LR";
-		if(countryString=="Lesotho")                                     countryCode="LS";
-		if(countryString=="Lithuania")                                   countryCode="LT";
-		if(countryString=="Luxembourg")                                  countryCode="LU";
-		if(countryString=="Latvia")                                      countryCode="LV";
-		if(countryString=="Libya")                                       countryCode="LY";
-		if(countryString=="Morocco")                                     countryCode="MA";
-		if(countryString=="Monaco")                                      countryCode="MC";
-		if(countryString=="Moldova")                                     countryCode="MD";
-		if(countryString=="Montenegro")                                  countryCode="ME";
-		if(countryString=="Saint Martin")                                countryCode="MF";
-		if(countryString=="Madagascar")                                  countryCode="MG";
-		if(countryString=="Marshall Islands")                            countryCode="MH";
-		if(countryString=="Macedonia")                                   countryCode="MK";
-		if(countryString=="Mali")                                        countryCode="ML";
-		if(countryString=="Myanmar")                                     countryCode="MM";
-		if(countryString=="Mongolia")                                    countryCode="MN";
-		if(countryString=="Macao")                                       countryCode="MO";
-		if(countryString=="Northern Mariana Islands")                    countryCode="MP";
-		if(countryString=="Martinique")                                  countryCode="MQ";
-		if(countryString=="Mauritania")                                  countryCode="MR";
-		if(countryString=="Montserrat")                                  countryCode="MS";
-		if(countryString=="Malta")                                       countryCode="MT";
-		if(countryString=="Mauritius")                                   countryCode="MU";
-		if(countryString=="Maldives")                                    countryCode="MV";
-		if(countryString=="Malawi")                                      countryCode="MW";
-		if(countryString=="Mexico")                                      countryCode="MX";
-		if(countryString=="Malaysia")                                    countryCode="MY";
-		if(countryString=="Mozambique")                                  countryCode="MZ";
-		if(countryString=="Namibia")                                     countryCode="NA";
-		if(countryString=="New Caledonia")                               countryCode="NC";
-		if(countryString=="Niger")                                       countryCode="NE";
-		if(countryString=="Norfolk Island")                              countryCode="NF";
-		if(countryString=="Nigeria")                                     countryCode="NG";
-		if(countryString=="Nicaragua")                                   countryCode="NI";
-		if(countryString=="Netherlands")                                 countryCode="NL";
-		if(countryString=="Norway")                                      countryCode="NO";
-		if(countryString=="Nepal")                                       countryCode="NP";
-		if(countryString=="Nauru")                                       countryCode="NR";
-		if(countryString=="Niue")                                        countryCode="NU";
-		if(countryString=="New Zealand")                                 countryCode="NZ";
-		if(countryString=="Oman")                                        countryCode="OM";
-		if(countryString=="Panama")                                      countryCode="PA";
-		if(countryString=="Peru")                                        countryCode="PE";
-		if(countryString=="French Polynesia")                            countryCode="PF";
-		if(countryString=="Papua New Guinea")                            countryCode="PG";
-		if(countryString=="Philippines")                                 countryCode="PH";
-		if(countryString=="Pakistan")                                    countryCode="PK";
-		if(countryString=="Poland")                                      countryCode="PL";
-		if(countryString=="Saint Pierre and Miquelon")                   countryCode="PM";
-		if(countryString=="Pitcairn")                                    countryCode="PN";
-		if(countryString=="Puerto Rico")                                 countryCode="PR";
-		if(countryString=="Palestinian Territory")                       countryCode="PS";
-		if(countryString=="Portugal")                                    countryCode="PT";
-		if(countryString=="Palau")                                       countryCode="PW";
-		if(countryString=="Paraguay")                                    countryCode="PY";
-		if(countryString=="Qatar")                                       countryCode="QA";
-		if(countryString=="Reunion")                                     countryCode="RE";
-		if(countryString=="Romania")                                     countryCode="RO";
-		if(countryString=="Serbia")                                      countryCode="RS";
-		if(countryString=="Russia")                                      countryCode="RU";
-		if(countryString=="Rwanda")                                      countryCode="RW";
-		if(countryString=="Saudi Arabia")                                countryCode="SA";
-		if(countryString=="Solomon Islands")                             countryCode="SB";
-		if(countryString=="Seychelles")                                  countryCode="SC";
-		if(countryString=="Sudan")                                       countryCode="SD";
-		if(countryString=="South Sudan")                                 countryCode="SS";
-		if(countryString=="Sweden")                                      countryCode="SE";
-		if(countryString=="Singapore")                                   countryCode="SG";
-		if(countryString=="Saint Helena")                                countryCode="SH";
-		if(countryString=="Slovenia")                                    countryCode="SI";
-		if(countryString=="Svalbard and Jan Mayen")                      countryCode="SJ";
-		if(countryString=="Slovakia")                                    countryCode="SK";
-		if(countryString=="Sierra Leone")                                countryCode="SL";
-		if(countryString=="San Marino")                                  countryCode="SM";
-		if(countryString=="Senegal")                                     countryCode="SN";
-		if(countryString=="Somalia")                                     countryCode="SO";
-		if(countryString=="Suriname")                                    countryCode="SR";
-		if(countryString=="Sao Tome and Principe")                       countryCode="ST";
-		if(countryString=="El Salvador")                                 countryCode="SV";
-		if(countryString=="Sint Maarten")                                countryCode="SX";
-		if(countryString=="Syria")                                       countryCode="SY";
-		if(countryString=="Swaziland")                                   countryCode="SZ";
-		if(countryString=="Turks and Caicos Islands")                    countryCode="TC";
-		if(countryString=="Chad")                                        countryCode="TD";
-		if(countryString=="French Southern Territories")                 countryCode="TF";
-		if(countryString=="Togo")                                        countryCode="TG";
-		if(countryString=="Thailand")                                    countryCode="TH";
-		if(countryString=="Tajikistan")                                  countryCode="TJ";
-		if(countryString=="Tokelau")                                     countryCode="TK";
-		if(countryString=="East Timor")                                  countryCode="TL";
-		if(countryString=="Turkmenistan")                                countryCode="TM";
-		if(countryString=="Tunisia")                                     countryCode="TN";
-		if(countryString=="Tonga")                                       countryCode="TO";
-		if(countryString=="Turkey")                                      countryCode="TR";
-		if(countryString=="Trinidad and Tobago")                         countryCode="TT";
-		if(countryString=="Tuvalu")                                      countryCode="TV";
-		if(countryString=="Taiwan")                                      countryCode="TW";
-		if(countryString=="Tanzania")                                    countryCode="TZ";
-		if(countryString=="Ukraine")                                     countryCode="UA";
-		if(countryString=="Uganda")                                      countryCode="UG";
-		if(countryString=="United States Minor Outlying Islands")        countryCode="UM";
-		if(countryString=="United States")                               countryCode="US";
-		if(countryString=="Uruguay")                                     countryCode="UY";
-		if(countryString=="Uzbekistan")                                  countryCode="UZ";
-		if(countryString=="Vatican")                                     countryCode="VA";
-		if(countryString=="Saint Vincent and the Grenadines")            countryCode="VC";
-		if(countryString=="Venezuela")                                   countryCode="VE";
-		if(countryString=="British Virgin Islands")                      countryCode="VG";
-		if(countryString=="U.S. Virgin Islands")                         countryCode="VI";
-		if(countryString=="Vietnam")                                     countryCode="VN";
-		if(countryString=="Vanuatu")                                     countryCode="VU";
-		if(countryString=="Wallis and Futuna")                           countryCode="WF";
-		if(countryString=="Samoa")                                       countryCode="WS";
-		if(countryString=="Yemen")                                       countryCode="YE";
-		if(countryString=="Mayotte")                                     countryCode="YT";
-		if(countryString=="South Africa")                                countryCode="ZA";
-		if(countryString=="Zambia")                                      countryCode="ZM";
-		if(countryString=="Zimbabwe")                                    countryCode="ZW";
-		if(countryString=="Serbia and Montenegro")                       countryCode="CS";
-		if(countryString=="Netherlands Antilles")                        countryCode="AN";
-
 		return countryCode;
 
 	}
 
-
+	static public String getCountryStringFromCode(String countryCode)
+	{
+        // Simplified reverse lookup. In a real app, use a Map.
+		if(countryCode.equals("US")) return "United States";
+        // Add more if needed or implement properly
+		return "Unknown";
+	}
 
 
 

@@ -1,8 +1,8 @@
 package com.bobsgame.client.engine.game.gui.statusbar.captions;
+import com.bobsgame.client.LWJGLUtils;
 
 import java.io.File;
 
-import org.lwjgl.opengl.Display;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -65,7 +65,7 @@ public class ClockCaption extends StatusBarCaption
 
 		if(caption!=null)
 		{
-			caption.screenX=Display.getWidth()-50*2;//50*2;//timeCaption.caption_width*2;
+			caption.screenX=LWJGLUtils.SCREEN_SIZE_X-50*2;//50*2;//timeCaption.caption_width*2;
 
 			//TODO: need to manually update the caption if they arent in the captionmanager. hmm. maybe have a different list for captions to be updated, or maybe just do captions by layer
 			//TODO: make a global list of all captions that get updated, and a smaller managed subset that get rendered in the game

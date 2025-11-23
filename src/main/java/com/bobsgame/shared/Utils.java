@@ -242,6 +242,16 @@ public class Utils
 			return false;
 	}
 
+    public static byte[] getResourceAsBytes(String filename) {
+        try (InputStream is = getResourceAsStream(filename)) {
+            if (is == null) return null;
+            return IOUtils.toByteArray(is);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
 
 	//=========================================================================================================================
 	public static InputStream getResourceAsStream(String filename)
@@ -967,181 +977,4 @@ public class Utils
 		if(i<0)return i*-1;
 		else return i;
 	}
-
-
-
-
-
-
-/*
-	//=========================================================================================================================
-	private void loadAsApplet()
-	{//=========================================================================================================================
-		PathfindingMap temp = map;
-			try
-			{
-				URL load = new URL(getDocumentBase(),"Saves/"+preset.getSelectedItem());
-				ObjectInputStream ois = new ObjectInputStream(load.openStream());
-				remove(map);
-				map = (PathfindingMap)ois.readObject();
-				add(map,"Center");
-				map.invalidate();
-				ois.close();
-
-				invalidate();
-			}
-			catch(Throwable ex)
-			{
-
-
-			}
-	}
-
-
-
-
-		//=========================================================================================================================
-		private void saveAsApplet)
-		{//=========================================================================================================================
-			PathfindingMap temp = map;
-				try
-				{
-					URL save = new URL(getDocumentBase(),"User/"+System.currentTimeMillis());//gridName.getText());
-
-					ObjectOutputStream oos = new ObjectOutputStream(save.openConnection().getOutputStream());
-					oos.writeObject(map);
-					oos.flush();
-					oos.close();
-
-				}
-				catch(Throwable ex)
-				{
-
-
-				}
-		}
-
-
-
-
-		//=========================================================================================================================
-		public void findSavedMaps(String folder)
-		{//=========================================================================================================================
-			try
-			{
-				URL test = new URL(getCodeBase(),folder);
-				preset.removeAll();
-				InputStream buff = (InputStream)test.openConnection().getInputStream();
-				StreamTokenizer st = new StreamTokenizer(new InputStreamReader(buff));
-				int type = st.nextToken();
-				int trys = 0;
-				ArrayList<String> files = new ArrayList<String>();
-				String last = "";
-				while(type!=-1 && trys < 1000)
-				{
-					if(st.sval!=null && st.sval.endsWith(".grd") && !st.sval.equals(last))
-					{
-						files.addElement(st.sval);
-						last = st.sval;
-					}
-					type = st.nextToken();
-					trys++;
-				}
-
-
-				for(int i=0;i<files.size();i++)
-				{
-					preset.add(files.elementAt(i).toString());
-				}
-				if(files.size()>0){loadAsApplet();}
-
-			}
-			catch(Throwable e){}
-		}
-
-
-	//=========================================================================================================================
-	private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException
-	{//=========================================================================================================================
-		if(!tidy)
-		{
-
-			tiles = new ArrayList<PathfindingTile>();
-			tidy=true;
-		}
-
-		ois.defaultReadObject();
-		tiles.addElement(this);
-		if(isStart){setStart(true);}
-		if(isFinish){setFinish(true);}
-
-
-	}
-
-		//=========================================================================================================================
-	private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException
-	{//=========================================================================================================================
-		PathfindingTile.tidy=false;
-		ois.defaultReadObject();
-		PathfindingTile.setShowPath(false);
-	}
-
-*/
-
-
-	/*
-	public void saveObject(Object map)
-	{
-		try
-		{
-			FileDialog fd = new FileDialog(new Frame(),"Save a grid",FileDialog.SAVE);
-			fd.setFile("*.grd");
-			fd.setDirectory("Saves");
-			fd.setFilenameFilter(new FilenameFilter(){public boolean accept(File f,String n){return n.endsWith("grd");}});
-			fd.show();
-			File file = new File(fd.getDirectory(),fd.getFile());
-			FileOutputStream fos = new FileOutputStream(file);
-			ObjectOutputStream oos = new ObjectOutputStream(fos);
-			oos.writeObject(map);
-			oos.flush();
-			oos.close();
-
-		}
-
-
-		catch(IOException ex)
-		{
-
-		}
-
-	}
-
-
-	public void loadObject(Object map)
-	{
-		try
-		{
-			FileDialog fd = new FileDialog(new Frame(),"Select Map to Load",FileDialog.LOAD);
-			fd.setFile("*.grd");
-			fd.setDirectory("Saves");
-			fd.setFilenameFilter(new FilenameFilter(){public boolean accept(File f,String n){return n.endsWith("grd");}});
-			fd.show();
-			File file = new File(fd.getDirectory(),fd.getFile());
-			FileInputStream fis = new FileInputStream(file);
-			ObjectInputStream ois = new ObjectInputStream(fis);
-
-			map = (PathfindingMap)ois.readObject();
-
-			ois.close();
-
-		}
-		catch(Throwable ex)
-		{
-
-
-		}
-	}
-*/
-
-
 }
