@@ -1,7 +1,7 @@
 package com.bobsgame.client.engine.game.gui;
+import com.bobsgame.client.LWJGLUtils;
 
 
-import org.lwjgl.opengl.Display;
 
 
 import com.bobsgame.ClientMain;
@@ -167,7 +167,7 @@ public class MenuPanel extends Widget
 			isActivated=true;
 			ticksSinceTurnedOn=0;
 
-			screenY = (float) (Display.getHeight());
+			screenY = (float) (LWJGLUtils.SCREEN_SIZE_Y);
 			super.setVisible(true);
 		}
 		else
@@ -222,7 +222,7 @@ public class MenuPanel extends Widget
 	{//=========================================================================================================================
 		if(ticksSinceTurnedOn<=fadeInTime)
 		{
-			screenY = (float) ((Display.getHeight())-(Easing.easeOutCubic(ticksSinceTurnedOn, 0, Display.getHeight(), fadeInTime)));
+			screenY = (float) ((LWJGLUtils.SCREEN_SIZE_Y)-(Easing.easeOutCubic(ticksSinceTurnedOn, 0, LWJGLUtils.SCREEN_SIZE_Y, fadeInTime)));
 			layout();
 		}
 
@@ -249,7 +249,7 @@ public class MenuPanel extends Widget
 	{//=========================================================================================================================
 		if(ticksSinceTurnedOff<=fadeOutTime)
 		{
-			screenY = (float) (Easing.easeOutParabolicBounce(ticksSinceTurnedOff, 0, Display.getHeight(), fadeOutTime));
+			screenY = (float) (Easing.easeOutParabolicBounce(ticksSinceTurnedOff, 0, LWJGLUtils.SCREEN_SIZE_Y, fadeOutTime));
 			layout();
 		}
 		else
@@ -275,7 +275,7 @@ public class MenuPanel extends Widget
 
 
 		mainPanelLayout.adjustSize();
-		mainPanelLayout.setSize((int)(Display.getWidth()*0.90f),(int)(Display.getHeight()*0.90f));
+		mainPanelLayout.setSize((int)(LWJGLUtils.SCREEN_SIZE_X*0.90f),(int)(LWJGLUtils.SCREEN_SIZE_Y*0.90f));
 
 
 
@@ -307,7 +307,7 @@ public class MenuPanel extends Widget
 		if(isActivated==false)return;
 
 
-		GLUtils.drawFilledRect(0, 0, 0, 0, Display.getWidth(), 0, Display.getHeight(), 0.5f);
+		GLUtils.drawFilledRect(0, 0, 0, 0, LWJGLUtils.SCREEN_SIZE_X, 0, LWJGLUtils.SCREEN_SIZE_Y, 0.5f);
 
 
 
