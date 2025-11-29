@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.MessageEvent;
 
-import slick.Texture;
+import com.bobsgame.client.Texture;
 
 import com.bobsgame.client.GLUtils;
 import com.bobsgame.client.engine.game.FriendCharacter;

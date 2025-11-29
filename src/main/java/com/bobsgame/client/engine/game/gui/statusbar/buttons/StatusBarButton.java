@@ -1,14 +1,18 @@
 package com.bobsgame.client.engine.game.gui.statusbar.buttons;
 
-import org.lwjgl.input.Mouse;
-import org.lwjgl.opengl.Display;
+//import org.lwjgl.input.Mouse;
 
-import slick.Texture;
+import com.bobsgame.client.LWJGLUtils;
+import org.lwjgl.glfw.GLFW;
+import com.bobsgame.client.Texture;
 
 import com.bobsgame.client.GLUtils;
 import com.bobsgame.client.engine.EnginePart;
 import com.bobsgame.client.engine.game.ClientGameEngine;
 import com.bobsgame.client.engine.game.gui.statusbar.StatusBar;
+
+import java.nio.DoubleBuffer;
+import org.lwjgl.system.MemoryStack;
 
 
 //=========================================================================================================================
@@ -92,8 +96,37 @@ public class StatusBarButton extends EnginePart
 
 		setOffsets();
 
+        double mouseX = 0;
+        double mouseY = 0;
 
-		if(Mouse.getX()>clickX0&&Mouse.getX()<clickX1&&Mouse.getY()>(Display.getHeight()-StatusBar.sizeY))
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            DoubleBuffer xpos = stack.mallocDouble(1);
+            DoubleBuffer ypos = stack.mallocDouble(1);
+            GLFW.glfwGetCursorPos(LWJGLUtils.window, xpos, ypos);
+            mouseX = xpos.get(0);
+            mouseY = ypos.get(0);
+        }
+
+        // GLFW origin is top-left, LWJGL 2 Mouse was bottom-left.
+        // StatusBar checks LWJGLUtils.SCREEN_SIZE_Y - StatusBar.sizeY, which means bottom of screen.
+        // If origin is top-left, bottom of screen is high Y value.
+        // StatusBar.sizeY is small (26).
+        // Original code: Mouse.getY() > (LWJGLUtils.SCREEN_SIZE_Y - StatusBar.sizeY)
+        // This implies Mouse.getY() is 0 at bottom. So > (Height-26) means top 26 pixels?
+        // Wait, if Mouse.getY() is 0 at bottom, then > Height-26 is at the TOP of the screen.
+        // Is the status bar at the top?
+        // Let's check render().
+        // GLUtils.drawTexture(texture, 0, LWJGLUtils.SCREEN_SIZE_X, -6, sizeY+6, ...)
+        // y0 = -6, y1 = sizeY+6.
+        // GLUtils.setViewport() -> glOrtho(0, width, height, 0, ...) -> top-left is 0,0.
+        // If using GLUtils.drawTexture with these coords, and ortho is 0,0 at top-left, then status bar is at TOP.
+        // So `Mouse.getY()` in LWJGL 2 (0 at bottom) being > Height - 26 means TOP of screen.
+
+        // In GLFW (0 at top), Y < 26 means top of screen.
+
+        // So we check if mouseY < StatusBar.sizeY
+
+		if(mouseX>clickX0&&mouseX<clickX1&&mouseY<StatusBar.sizeY)
 		{
 			glow=true;
 			glowAlpha=1.0f;

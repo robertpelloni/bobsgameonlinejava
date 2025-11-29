@@ -3,6 +3,7 @@ package com.bobsgame.editor.Project;
 
 import java.awt.Frame;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.Hashtable;
 import java.util.ArrayList;
 import java.util.List;
@@ -443,7 +444,7 @@ public class Project
 
 
 			zin=zip.getInputStream(z);
-			stringList = IOUtils.readLines(zin);
+			stringList = IOUtils.readLines(zin, StandardCharsets.UTF_8);
 		}
 		catch(ZipException e1)
 		{

@@ -11,9 +11,8 @@ import static org.lwjgl.opengl.GL13.*;
 //import static org.lwjgl.opengl.GL40.*;
 
 
-import org.lwjgl.opengl.Display;
 
-import slick.Texture;
+import com.bobsgame.client.Texture;
 
 import com.bobsgame.client.GLUtils;
 import com.bobsgame.client.LWJGLUtils;
@@ -535,8 +534,8 @@ public class ND extends MenuPanel
 
 				LWJGLUtils.setShaderVar1i(LWJGLUtils.lightShader, "Tex0", 0);
 				LWJGLUtils.setShaderVar1i(LWJGLUtils.lightShader, "Tex1", 1);
-				LWJGLUtils.setShaderVar1f(LWJGLUtils.lightShader, "width", Display.getWidth());
-				LWJGLUtils.setShaderVar1f(LWJGLUtils.lightShader, "height", Display.getHeight());
+				LWJGLUtils.setShaderVar1f(LWJGLUtils.lightShader, "width", LWJGLUtils.SCREEN_SIZE_X);
+				LWJGLUtils.setShaderVar1f(LWJGLUtils.lightShader, "height", LWJGLUtils.SCREEN_SIZE_Y);
 
 
 				float lightOffset = 48*nDZoom;
