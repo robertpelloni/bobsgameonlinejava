@@ -14,6 +14,8 @@ dependency-reduced-pom.xml
 *.class
 *.bak
 build/
+<<<<<<< HEAD
+=======
 .clinerules/byterover-rules.md
 .kilocode/rules/byterover-rules.md
 .roo/rules/byterover-rules.md
@@ -22,3 +24,4 @@ build/
 .kiro/steering/byterover-rules.md
 .qoder/rules/byterover-rules.md
 .augment/rules/byterover-rules.md
+>>>>>>> main
