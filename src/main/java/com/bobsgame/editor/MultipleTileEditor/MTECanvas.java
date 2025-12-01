@@ -548,12 +548,12 @@ public class MTECanvas extends JComponent implements MouseListener, MouseWheelLi
 	//===============================================================================================
 	public void mouseClicked(MouseEvent me)
 	{//===============================================================================================
-		int leftMask = InputEvent.BUTTON1_MASK;
-		int middleMask = InputEvent.BUTTON2_MASK;
-		int rightMask = InputEvent.BUTTON3_MASK;
-		int shiftClickMask = InputEvent.BUTTON1_MASK + InputEvent.SHIFT_MASK;
-		int ctrlClickMask = InputEvent.BUTTON1_MASK + InputEvent.CTRL_MASK;
-		//int altClickMask = me.BUTTON1_MASK + me.ALT_MASK;
+		int leftMask = InputEvent.BUTTON1_DOWN_MASK;
+		int middleMask = InputEvent.BUTTON2_DOWN_MASK;
+		int rightMask = InputEvent.BUTTON3_DOWN_MASK;
+		int shiftClickMask = InputEvent.BUTTON1_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK;
+		int ctrlClickMask = InputEvent.BUTTON1_DOWN_MASK | InputEvent.CTRL_DOWN_MASK;
+		//int altClickMask = me.BUTTON1_DOWN_MASK | me.ALT_DOWN_MASK;
 		int x = me.getX() / zoom;
 		int y = me.getY() / zoom;
 
@@ -569,7 +569,7 @@ public class MTECanvas extends JComponent implements MouseListener, MouseWheelLi
 
 			int tile = MTE.tiles[x / 8][y / 8];
 
-			if(me.getModifiers() == leftMask)
+			if(me.getModifiersEx() == leftMask)
 			{
 				if(MTE.controlPanel.paletteCanvas.colorSelected != Project.tileset.getPixel(tile, x % 8, y % 8))
 				{
@@ -598,7 +598,7 @@ public class MTECanvas extends JComponent implements MouseListener, MouseWheelLi
 					setText("Filled");
 				}
 			}
-			else if((me.getModifiers() == rightMask || me.getModifiers() == ctrlClickMask))
+			else if((me.getModifiersEx() == rightMask || me.getModifiersEx() == ctrlClickMask))
 			{
 				if(MTE.controlPanel.paletteCanvas.colorSelected != Project.tileset.getPixel(tile, x % 8, y % 8))
 				{
@@ -609,7 +609,7 @@ public class MTECanvas extends JComponent implements MouseListener, MouseWheelLi
 			}
 		}
 
-		if((me.getModifiers() == middleMask || me.getModifiers() == shiftClickMask))
+		if((me.getModifiersEx() == middleMask || me.getModifiersEx() == shiftClickMask))
 		{
 			getSelectionBox().isShowing=false;
 			setText("MTECanvas: Deselected Area");
@@ -619,12 +619,12 @@ public class MTECanvas extends JComponent implements MouseListener, MouseWheelLi
 	//===============================================================================================
 	public void mousePressed(MouseEvent me)
 	{//===============================================================================================
-		int leftMask = InputEvent.BUTTON1_MASK;
-		int middleMask = InputEvent.BUTTON2_MASK;
-		int rightMask = InputEvent.BUTTON3_MASK;
-		int shiftClickMask = InputEvent.BUTTON1_MASK + InputEvent.SHIFT_MASK;
-		int ctrlClickMask = InputEvent.BUTTON1_MASK + InputEvent.CTRL_MASK;
-		//int altClickMask = me.BUTTON1_MASK + me.ALT_MASK;
+		int leftMask = InputEvent.BUTTON1_DOWN_MASK;
+		int middleMask = InputEvent.BUTTON2_DOWN_MASK;
+		int rightMask = InputEvent.BUTTON3_DOWN_MASK;
+		int shiftClickMask = InputEvent.BUTTON1_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK;
+		int ctrlClickMask = InputEvent.BUTTON1_DOWN_MASK | InputEvent.CTRL_DOWN_MASK;
+		//int altClickMask = me.BUTTON1_DOWN_MASK | me.ALT_DOWN_MASK;
 
 
 
@@ -635,12 +635,12 @@ public class MTECanvas extends JComponent implements MouseListener, MouseWheelLi
 		int x = me.getX() / zoom;
 		int y = me.getY() / zoom;
 		mousePressed = true;
-		if((me.getModifiers() == rightMask || me.getModifiers() == ctrlClickMask) || me.getModifiers() == leftMask)
+		if((me.getModifiersEx() == rightMask || me.getModifiersEx() == ctrlClickMask) || me.getModifiersEx() == leftMask)
 		{
 			dragPixelx = x;
 			dragPixely = y;
 		}
-		else if((me.getModifiers() == middleMask || me.getModifiers() == shiftClickMask))
+		else if((me.getModifiersEx() == middleMask || me.getModifiersEx() == shiftClickMask))
 		{
 			int pressedX = (int)(me.getX() / zoom);
 			int pressedY = (int)(me.getY() / zoom);
@@ -669,9 +669,9 @@ public class MTECanvas extends JComponent implements MouseListener, MouseWheelLi
 	//===============================================================================================
 	public void mouseReleased(MouseEvent me)
 	{//===============================================================================================
-		int leftMask = InputEvent.BUTTON1_MASK;
-		int rightMask = InputEvent.BUTTON3_MASK;
-		int ctrlClickMask = InputEvent.BUTTON1_MASK + InputEvent.CTRL_MASK;
+		int leftMask = InputEvent.BUTTON1_DOWN_MASK;
+		int rightMask = InputEvent.BUTTON3_DOWN_MASK;
+		int ctrlClickMask = InputEvent.BUTTON1_DOWN_MASK | InputEvent.CTRL_DOWN_MASK;
 		int x = me.getX() / zoom;
 		int y = me.getY() / zoom;
 		mousePressed = false;
@@ -688,13 +688,13 @@ public class MTECanvas extends JComponent implements MouseListener, MouseWheelLi
 		if(selectionDragged)
 		{
 			mouseDrag = false;
-			if((me.getModifiers() == rightMask || me.getModifiers() == ctrlClickMask))
+			if((me.getModifiersEx() == rightMask || me.getModifiersEx() == ctrlClickMask))
 			{
 				selectionDragged = false;
 				fillUndoArray();
 				copySelection(dragPixelx, dragPixely, x, y);
 			}
-			else if(me.getModifiers() == leftMask)
+			else if(me.getModifiersEx() == leftMask)
 			{
 				selectionDragged = false;
 				fillUndoArray();
@@ -719,8 +719,8 @@ public class MTECanvas extends JComponent implements MouseListener, MouseWheelLi
 	public void mouseDragged(MouseEvent me)
 	{//===============================================================================================
 
-		int middleMask = InputEvent.BUTTON2_MASK;
-		int shiftClickMask = InputEvent.BUTTON1_MASK + InputEvent.SHIFT_MASK;
+		int middleMask = InputEvent.BUTTON2_DOWN_MASK;
+		int shiftClickMask = InputEvent.BUTTON1_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK;
 
 
 
@@ -728,9 +728,9 @@ public class MTECanvas extends JComponent implements MouseListener, MouseWheelLi
 		int y = (me.getY() / zoom);
 		mouseDrag = true;
 
-		int shiftMiddleClickMask = InputEvent.BUTTON2_MASK + InputEvent.SHIFT_MASK;
+		int shiftMiddleClickMask = InputEvent.BUTTON2_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK;
 
-		if(me.getModifiers() == shiftMiddleClickMask)
+		if(me.getModifiersEx() == shiftMiddleClickMask)
 		{
 
 			int offsetX = oldx - me.getX();
@@ -751,7 +751,7 @@ public class MTECanvas extends JComponent implements MouseListener, MouseWheelLi
 
 			if(getSelectionBox().isShowing)
 			{
-				if((me.getModifiers() == middleMask || me.getModifiers() == shiftClickMask))
+				if((me.getModifiersEx() == middleMask || me.getModifiersEx() == shiftClickMask))
 				{
 
 					x++;//so the selection box is actually under the cursor

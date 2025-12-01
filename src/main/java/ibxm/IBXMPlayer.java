@@ -57,7 +57,7 @@ public class IBXMPlayer extends JFrame {
 	private JLabel timeLabel;
 	private JSlider seekSlider;
 	private JButton playButton;
-	private JList instrumentList;
+	private JList<String> instrumentList;
 	private Timer updateTimer;
 	private JFileChooser loadFileChooser, saveFileChooser;
 	private JCheckBox fadeOutCheckBox;
@@ -88,7 +88,7 @@ public class IBXMPlayer extends JFrame {
 		controlPanel.add( playButton, BorderLayout.EAST );
 		seekSlider = new JSlider( JSlider.HORIZONTAL, 0, 0, 0 );
 		controlPanel.add( seekSlider, BorderLayout.CENTER );
-		instrumentList = new JList();
+		instrumentList = new JList<>();
 		instrumentList.setFont( new Font( "Monospaced", Font.BOLD, 12 ) );
 		instrumentList.setOpaque( false );
 		JScrollPane instrumentPane = new JScrollPane( instrumentList );
@@ -99,8 +99,9 @@ public class IBXMPlayer extends JFrame {
 					dropTargetDropEvent.acceptDrop( dropTargetDropEvent.getDropAction() );
 					Transferable transferable = dropTargetDropEvent.getTransferable();
 					DataFlavor dataFlavor = DataFlavor.javaFileListFlavor;
-					List fileList = ( List ) transferable.getTransferData( dataFlavor );
-					File file = ( File ) fileList.get( 0 );
+					@SuppressWarnings("unchecked")
+					List<File> fileList = ( List<File> ) transferable.getTransferData( dataFlavor );
+					File file = fileList.get( 0 );
 					try {
 						loadModule( file );
 					} catch( Exception e ) {

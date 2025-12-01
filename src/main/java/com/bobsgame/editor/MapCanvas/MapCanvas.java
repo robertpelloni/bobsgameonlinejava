@@ -1401,12 +1401,12 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 
 		me = new MouseEvent((Component) me.getSource(), me.getID(), me.getWhen(), me.getModifiersEx(), me.getX()-drawOffsetX(), me.getY()-drawOffsetY(), me.getXOnScreen(), me.getYOnScreen(), me.getClickCount(), me.isPopupTrigger(), me.getButton());
 
-		int leftMask = InputEvent.BUTTON1_MASK;
-		int middleMask = InputEvent.BUTTON2_MASK;
-		int rightMask = InputEvent.BUTTON3_MASK;
-		int shiftClickMask = InputEvent.BUTTON1_MASK + InputEvent.SHIFT_MASK;
-		//int ctrlClickMask = InputEvent.BUTTON1_MASK + InputEvent.CTRL_MASK;
-		int ctrlRightClickMask = InputEvent.BUTTON3_MASK + InputEvent.CTRL_MASK;
+		int leftMask = InputEvent.BUTTON1_DOWN_MASK;
+		int middleMask = InputEvent.BUTTON2_DOWN_MASK;
+		int rightMask = InputEvent.BUTTON3_DOWN_MASK;
+		int shiftClickMask = InputEvent.BUTTON1_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK;
+		//int ctrlClickMask = InputEvent.BUTTON1_DOWN_MASK | InputEvent.CTRL_DOWN_MASK;
+		int ctrlRightClickMask = InputEvent.BUTTON3_DOWN_MASK | InputEvent.CTRL_DOWN_MASK;
 
 
 		if(
@@ -1430,10 +1430,10 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 				{
 					int val=0;
 
-					if(me.getModifiers() == leftMask || me.getModifiers() == rightMask)
+					if(me.getModifiersEx() == leftMask || me.getModifiersEx() == rightMask)
 					{
-						if(me.getModifiers() == leftMask)val = 1;
-						if(me.getModifiers() == rightMask)val = 0;
+						if(me.getModifiersEx() == leftMask)val = 1;
+						if(me.getModifiersEx() == rightMask)val = 0;
 
 
 						if(getMap().getTileIndex(MapData.MAP_HIT_LAYER, clickedTileX, clickedTileY) != val)
@@ -1449,7 +1449,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 						}
 					}
 
-					if(me.getModifiers() == middleMask)
+					if(me.getModifiersEx() == middleMask)
 					{
 						deselectMapSelectionArea();
 					}
@@ -1463,7 +1463,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 
 					if(selectedAllLayers)
 					{
-						if(me.getModifiers() == leftMask || me.getModifiers() == middleMask)
+						if(me.getModifiersEx() == leftMask || me.getModifiersEx() == middleMask)
 						{
 							//go through all doors, actions, sprites
 
@@ -1487,7 +1487,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 										EditorMain.controlPanel.setSelectedLayerIfEnabled(MapData.MAP_DOOR_LAYER);
 										EditorMain.infoLabel.setTextNoConsole("MapCanvas: Selected Door \""+d.name()+"\"");
 
-										if(me.getModifiers() == middleMask)doorWindow.showDoorWindow();
+										if(me.getModifiersEx() == middleMask)doorWindow.showDoorWindow();
 									}
 								}
 
@@ -1507,7 +1507,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 										EditorMain.controlPanel.setSelectedLayerIfEnabled(MapData.MAP_ENTITY_LAYER);
 										EditorMain.infoLabel.setTextNoConsole("MapCanvas: Selected Map Sprite \""+m.name()+"\"");
 
-										if(me.getModifiers() == middleMask)entityWindow.showEntityWindow();
+										if(me.getModifiersEx() == middleMask)entityWindow.showEntityWindow();
 									}
 								}
 
@@ -1527,7 +1527,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 										EditorMain.controlPanel.setSelectedLayerIfEnabled(MapData.MAP_AREA_LAYER);
 										EditorMain.infoLabel.setTextNoConsole("MapCanvas: Selected Map Action");
 
-										if(me.getModifiers() == middleMask)areaWindow.showAreaWindow();
+										if(me.getModifiersEx() == middleMask)areaWindow.showAreaWindow();
 									}
 								}
 
@@ -1545,7 +1545,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 					if(selectedLayer==MapData.MAP_DOOR_LAYER)
 					{
 						//if left click or right click and sprite is under mouse, draw bounds box over sprite, select map sprite
-						if(me.getModifiers() == leftMask || me.getModifiers() == rightMask || me.getModifiers() == middleMask)
+						if(me.getModifiersEx() == leftMask || me.getModifiersEx() == rightMask || me.getModifiersEx() == middleMask)
 						{
 
 								//if sprite is under mouse, draw bounds box over sprite
@@ -1568,7 +1568,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 										getMap().setSelectedDoorIndex(n);
 										EditorMain.infoLabel.setTextNoConsole("MapCanvas: Selected Door \""+d.name()+"\"");
 
-										if(me.getModifiers() == middleMask)
+										if(me.getModifiersEx() == middleMask)
 										{
 											doorWindow.showDoorWindow();
 										}
@@ -1584,7 +1584,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 
 
 									//if right click on nothing, pop up right click menu
-									if(me.getModifiers() == rightMask)
+									if(me.getModifiersEx() == rightMask)
 									{
 										/*
 										if(entityPopup.isVisible())
@@ -1676,7 +1676,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 					if(selectedLayer==MapData.MAP_ENTITY_LAYER)
 					{
 						//if left click or right click and sprite is under mouse, draw bounds box over sprite, select map sprite
-						if(me.getModifiers() == leftMask || me.getModifiers() == rightMask || me.getModifiers() == middleMask)
+						if(me.getModifiersEx() == leftMask || me.getModifiersEx() == rightMask || me.getModifiersEx() == middleMask)
 						{
 
 							boolean clickedOnSprite = false;
@@ -1702,7 +1702,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 										break;
 									}
 
-									if(me.getModifiers() == middleMask)
+									if(me.getModifiersEx() == middleMask)
 									{
 										entityWindow.showEntityWindow();
 									}
@@ -1717,7 +1717,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 								EditorMain.infoLabel.setTextNoConsole("MapCanvas: No Entity Selected");
 
 								//if right click on nothing, pop up right click menu
-								if(me.getModifiers() == rightMask)
+								if(me.getModifiersEx() == rightMask)
 								{
 									EditorMain.infoLabel.setTextNoConsole("MapCanvas: Created New Entity");
 
@@ -1774,7 +1774,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 					if(selectedLayer==MapData.MAP_LIGHT_LAYER)
 					{
 						//if light is under mouse, draw bounds box over light
-						if(me.getModifiers() == leftMask || me.getModifiers() == middleMask)
+						if(me.getModifiersEx() == leftMask || me.getModifiersEx() == middleMask)
 						{
 
 
@@ -1798,7 +1798,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 									getMap().setSelectedLightIndex(n);
 									EditorMain.infoLabel.setTextNoConsole("MapCanvas: Selected Map Light "+l.name());
 
-									if(me.getModifiers() == middleMask)
+									if(me.getModifiersEx() == middleMask)
 									{
 										lightWindow.showLightWindow();
 									}
@@ -1815,7 +1815,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 								if(
 										mapSelectionArea.isShowing&&
 										mapSelectionArea.contains(clickedMapX, clickedMapY)&&
-										me.getModifiers() == middleMask
+										me.getModifiersEx() == middleMask
 								)
 								{
 
@@ -1848,7 +1848,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 					{
 
 						//if light is under mouse, draw bounds box over light
-						if(me.getModifiers() == leftMask || me.getModifiers() == middleMask)
+						if(me.getModifiersEx() == leftMask || me.getModifiersEx() == middleMask)
 						{
 
 							boolean clickedOnArea = false;
@@ -1876,7 +1876,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 									getMap().setSelectedAreaIndex(n);
 									EditorMain.infoLabel.setTextNoConsole("MapCanvas: Selected Map Action " + a.name());
 
-									if(me.getModifiers() == middleMask)
+									if(me.getModifiersEx() == middleMask)
 									{
 										areaWindow.showAreaWindow();
 									}
@@ -1894,7 +1894,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 								if(
 										mapSelectionArea.isShowing&&
 										mapSelectionArea.contains(clickedTileX, clickedTileY)&&
-										me.getModifiers() == middleMask
+										me.getModifiersEx() == middleMask
 								)
 								{
 
@@ -1931,7 +1931,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 					//we are on a tile layer
 					//---------------------------------
 
-					if(me.getModifiers() == leftMask)
+					if(me.getModifiersEx() == leftMask)
 					{
 						if(getMap().getTileIndex(selectedLayer, clickedTileX, clickedTileY) != EditorMain.tileCanvas.tileSelected)
 						{
@@ -1961,7 +1961,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 
 						}
 					}
-					else if(me.getModifiers() == ctrlRightClickMask)
+					else if(me.getModifiersEx() == ctrlRightClickMask)
 					{
 						if(mapSelectionArea.isShowing && mapSelectionArea.contains(clickedTileX, clickedTileY))
 						{
@@ -1969,7 +1969,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 						}
 
 					}
-					else if(me.getModifiers() == rightMask)
+					else if(me.getModifiersEx() == rightMask)
 					{
 						if(me.getClickCount() == 2 && mapSelectionArea.isShowing && mapSelectionArea.contains(clickedTileX, clickedTileY))
 						{
@@ -1995,7 +1995,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 
 						}
 					}
-					else if(me.getModifiers() == middleMask)
+					else if(me.getModifiersEx() == middleMask)
 					{
 						deselectMapSelectionArea();
 					}
@@ -2006,7 +2006,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 		else //clicked outside of the map.
 		{
 
-			if((me.getModifiers() == middleMask || me.getModifiers() == shiftClickMask) && mouseDragged==false)
+			if((me.getModifiersEx() == middleMask || me.getModifiersEx() == shiftClickMask) && mouseDragged==false)
 			{
 				if(selectedLayer==MapData.MAP_DOOR_LAYER)
 				{
@@ -2088,10 +2088,10 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 		me = new MouseEvent((Component) me.getSource(), me.getID(), me.getWhen(), me.getModifiersEx(), me.getX()-drawOffsetX(), me.getY()-drawOffsetY(), me.getXOnScreen(), me.getYOnScreen(), me.getClickCount(), me.isPopupTrigger(), me.getButton());
 
 
-		//int leftMask = InputEvent.BUTTON1_MASK;
-		int middleMask = InputEvent.BUTTON2_MASK;
-		//int rightMask = InputEvent.BUTTON3_MASK;
-		//int shiftClickMask = InputEvent.BUTTON1_MASK + InputEvent.SHIFT_MASK;
+		//int leftMask = InputEvent.BUTTON1_DOWN_MASK;
+		int middleMask = InputEvent.BUTTON2_DOWN_MASK;
+		//int rightMask = InputEvent.BUTTON3_DOWN_MASK;
+		//int shiftClickMask = InputEvent.BUTTON1_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK;
 
 		mousePressedX = me.getX();
 		mousePressedY = me.getY();
@@ -2107,7 +2107,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 		if(pressedTileY<0)pressedTileY=0;
 
 
-		if(me.getModifiers() == middleMask)
+		if(me.getModifiersEx() == middleMask)
 		{
 
 			if(pressedTileX<getMap().wT()&&pressedTileY<getMap().hT())
@@ -2172,11 +2172,11 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 
 
 
-		int leftMask = InputEvent.BUTTON1_MASK;
-		int rightMask = InputEvent.BUTTON3_MASK;
-		int ctrlClickMask = InputEvent.BUTTON1_MASK + InputEvent.CTRL_MASK;
-		int shiftClickMask = InputEvent.BUTTON1_MASK + InputEvent.SHIFT_MASK;
-		int shiftCtrlClickMask = InputEvent.BUTTON1_MASK + InputEvent.SHIFT_MASK + InputEvent.CTRL_MASK;
+		int leftMask = InputEvent.BUTTON1_DOWN_MASK;
+		int rightMask = InputEvent.BUTTON3_DOWN_MASK;
+		int ctrlClickMask = InputEvent.BUTTON1_DOWN_MASK | InputEvent.CTRL_DOWN_MASK;
+		int shiftClickMask = InputEvent.BUTTON1_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK;
+		int shiftCtrlClickMask = InputEvent.BUTTON1_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK | InputEvent.CTRL_DOWN_MASK;
 
 		if(mouseDragged == true)
 		{
@@ -2206,14 +2206,14 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 		{
 			if(pressedTileX==releasedTileX&&pressedTileY==releasedTileY){selectionDragged = false;setCursor(new Cursor(Cursor.DEFAULT_CURSOR));repaint();return;}
 
-			if((me.getModifiers() == rightMask || me.getModifiers() == ctrlClickMask))
+			if((me.getModifiersEx() == rightMask || me.getModifiersEx() == ctrlClickMask))
 			{
 				selectionDragged = false;
 				fillUndoArray();
 				mapSelectionArea.copyFromTo(releasedTileX, releasedTileY, pressedTileX, pressedTileY);
 			}
 			else
-			if(me.getModifiers() == leftMask)
+			if(me.getModifiersEx() == leftMask)
 			{
 				selectionDragged = false;
 				fillUndoArray();
@@ -2234,7 +2234,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 
 			doorDragged = false;
 
-			if(me.getModifiers() == leftMask)
+			if(me.getModifiersEx() == leftMask)
 			{
 				//tile precision (default)
 				getMap().getSelectedDoor().setXPixels(releasedTileX*8);
@@ -2264,7 +2264,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 		{
 			doorArrivalDragged = false;
 
-			if(me.getModifiers() == leftMask)
+			if(me.getModifiersEx() == leftMask)
 			{
 				//tile precision (default)
 				getMap().getSelectedDoor().setArrivalXPixels(releasedTileX*8);
@@ -2306,7 +2306,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 			int oldMapX = getMap().getSelectedEntity().xP();
 			int oldMapY = getMap().getSelectedEntity().yP();
 
-			if(me.getModifiers() == ctrlClickMask || me.getModifiers() == rightMask)
+			if(me.getModifiersEx() == ctrlClickMask || me.getModifiersEx() == rightMask)
 			{
 				//copy sprite
 
@@ -2337,7 +2337,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 				EditorMain.infoLabel.setText("MapCanvas: Map Sprite Copied");
 			}
 			else
-			if(me.getModifiers() == leftMask)
+			if(me.getModifiersEx() == leftMask)
 			{
 				//move sprite
 
@@ -2396,7 +2396,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 
 			lightDragged=false;
 
-			if(me.getModifiers() == ctrlClickMask || me.getModifiers() == rightMask)
+			if(me.getModifiersEx() == ctrlClickMask || me.getModifiersEx() == rightMask)
 			{
 
 				//copy light
@@ -2418,7 +2418,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 				EditorMain.infoLabel.setText("MapCanvas: Map Light Copied");
 			}
 			else
-			if(me.getModifiers() == leftMask)
+			if(me.getModifiersEx() == leftMask)
 			{
 				//pixel precision
 				getMap().getSelectedLight().setXPixels(releasedMapX);
@@ -2463,7 +2463,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 		{
 			lightToggleDragged = false;
 
-			if(me.getModifiers() == leftMask)
+			if(me.getModifiersEx() == leftMask)
 			{
 				//tile precision (default)
 				getMap().getSelectedLight().setToggleXPixels(releasedTileX*8);
@@ -2484,7 +2484,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 			areaDragged=false;
 
 
-			if(me.getModifiers() == ctrlClickMask || me.getModifiers() == rightMask)
+			if(me.getModifiersEx() == ctrlClickMask || me.getModifiersEx() == rightMask)
 			{
 
 				//copy action
@@ -2506,14 +2506,14 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 				EditorMain.infoLabel.setText("MapCanvas: Map Action Copied");
 			}
 			else
-			if(me.getModifiers() == shiftClickMask)
+			if(me.getModifiersEx() == shiftClickMask)
 			{
 				//pixel precision
 				getMap().getSelectedArea().setXPixels(releasedMapX);
 				getMap().getSelectedArea().setYPixels(releasedMapY);
 			}
 			else
-			if(me.getModifiers() == leftMask)
+			if(me.getModifiersEx() == leftMask)
 			{
 				//tile precision (default)
 				getMap().getSelectedArea().setXPixels(releasedTileX*8);
@@ -2529,18 +2529,18 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 
 		}
 
-		if(areaArrivalDragged && (me.getModifiers() == leftMask || me.getModifiers() == shiftClickMask ))
+		if(areaArrivalDragged && (me.getModifiersEx() == leftMask || me.getModifiersEx() == shiftClickMask ))
 		{
 			areaArrivalDragged=false;
 
-			if(me.getModifiers() == shiftClickMask)
+			if(me.getModifiersEx() == shiftClickMask)
 			{
 				//pixel precision
 				getMap().getSelectedArea().setArrivalXPixels(releasedMapX);
 				getMap().getSelectedArea().setArrivalYPixels(releasedMapY);
 			}
 			else
-			if(me.getModifiers() == leftMask)
+			if(me.getModifiersEx() == leftMask)
 			{
 				//tile precision (default)
 				getMap().getSelectedArea().setArrivalXPixels(releasedTileX*8);
@@ -2661,7 +2661,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 			{
 
 
-				if(me.getModifiers() == shiftCtrlClickMask)
+				if(me.getModifiersEx() == shiftCtrlClickMask)
 				{
 					//if we dropped it on nothing, create a waypoint action there.
 					//if pull a connection from an area and drop it, should be automatic 1x1 waypoint.
@@ -2808,12 +2808,12 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 		me = new MouseEvent((Component) me.getSource(), me.getID(), me.getWhen(), me.getModifiersEx(), me.getX()-drawOffsetX(), me.getY()-drawOffsetY(), me.getXOnScreen(), me.getYOnScreen(), me.getClickCount(), me.isPopupTrigger(), me.getButton());
 
 
-		int leftMask = InputEvent.BUTTON1_MASK;
-		int middleMask = InputEvent.BUTTON2_MASK;
-		int rightMask = InputEvent.BUTTON3_MASK;
-		int shiftClickMask = InputEvent.BUTTON1_MASK + InputEvent.SHIFT_MASK;
-		int shiftMiddleClickMask = InputEvent.BUTTON2_MASK + InputEvent.SHIFT_MASK;
-		int shiftCtrlClickMask = InputEvent.BUTTON1_MASK + InputEvent.SHIFT_MASK + InputEvent.CTRL_MASK;
+		int leftMask = InputEvent.BUTTON1_DOWN_MASK;
+		int middleMask = InputEvent.BUTTON2_DOWN_MASK;
+		int rightMask = InputEvent.BUTTON3_DOWN_MASK;
+		int shiftClickMask = InputEvent.BUTTON1_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK;
+		int shiftMiddleClickMask = InputEvent.BUTTON2_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK;
+		int shiftCtrlClickMask = InputEvent.BUTTON1_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK | InputEvent.CTRL_DOWN_MASK;
 
 
 		mouseDragged = true;
@@ -2826,7 +2826,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 
 
 
-		if(me.getModifiers() == shiftMiddleClickMask)
+		if(me.getModifiersEx() == shiftMiddleClickMask)
 		{
 
 			int offsetX = mousePressedX - me.getX();
@@ -2848,7 +2848,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 
 		if(
 
-				me.getModifiers() == middleMask
+				me.getModifiersEx() == middleMask
 				&& (mapSelectionArea.isShowing || (me.getX()>mousePressedX+8&&me.getY()>mousePressedY+8))
 		)
 		{
@@ -2914,7 +2914,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 
 
 
-		if(me.getModifiers() == shiftClickMask || me.getModifiers() == shiftCtrlClickMask)
+		if(me.getModifiersEx() == shiftClickMask || me.getModifiersEx() == shiftCtrlClickMask)
 		{
 
 			if(selectedLayer==MapData.MAP_DOOR_LAYER|| selectedLayer==MapData.MAP_ENTITY_LAYER|| selectedLayer==MapData.MAP_AREA_LAYER)
@@ -2942,7 +2942,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 				if(doorConnectionDragged==true || entityConnectionDragged==true || areaConnectionDragged==true)
 				{
 
-					if(me.getModifiers() == shiftClickMask)setCursor(new Cursor(Cursor.HAND_CURSOR));
+					if(me.getModifiersEx() == shiftClickMask)setCursor(new Cursor(Cursor.HAND_CURSOR));
 					else setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
 
 					//draw line from door to cursor
@@ -3056,7 +3056,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 					int draggedTileX = (int)(me.getX() / (zoom));
 					int draggedTileY = (int)(me.getY() / (zoom));
 
-					if(me.getModifiers() == shiftCtrlClickMask)G.drawRect(draggedTileX*zoom, draggedTileY*zoom, zoom, zoom);
+					if(me.getModifiersEx() == shiftCtrlClickMask)G.drawRect(draggedTileX*zoom, draggedTileY*zoom, zoom, zoom);
 
 					return;
 				}
@@ -3064,7 +3064,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 
 		}
 
-		if(me.getModifiers() == leftMask || me.getModifiers() == rightMask)
+		if(me.getModifiersEx() == leftMask || me.getModifiersEx() == rightMask)
 		{
 
 			Door selectedDoor = getMap().getSelectedDoor();
@@ -3081,7 +3081,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 
 			)
 			{
-				if(me.getModifiers() == rightMask)setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
+				if(me.getModifiersEx() == rightMask)setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
 				else setCursor(new Cursor(Cursor.MOVE_CURSOR));
 				selectionDragged = true;
 				return;
@@ -3089,7 +3089,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 
 			//handle movement of door arrival point
 			if(
-					me.getModifiers() == leftMask&&
+					me.getModifiersEx() == leftMask&&
 					doorArrivalDragged==false&&
 					doorDragged==false&&
 					selectedLayer==MapData.MAP_DOOR_LAYER&&
@@ -3110,7 +3110,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 
 			//handle movement of door
 			if(
-					me.getModifiers() == leftMask&&
+					me.getModifiersEx() == leftMask&&
 					doorDragged==false&&
 					doorArrivalDragged==false&&
 					selectedLayer==MapData.MAP_DOOR_LAYER&&
@@ -3141,7 +3141,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 
 			)
 			{
-				if(me.getModifiers() == rightMask)setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
+				if(me.getModifiersEx() == rightMask)setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
 				else setCursor(new Cursor(Cursor.MOVE_CURSOR));
 				entityDragged = true;
 				return;
@@ -3150,7 +3150,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 
 			//handle movement of light toggle
 			if(
-					me.getModifiers() == leftMask&&
+					me.getModifiersEx() == leftMask&&
 					lightToggleDragged==false&&
 					lightDragged==false&&
 					selectedLayer==MapData.MAP_LIGHT_LAYER&&
@@ -3184,7 +3184,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 
 			)
 			{
-				if(me.getModifiers() == rightMask)setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
+				if(me.getModifiersEx() == rightMask)setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
 				else setCursor(new Cursor(Cursor.MOVE_CURSOR));
 				lightDragged = true;
 				return;
@@ -3193,7 +3193,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 
 			//handle movement of action arrival
 			if(
-					me.getModifiers() == leftMask&&
+					me.getModifiersEx() == leftMask&&
 					areaDragged==false&&
 					areaArrivalDragged==false&&
 					selectedLayer==MapData.MAP_AREA_LAYER&&
@@ -3226,7 +3226,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 
 			)
 			{
-				if(me.getModifiers() == rightMask)setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
+				if(me.getModifiersEx() == rightMask)setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
 				else setCursor(new Cursor(Cursor.MOVE_CURSOR));
 				areaDragged = true;
 				return;

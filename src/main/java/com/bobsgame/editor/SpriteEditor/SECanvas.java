@@ -539,11 +539,11 @@ public class SECanvas extends MTECanvas
 	//===============================================================================================
 	public void mouseClicked(MouseEvent me)
 	{//===============================================================================================
-		int leftMask = InputEvent.BUTTON1_MASK;
-		int middleMask = InputEvent.BUTTON2_MASK;
-		int rightMask = InputEvent.BUTTON3_MASK;
-		int shiftClickMask = InputEvent.BUTTON1_MASK + InputEvent.SHIFT_MASK;
-		int ctrlClickMask = InputEvent.BUTTON1_MASK + InputEvent.CTRL_MASK;
+		int leftMask = InputEvent.BUTTON1_DOWN_MASK;
+		int middleMask = InputEvent.BUTTON2_DOWN_MASK;
+		int rightMask = InputEvent.BUTTON3_DOWN_MASK;
+		int shiftClickMask = InputEvent.BUTTON1_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK;
+		int ctrlClickMask = InputEvent.BUTTON1_DOWN_MASK | InputEvent.CTRL_DOWN_MASK;
 
 		int x = me.getX() / zoom;
 		int y = me.getY() / zoom;
@@ -562,7 +562,7 @@ public class SECanvas extends MTECanvas
 				y < h
 		)
 		{
-			if(me.getModifiers() == leftMask)
+			if(me.getModifiersEx() == leftMask)
 			{
 				if(SpriteEditor.controlPanel.paletteCanvas.colorSelected != s.getPixel(x, y))
 				{
@@ -586,7 +586,7 @@ public class SECanvas extends MTECanvas
 					setText("Sprite Editor: Filled");
 				}
 			}
-			else if((me.getModifiers() == rightMask || me.getModifiers() == ctrlClickMask))
+			else if((me.getModifiersEx() == rightMask || me.getModifiersEx() == ctrlClickMask))
 			{
 				if(SpriteEditor.controlPanel.paletteCanvas.colorSelected != s.getPixel(x, y))
 				{
@@ -597,7 +597,7 @@ public class SECanvas extends MTECanvas
 		}
 
 
-		if((me.getModifiers() == middleMask || me.getModifiers() == shiftClickMask))
+		if((me.getModifiersEx() == middleMask || me.getModifiersEx() == shiftClickMask))
 		{
 			getSelectionBox().isShowing=false;
 			setText("Sprite Editor: Deselected Area");
@@ -612,11 +612,11 @@ public class SECanvas extends MTECanvas
 		requestFocus();
 		requestFocusInWindow();
 
-		int leftMask = InputEvent.BUTTON1_MASK;
-		int middleMask = InputEvent.BUTTON2_MASK;
-		int rightMask = InputEvent.BUTTON3_MASK;
-		int shiftClickMask = InputEvent.BUTTON1_MASK + InputEvent.SHIFT_MASK;
-		int ctrlClickMask = InputEvent.BUTTON1_MASK + InputEvent.CTRL_MASK;
+		int leftMask = InputEvent.BUTTON1_DOWN_MASK;
+		int middleMask = InputEvent.BUTTON2_DOWN_MASK;
+		int rightMask = InputEvent.BUTTON3_DOWN_MASK;
+		int shiftClickMask = InputEvent.BUTTON1_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK;
+		int ctrlClickMask = InputEvent.BUTTON1_DOWN_MASK | InputEvent.CTRL_DOWN_MASK;
 
 
 
@@ -628,12 +628,12 @@ public class SECanvas extends MTECanvas
 		int y = me.getY() / zoom;
 		mousePressed = true;
 
-		if((me.getModifiers() == rightMask || me.getModifiers() == ctrlClickMask) || me.getModifiers() == leftMask)
+		if((me.getModifiersEx() == rightMask || me.getModifiersEx() == ctrlClickMask) || me.getModifiersEx() == leftMask)
 		{
 			dragPixelx = x;
 			dragPixely = y;
 		}
-		else if((me.getModifiers() == middleMask || me.getModifiers() == shiftClickMask))
+		else if((me.getModifiersEx() == middleMask || me.getModifiersEx() == shiftClickMask))
 		{
 			int pressedX = (int)(me.getX() / zoom);
 			int pressedY = (int)(me.getY() / zoom);
@@ -663,11 +663,11 @@ public class SECanvas extends MTECanvas
 	//===============================================================================================
 	public void mouseReleased(MouseEvent me)
 	{//===============================================================================================
-		int leftMask = InputEvent.BUTTON1_MASK;
+		int leftMask = InputEvent.BUTTON1_DOWN_MASK;
 
-		int rightMask = InputEvent.BUTTON3_MASK;
+		int rightMask = InputEvent.BUTTON3_DOWN_MASK;
 
-		int ctrlClickMask = InputEvent.BUTTON1_MASK + InputEvent.CTRL_MASK;
+		int ctrlClickMask = InputEvent.BUTTON1_DOWN_MASK | InputEvent.CTRL_DOWN_MASK;
 
 		int x = (me.getX() / zoom);
 		int y = (me.getY() / zoom);
@@ -681,13 +681,13 @@ public class SECanvas extends MTECanvas
 		if(selectionDragged)
 		{
 			mouseDrag = false;
-			if((me.getModifiers() == rightMask || me.getModifiers() == ctrlClickMask))
+			if((me.getModifiersEx() == rightMask || me.getModifiersEx() == ctrlClickMask))
 			{
 				selectionDragged = false;
 				fillUndoArray();
 				copySelection(dragPixelx, dragPixely, x, y);
 			}
-			else if(me.getModifiers() == leftMask)
+			else if(me.getModifiersEx() == leftMask)
 			{
 				selectionDragged = false;
 				fillUndoArray();
@@ -702,17 +702,17 @@ public class SECanvas extends MTECanvas
 	{//===============================================================================================
 
 
-		int middleMask = InputEvent.BUTTON2_MASK;
+		int middleMask = InputEvent.BUTTON2_DOWN_MASK;
 
-		int shiftClickMask = InputEvent.BUTTON1_MASK + InputEvent.SHIFT_MASK;
+		int shiftClickMask = InputEvent.BUTTON1_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK;
 
 		int x = (me.getX() / zoom);
 		int y = (me.getY() / zoom);
 		mouseDrag = true;
 
-		int shiftMiddleClickMask = InputEvent.BUTTON2_MASK + InputEvent.SHIFT_MASK;
+		int shiftMiddleClickMask = InputEvent.BUTTON2_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK;
 
-		if(me.getModifiers() == shiftMiddleClickMask)
+		if(me.getModifiersEx() == shiftMiddleClickMask)
 		{
 
 			int offsetX = oldx - me.getX();
@@ -733,7 +733,7 @@ public class SECanvas extends MTECanvas
 
 			if(getSelectionBox().isShowing)
 			{
-				if((me.getModifiers() == middleMask || me.getModifiers() == shiftClickMask))
+				if((me.getModifiersEx() == middleMask || me.getModifiersEx() == shiftClickMask))
 				{
 
 					x++;//so the selection box is actually under the cursor

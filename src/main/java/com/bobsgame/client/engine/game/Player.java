@@ -37,7 +37,6 @@ import com.bobsgame.client.engine.text.BobFont;
 //import org.lwjgl.input.Keyboard;
 //import org.lwjgl.input.Mouse;
 //import org.lwjgl.openal.AL;
-//import org.lwjgl.opengl.Display;
 //import org.lwjgl.opengl.DisplayMode;
 
 //import com.bobsgame.editor.BobColor;

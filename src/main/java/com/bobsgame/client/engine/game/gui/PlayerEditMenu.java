@@ -21,7 +21,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import slick.Texture;
+import com.bobsgame.client.Texture;
 
 
 import ch.qos.logback.classic.Logger;
@@ -1504,7 +1504,8 @@ public class PlayerEditMenu extends MenuPanel
 									e.printStackTrace();
 								}
 
-								ClientMain.clientMain.getAppletContext().showDocument(url, "_blank");
+                                //Applet removed
+								//ClientMain.clientMain.getAppletContext().showDocument(url, "_blank");
 
 
 								//TODO: pause until we have confirmation
@@ -1847,8 +1848,8 @@ public class PlayerEditMenu extends MenuPanel
 			//y0 = (float)Math.floor(screenTop());
 			//y1 = (float)Math.floor(screenBottom());
 
-			float x0 = animPanel.getX() + animPanel.getWidth()/2 - p.w()*drawScale/2.0f;//Display.getWidth()/2 - p.width()*drawScale/2.0f;
-			float y0 = animPanel.getY() + animPanel.getHeight()/2 - p.h()*drawScale/2.0f;//Display.getHeight()/2 - p.height()*drawScale/2.0f;
+			float x0 = animPanel.getX() + animPanel.getWidth()/2 - p.w()*drawScale/2.0f;//LWJGLUtils.SCREEN_SIZE_X/2 - p.width()*drawScale/2.0f;
+			float y0 = animPanel.getY() + animPanel.getHeight()/2 - p.h()*drawScale/2.0f;//LWJGLUtils.SCREEN_SIZE_Y/2 - p.height()*drawScale/2.0f;
 			float x1 = (float) (x0+p.w()*drawScale);
 			float y1 = (float) (y0+p.h()*drawScale);
 

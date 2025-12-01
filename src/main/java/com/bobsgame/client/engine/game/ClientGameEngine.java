@@ -4,6 +4,7 @@ package com.bobsgame.client.engine.game;
 
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 //import static org.lwjgl.opengl.GL30.*;
@@ -662,7 +663,7 @@ public class ClientGameEngine extends Engine
 		List<String> b64List=null;
 
 
-		try{b64List = IOUtils.readLines(Utils.getResourceAsStream("res/PreloadSkillData"));}catch(IOException e){e.printStackTrace();}
+		try{b64List = IOUtils.readLines(Utils.getResourceAsStream("res/PreloadSkillData"), StandardCharsets.UTF_8);}catch(IOException e){e.printStackTrace();}
 		if(b64List!=null)
 		{
 			for(int i=0;i<b64List.size();i++)
@@ -679,7 +680,7 @@ public class ClientGameEngine extends Engine
 			}
 		}
 
-		try{b64List = IOUtils.readLines(Utils.getResourceAsStream("res/PreloadDialogueData"));}catch(IOException e){e.printStackTrace();}
+		try{b64List = IOUtils.readLines(Utils.getResourceAsStream("res/PreloadDialogueData"), StandardCharsets.UTF_8);}catch(IOException e){e.printStackTrace();}
 		if(b64List!=null)
 		{
 			for(int i=0;i<b64List.size();i++)
@@ -696,7 +697,7 @@ public class ClientGameEngine extends Engine
 			}
 		}
 
-		try{b64List = IOUtils.readLines(Utils.getResourceAsStream("res/PreloadFlagData"));}catch(IOException e){e.printStackTrace();}
+		try{b64List = IOUtils.readLines(Utils.getResourceAsStream("res/PreloadFlagData"), StandardCharsets.UTF_8);}catch(IOException e){e.printStackTrace();}
 		if(b64List!=null)
 		{
 			for(int i=0;i<b64List.size();i++)
@@ -713,7 +714,7 @@ public class ClientGameEngine extends Engine
 			}
 		}
 
-		try{b64List = IOUtils.readLines(Utils.getResourceAsStream("res/PreloadGameStringData"));}catch(IOException e){e.printStackTrace();}
+		try{b64List = IOUtils.readLines(Utils.getResourceAsStream("res/PreloadGameStringData"), StandardCharsets.UTF_8);}catch(IOException e){e.printStackTrace();}
 		if(b64List!=null)
 		{
 			for(int i=0;i<b64List.size();i++)
@@ -730,7 +731,7 @@ public class ClientGameEngine extends Engine
 			}
 		}
 
-		try{b64List = IOUtils.readLines(Utils.getResourceAsStream("res/PreloadEventData"));}catch(IOException e){e.printStackTrace();}
+		try{b64List = IOUtils.readLines(Utils.getResourceAsStream("res/PreloadEventData"), StandardCharsets.UTF_8);}catch(IOException e){e.printStackTrace();}
 		if(b64List!=null)
 		{
 			for(int i=0;i<b64List.size();i++)
@@ -747,7 +748,7 @@ public class ClientGameEngine extends Engine
 			}
 		}
 
-		try{b64List = IOUtils.readLines(Utils.getResourceAsStream("res/PreloadSpriteData"));}catch(IOException e){e.printStackTrace();}
+		try{b64List = IOUtils.readLines(Utils.getResourceAsStream("res/PreloadSpriteData"), StandardCharsets.UTF_8);}catch(IOException e){e.printStackTrace();}
 		if(b64List!=null)
 		{
 			for(int i=0;i<b64List.size();i++)
@@ -780,7 +781,7 @@ public class ClientGameEngine extends Engine
 		}
 
 
-		try{b64List = IOUtils.readLines(Utils.getResourceAsStream("res/PreloadSoundData"));}catch(IOException e){e.printStackTrace();}
+		try{b64List = IOUtils.readLines(Utils.getResourceAsStream("res/PreloadSoundData"), StandardCharsets.UTF_8);}catch(IOException e){e.printStackTrace();}
 		if(b64List!=null)
 		{
 			for(int i=0;i<b64List.size();i++)
@@ -807,7 +808,7 @@ public class ClientGameEngine extends Engine
 		}
 
 
-		try{b64List = IOUtils.readLines(Utils.getResourceAsStream("res/PreloadMusicData"));}catch(IOException e){e.printStackTrace();}
+		try{b64List = IOUtils.readLines(Utils.getResourceAsStream("res/PreloadMusicData"), StandardCharsets.UTF_8);}catch(IOException e){e.printStackTrace();}
 		if(b64List!=null)
 		{
 			for(int i=0;i<b64List.size();i++)
@@ -829,7 +830,7 @@ public class ClientGameEngine extends Engine
 			}
 		}
 
-		try{b64List = IOUtils.readLines(Utils.getResourceAsStream("res/PreloadMapData"));}catch(IOException e){e.printStackTrace();}
+		try{b64List = IOUtils.readLines(Utils.getResourceAsStream("res/PreloadMapData"), StandardCharsets.UTF_8);}catch(IOException e){e.printStackTrace();}
 		if(b64List!=null)
 		{
 			for(int i=0;i<b64List.size();i++)
