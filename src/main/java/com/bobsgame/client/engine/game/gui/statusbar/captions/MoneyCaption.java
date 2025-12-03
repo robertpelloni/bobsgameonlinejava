@@ -1,6 +1,6 @@
 package com.bobsgame.client.engine.game.gui.statusbar.captions;
+import com.bobsgame.client.LWJGLUtils;
 
-import org.lwjgl.opengl.Display;
 
 import com.bobsgame.client.GLUtils;
 import com.bobsgame.client.engine.game.ClientGameEngine;
@@ -67,7 +67,7 @@ public class MoneyCaption extends StatusBarCaption
 		if(caption!=null)
 		{
 
-			caption.screenX=Display.getWidth()-(100*2)-caption.texture.getImageWidth();//100*2;//timeCaption.caption_width*2+dayCaption.caption_width*2;
+			caption.screenX=LWJGLUtils.SCREEN_SIZE_X-(100*2)-caption.texture.getImageWidth();//100*2;//timeCaption.caption_width*2+dayCaption.caption_width*2;
 			caption.setAlphaImmediately(1.0f);
 
 			if(light!=null)light.setX(caption.screenX+caption.getWidth()/2-15);

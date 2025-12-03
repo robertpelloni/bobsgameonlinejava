@@ -598,17 +598,17 @@ public class TileCanvas extends JComponent implements MouseMotionListener, Mouse
 	//===============================================================================================
 	public void mouseClicked(MouseEvent me)
 	{//===============================================================================================
-		//int leftMask = InputEvent.BUTTON1_MASK;
-		int middleMask = InputEvent.BUTTON2_MASK;
-		int rightMask = InputEvent.BUTTON3_MASK;
-		int shiftClickMask = InputEvent.BUTTON1_MASK + InputEvent.SHIFT_MASK;
-		int ctrlClickMask = InputEvent.BUTTON1_MASK + InputEvent.CTRL_MASK;
+		//int leftMask = InputEvent.BUTTON1_DOWN_MASK;
+		int middleMask = InputEvent.BUTTON2_DOWN_MASK;
+		int rightMask = InputEvent.BUTTON3_DOWN_MASK;
+		int shiftClickMask = InputEvent.BUTTON1_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK;
+		int ctrlClickMask = InputEvent.BUTTON1_DOWN_MASK | InputEvent.CTRL_DOWN_MASK;
 
 
 
 		if(tileSelectionArea.contains(me.getX(), me.getY()) && tileSelectionArea.isShowing)
 		{
-			if((me.getModifiers() == rightMask || me.getModifiers() == ctrlClickMask))
+			if((me.getModifiersEx() == rightMask || me.getModifiersEx() == ctrlClickMask))
 			{
 				if(me.getClickCount() == 2)
 				{
@@ -631,7 +631,7 @@ public class TileCanvas extends JComponent implements MouseMotionListener, Mouse
 			}
 
 		}
-		if((me.getModifiers() == middleMask || me.getModifiers() == shiftClickMask))
+		if((me.getModifiersEx() == middleMask || me.getModifiersEx() == shiftClickMask))
 		{
 			tileSelectionArea.isShowing=false;
 			EditorMain.infoLabel.setTextNoConsole("TileCanvas: Deselected Area");
@@ -643,11 +643,11 @@ public class TileCanvas extends JComponent implements MouseMotionListener, Mouse
 	//===============================================================================================
 	public void mousePressed(MouseEvent me)
 	{//===============================================================================================
-		int leftMask = InputEvent.BUTTON1_MASK;
-		int middleMask = InputEvent.BUTTON2_MASK;
-		int rightMask = InputEvent.BUTTON3_MASK;
-		int shiftClickMask = InputEvent.BUTTON1_MASK + InputEvent.SHIFT_MASK;
-		int ctrlClickMask = InputEvent.BUTTON1_MASK + InputEvent.CTRL_MASK;
+		int leftMask = InputEvent.BUTTON1_DOWN_MASK;
+		int middleMask = InputEvent.BUTTON2_DOWN_MASK;
+		int rightMask = InputEvent.BUTTON3_DOWN_MASK;
+		int shiftClickMask = InputEvent.BUTTON1_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK;
+		int ctrlClickMask = InputEvent.BUTTON1_DOWN_MASK | InputEvent.CTRL_DOWN_MASK;
 
 
 		int clickedTile = me.getY() / TILE_SIZE * WIDTH_TILES + me.getX() / TILE_SIZE;
@@ -655,7 +655,7 @@ public class TileCanvas extends JComponent implements MouseMotionListener, Mouse
 
 		mousePressed = true;
 
-		if((me.getModifiers() == rightMask || me.getModifiers() == ctrlClickMask) || me.getModifiers() == leftMask)
+		if((me.getModifiersEx() == rightMask || me.getModifiersEx() == ctrlClickMask) || me.getModifiersEx() == leftMask)
 		{
 
 			int t = tileSelected;
@@ -674,7 +674,7 @@ public class TileCanvas extends JComponent implements MouseMotionListener, Mouse
 
 		}
 		else
-		if((me.getModifiers() == middleMask || me.getModifiers() == shiftClickMask) && tileSelectionArea.isSelectedCopy == false && tileSelectionArea.isSelectedCut == false)
+		if((me.getModifiersEx() == middleMask || me.getModifiersEx() == shiftClickMask) && tileSelectionArea.isSelectedCopy == false && tileSelectionArea.isSelectedCut == false)
 		{
 			tileSelectionArea.setLocation(me.getX()/TILE_SIZE*TILE_SIZE, me.getY()/TILE_SIZE*TILE_SIZE);
 			tileSelectionArea.setSize(0, 0);
@@ -689,11 +689,11 @@ public class TileCanvas extends JComponent implements MouseMotionListener, Mouse
 	//===============================================================================================
 	public void mouseReleased(MouseEvent me)
 	{//===============================================================================================
-		int leftMask = InputEvent.BUTTON1_MASK;
-		int middleMask = InputEvent.BUTTON2_MASK;
-		int rightMask = InputEvent.BUTTON3_MASK;
-		int shiftClickMask = InputEvent.BUTTON1_MASK + InputEvent.SHIFT_MASK;
-		int ctrlClickMask = InputEvent.BUTTON1_MASK + InputEvent.CTRL_MASK;
+		int leftMask = InputEvent.BUTTON1_DOWN_MASK;
+		int middleMask = InputEvent.BUTTON2_DOWN_MASK;
+		int rightMask = InputEvent.BUTTON3_DOWN_MASK;
+		int shiftClickMask = InputEvent.BUTTON1_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK;
+		int ctrlClickMask = InputEvent.BUTTON1_DOWN_MASK | InputEvent.CTRL_DOWN_MASK;
 
 
 		int clickedTile = me.getY() / TILE_SIZE * WIDTH_TILES + me.getX() / TILE_SIZE;
@@ -704,19 +704,19 @@ public class TileCanvas extends JComponent implements MouseMotionListener, Mouse
 		if(mouseDrag)
 		{
 			mouseDrag = false;
-			if((me.getModifiers() == rightMask || me.getModifiers() == ctrlClickMask))
+			if((me.getModifiersEx() == rightMask || me.getModifiersEx() == ctrlClickMask))
 			{
 				tileSelected = clickedTile;
 				copySelection(tileSelected, dragTile);
 				paint();
 			}
-			else if(me.getModifiers() == leftMask)
+			else if(me.getModifiersEx() == leftMask)
 			{
 				tileSelected = clickedTile;
 				moveSelection(tileSelected, dragTile);
 				paint();
 			}
-			else if((me.getModifiers() == middleMask || me.getModifiers() == shiftClickMask) && tileSelectionArea.isShowing)
+			else if((me.getModifiersEx() == middleMask || me.getModifiersEx() == shiftClickMask) && tileSelectionArea.isShowing)
 			{
 				EditorMain.infoLabel.setTextNoConsole("TileCanvas: Selected Area");
 			}
@@ -754,17 +754,17 @@ public class TileCanvas extends JComponent implements MouseMotionListener, Mouse
 	//===============================================================================================
 	public void mouseDragged(MouseEvent me)
 	{//===============================================================================================
-		int leftMask = InputEvent.BUTTON1_MASK;
-		int middleMask = InputEvent.BUTTON2_MASK;
-		int rightMask = InputEvent.BUTTON3_MASK;
-		int shiftClickMask = InputEvent.BUTTON1_MASK + InputEvent.SHIFT_MASK;
-		int ctrlClickMask = InputEvent.BUTTON1_MASK + InputEvent.CTRL_MASK;
+		int leftMask = InputEvent.BUTTON1_DOWN_MASK;
+		int middleMask = InputEvent.BUTTON2_DOWN_MASK;
+		int rightMask = InputEvent.BUTTON3_DOWN_MASK;
+		int shiftClickMask = InputEvent.BUTTON1_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK;
+		int ctrlClickMask = InputEvent.BUTTON1_DOWN_MASK | InputEvent.CTRL_DOWN_MASK;
 
 
 		mouseDrag = true;
 		if(
 				tileSelectionArea.isShowing &&
-				(me.getModifiers() == middleMask || me.getModifiers() == shiftClickMask)
+				(me.getModifiersEx() == middleMask || me.getModifiersEx() == shiftClickMask)
 
 		)
 		{
@@ -777,7 +777,7 @@ public class TileCanvas extends JComponent implements MouseMotionListener, Mouse
 				tileSelectionArea.repaint();
 			}
 		}
-		else if((me.getModifiers() == rightMask || me.getModifiers() == ctrlClickMask) || me.getModifiers() == leftMask && tileSelectionArea.contains(me.getX(), me.getY()))
+		else if((me.getModifiersEx() == rightMask || me.getModifiersEx() == ctrlClickMask) || me.getModifiersEx() == leftMask && tileSelectionArea.contains(me.getX(), me.getY()))
 		{
 			setCursor(new Cursor(Cursor.MOVE_CURSOR));
 		}

@@ -1296,80 +1296,34 @@ public class StatusPanel extends SubPanel
 	protected void doGoPremiumButton()
 	{//=========================================================================================================================
 
-		if(ClientMain.isApplet==true)
-		{
+        try
+        {
+            //open browser window, we can't get it with JS as a desktop client so we need to redirect to PHP or something which stores it in SQL
+            String url = "http://www.bobsgame.com/buyBobPass.php?u="+GameSave().userID;
 
-			//open with javascript
-
-			URL url = null;
-			try
-			{
-				url = new URL("http://www.bobsgame.com/buyBobPass.php?u="+GameSave().userID);
-			}
-			catch (MalformedURLException e)
-			{
-				e.printStackTrace();
-			}
-
-			ClientMain.clientMain.getAppletContext().showDocument(url, "_blank");
-
-
-		}
-		else
-		{
-			try
-			{
-				//open browser window, we can't get it with JS as a desktop client so we need to redirect to PHP or something which stores it in SQL
-				String url = "http://www.bobsgame.com/buyBobPass.php?u="+GameSave().userID;
-
-				java.awt.Desktop.getDesktop().browse(java.net.URI.create(url));
-			}
-			catch (java.io.IOException e)
-			{
-				log.error("Could not open browser: "+e.getMessage());
-			}
-
-		}
+            java.awt.Desktop.getDesktop().browse(java.net.URI.create(url));
+        }
+        catch (java.io.IOException e)
+        {
+            log.error("Could not open browser: "+e.getMessage());
+        }
 
 	}
 
 	//=========================================================================================================================
 	protected void doAddMoneyButton()
 	{//=========================================================================================================================
-		if(ClientMain.isApplet==true)
-		{
+        try
+        {
+            //open browser window, we can't get it with JS as a desktop client so we need to redirect to PHP or something which stores it in SQL
+            String url = "http://www.bobsgame.com/buyBobCoins.php?u="+GameSave().userID;
 
-			//open with javascript
-
-			URL url = null;
-			try
-			{
-				url = new URL("http://www.bobsgame.com/buyBobCoins.php?u="+GameSave().userID);
-			}
-			catch (MalformedURLException e)
-			{
-				e.printStackTrace();
-			}
-
-			ClientMain.clientMain.getAppletContext().showDocument(url, "_blank");
-
-
-		}
-		else
-		{
-			try
-			{
-				//open browser window, we can't get it with JS as a desktop client so we need to redirect to PHP or something which stores it in SQL
-				String url = "http://www.bobsgame.com/buyBobCoins.php?u="+GameSave().userID;
-
-				java.awt.Desktop.getDesktop().browse(java.net.URI.create(url));
-			}
-			catch (java.io.IOException e)
-			{
-				log.error("Could not open browser: "+e.getMessage());
-			}
-
-		}
+            java.awt.Desktop.getDesktop().browse(java.net.URI.create(url));
+        }
+        catch (java.io.IOException e)
+        {
+            log.error("Could not open browser: "+e.getMessage());
+        }
 
 	}
 

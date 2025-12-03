@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.concurrent.ConcurrentHashMap;
 
-import slick.Texture;
+import com.bobsgame.client.Texture;
 
 
 import com.bobsgame.client.GLUtils;
