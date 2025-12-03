@@ -19,6 +19,7 @@ import org.lwjgl.opengl.GL12;
 import org.lwjgl.opengl.GL14;
 
 import static org.lwjgl.opengl.GL11.*;
+import com.bobsgame.client.engine.text.BobFont.BitmapFont;
 
 public class GLUtils {
 	public static Logger log = (Logger) LoggerFactory.getLogger(GLUtils.class);
@@ -39,6 +40,17 @@ public class GLUtils {
 	public final static int FILTER_LINEAR = 1;
 
 	public static float globalDrawScale = 1.0f;
+
+    public static class DummyFont {
+        public int getWidth(String text) {
+            if (text == null) return 0;
+            return text.length() * 10;
+        }
+
+        public void drawString(float x, float y, String text, BobColor color) {
+            // TODO
+        }
+    }
 
 	public GLUtils() {
 		blankTexture = GLUtils.loadTexture("res/misc/blank.png");
@@ -357,6 +369,7 @@ public class GLUtils {
 	}
 
 	public static void drawOutlinedString(int screenX0, int screenY0, String text, BobColor color) {
+        // TODO: Reimplement Font rendering using STB Truetype or similar
 		if (font == null) {
 			log.error("Font is null");
 			return;
