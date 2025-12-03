@@ -84,8 +84,6 @@ public class ClientMain {
 
 	static Thread gameThread = null;
 	static Runnable gameRunnable = null;
-    // Removed JSObject dependency
-	//public static JSObject browser = null;
 
 	static boolean started = false;
 
@@ -127,12 +125,6 @@ public class ClientMain {
 		clientInfo.shaderCompiled = LWJGLUtils.useShader;
 		clientInfo.canUseFBO = LWJGLUtils.useFBO;
 		clientInfo.usingVSync = LWJGLUtils.vsync;
-
-		//clientInfo.displayAdapter = Display.getAdapter();
-		//clientInfo.displayDriver = Display.getVersion();
-		//clientInfo.lwjglVersion = Sys.getVersion();
-		//clientInfo.lwjglIs64Bit = Sys.is64Bit();
-		//clientInfo.lwjglPlatformName = LWJGLUtil.getPlatformName();
 
 		clientInfo.numCPUs = StatsUtils.rt.availableProcessors();
 		clientInfo.totalMemory = StatsUtils.totalMemory / 1024 / 1024;
@@ -766,48 +758,6 @@ public class ClientMain {
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
-				} else if (LWJGLUtils.vsync == false) {
-					//Display.sync(240);
-					//Display.sync(90);
-					//Display.sync(60);
-
-					//sync() only seems to work properly with ghost thread
-
-					//with ghost thread
-					//60 = stutter
-					//90 = no stutter, a bit flickery
-					//120 = quick, slight stutter, probably due to interpolation
-					//150 = quick, 15% cpu, seems a bit flickery, probably due to interpolation
-					//240 == 250 fps for some reason, really smooth, 20% gpu, almost no cpu.
-
-
-					//without ghost thread
-						//sync(240) caps at 120 and stutters. fucking weird!
-						//90 = 60
-						//60 = 60
-						//30 = 30, jitter but no stutter
-						//45 = jitter and constant fast stutter, maybe from interpolation.
-
-
-					/*try
-					{
-						//this actually regulates framerate
-						Thread.sleep(6);//16);//TODO: vary this based on system speed
-
-						//no ghost thread
-						//30 = 30 fps solid, jitter but no stutter, very smooth though **(same for with ghost thread)
-
-						//ghost thread
-						//8 = ~ 120-125 fps, starting to get a little bit of stutter
-						//7 = ~ 130-140 fps, no stutter, tiny bit choppy for some reason
-						//6 = ~ 150 fps, no stutter
-						//5 = ~ 200 fps, no stutter
-						//4 = ~ 250 fps, no stutter
-						//1 = 950 fps, very smooth
-
-						Thread.yield();
-
-					}catch(Exception e){e.printStackTrace();}*/
 				}
 				//Display.update();
                 LWJGLUtils.updateDisplay();

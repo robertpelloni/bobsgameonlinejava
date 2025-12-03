@@ -1,0 +1,16 @@
+.idea/
+
+target/
+bin/
+res/data/
+
+
+nullexitautosave.h.zip
+exitautosave.h.zip
+nullexitautosave.h.zip.temp
+
+dependency-reduced-pom.xml
+
+*.class
+*.bak
+build/

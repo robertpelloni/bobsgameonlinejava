@@ -364,13 +364,13 @@ public class Player extends Character
 			else
 			if(ControlsManager().BUTTON_LEFT_HELD==true&&ControlsManager().BUTTON_UP_HELD==true){direction=UPLEFT;}
 			else
-			if(ControlsManager().BUTTON_RIGHT_HELD==true){System.out.println("MOVING RIGHT");direction=RIGHT;}
+			if(ControlsManager().BUTTON_RIGHT_HELD==true){direction=RIGHT;}
 			else
-			if(ControlsManager().BUTTON_LEFT_HELD==true){System.out.println("MOVING LEFT");direction=LEFT;}
+			if(ControlsManager().BUTTON_LEFT_HELD==true){direction=LEFT;}
 			else
-			if(ControlsManager().BUTTON_UP_HELD==true){System.out.println("MOVING UP");direction=UP;}
+			if(ControlsManager().BUTTON_UP_HELD==true){direction=UP;}
 			else
-			if(ControlsManager().BUTTON_DOWN_HELD==true){System.out.println("MOVING DOWN");direction=DOWN;}
+			if(ControlsManager().BUTTON_DOWN_HELD==true){direction=DOWN;}
 			else
 			noInput=true;
 
