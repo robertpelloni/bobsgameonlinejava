@@ -1,8 +1,5 @@
-<<<<<<< HEAD
 import org.gradle.internal.os.OperatingSystem
 
-=======
->>>>>>> main
 plugins {
     id 'java'
     id 'application'
@@ -14,7 +11,6 @@ repositories {
 
 project.ext.lwjglVersion = "3.3.3"
 
-<<<<<<< HEAD
 switch (OperatingSystem.current()) {
     case OperatingSystem.LINUX:
         project.ext.lwjglNatives = "natives-linux"
@@ -25,15 +21,6 @@ switch (OperatingSystem.current()) {
     case OperatingSystem.WINDOWS:
         project.ext.lwjglNatives = "natives-windows"
         break
-=======
-def os = System.getProperty("os.name").toLowerCase()
-if (os.contains("linux")) {
-    project.ext.lwjglNatives = "natives-linux"
-} else if (os.contains("mac")) {
-    project.ext.lwjglNatives = "natives-macos"
-} else if (os.contains("windows")) {
-    project.ext.lwjglNatives = "natives-windows"
->>>>>>> main
 }
 
 dependencies {

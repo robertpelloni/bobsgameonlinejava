@@ -176,6 +176,10 @@ public class LWJGLUtils
             GLFW.glfwSwapInterval(0);
         }
 
+        GLFW.glfwSetWindowSizeCallback(window, (window, width, height) -> {
+            doResize();
+        });
+
         GLFW.glfwShowWindow(window);
 
         GL.createCapabilities();
