@@ -1,6 +1,7 @@
 package com.bobsgame.client.engine.game.nd;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
@@ -59,7 +60,7 @@ public class GameDataLoader extends EnginePart
 		try
 		{
 			//stringList = IOUtils.readLines(gameDataLoader.getClass().getClassLoader().getResourceAsStream("gameData"));
-			stringList = IOUtils.readLines(Utils.getResourceAsStream(Cache.cacheDir+"gameData"));
+			stringList = IOUtils.readLines(Utils.getResourceAsStream(Cache.cacheDir+"gameData"), StandardCharsets.UTF_8);
 		}
 		catch(IOException e)
 		{

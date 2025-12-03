@@ -1,10 +1,10 @@
 package com.bobsgame.client.state;
+import com.bobsgame.client.LWJGLUtils;
 
 import java.util.ArrayList;
 
-import org.lwjgl.opengl.Display;
 
-import slick.Texture;
+import com.bobsgame.client.Texture;
 
 import com.bobsgame.client.GLUtils;
 import com.bobsgame.client.engine.Engine;
@@ -133,8 +133,8 @@ public class GlowTileBackground extends MenuPanel
 		float tileHeight = glowTileFramesTexture[0].getImageHeight()*scale;
 
 
-		int screenWidth = Display.getWidth();
-		int screenHeight = Display.getHeight();
+		int screenWidth = LWJGLUtils.SCREEN_SIZE_X;
+		int screenHeight = LWJGLUtils.SCREEN_SIZE_Y;
 
 		if(g!=null)
 		{
@@ -272,8 +272,8 @@ public class GlowTileBackground extends MenuPanel
 			int w = texture.getImageWidth();
 			int h = texture.getImageHeight();
 
-			float screenWidth = Display.getWidth();
-			float screenHeight = Display.getHeight();
+			float screenWidth = LWJGLUtils.SCREEN_SIZE_X;
+			float screenHeight = LWJGLUtils.SCREEN_SIZE_Y;
 
 			if(g!=null)
 			{
