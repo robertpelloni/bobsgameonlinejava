@@ -1,8 +1,8 @@
 package com.bobsgame.client.engine.game.gui.statusbar;
 
-import org.lwjgl.opengl.Display;
 
-import slick.Texture;
+import com.bobsgame.client.LWJGLUtils;
+import com.bobsgame.client.Texture;
 
 import com.bobsgame.client.GLUtils;
 import com.bobsgame.client.engine.EnginePart;
@@ -224,7 +224,7 @@ public class StatusBar extends EnginePart
 
 
 
-		GLUtils.drawTexture(texture, 0, Display.getWidth(), -6, sizeY+6, alpha, GLUtils.FILTER_FBO_NEAREST_NO_MIPMAPPING);
+		GLUtils.drawTexture(texture, 0, LWJGLUtils.SCREEN_SIZE_X, -6, sizeY+6, alpha, GLUtils.FILTER_FBO_NEAREST_NO_MIPMAPPING);
 
 	}
 

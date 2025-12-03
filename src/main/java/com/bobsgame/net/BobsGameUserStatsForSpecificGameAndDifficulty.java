@@ -322,7 +322,7 @@ public class BobsGameUserStatsForSpecificGameAndDifficulty
 				p = p.substring(p.indexOf(",")+1);
 				long fid = -1;
 				try{fid = Long.parseLong(friendIDString);}catch(NumberFormatException ex){ex.printStackTrace();return false;}
-				Long friendID = new Long(fid);
+				Long friendID = Long.valueOf(fid);
 				if(wonOrLostString.equals("won"))friendIDsWhoWon.add(friendID);
 				if(wonOrLostString.equals("lost"))friendIDsWhoLost.add(friendID);
 			}
@@ -1054,6 +1054,7 @@ public class BobsGameUserStatsForSpecificGameAndDifficulty
 
 		}
 	}
+
 
 
 

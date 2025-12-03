@@ -1,6 +1,6 @@
 package com.bobsgame.client.engine.game.gui.statusbar.captions;
+import com.bobsgame.client.LWJGLUtils;
 
-import org.lwjgl.opengl.Display;
 
 import com.bobsgame.client.engine.Engine;
 import com.bobsgame.client.engine.EnginePart;
@@ -44,7 +44,7 @@ public class DayCaption extends StatusBarCaption
 
 		if(caption!=null)
 		{
-			caption.screenX=Display.getWidth()-95*2;//50*2;//timeCaption.caption_width*2;
+			caption.screenX=LWJGLUtils.SCREEN_SIZE_X-95*2;//50*2;//timeCaption.caption_width*2;
 			caption.setAlphaImmediately(1.0f);
 
 			if(light!=null)light.setX(caption.screenX+caption.getWidth()/2-10);

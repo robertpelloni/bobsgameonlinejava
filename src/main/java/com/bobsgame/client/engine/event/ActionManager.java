@@ -367,7 +367,7 @@ public class ActionManager extends EnginePart
 		/*
 		int px = (int)(ACTION_caption.caption_width*2*ACTION_caption.scale);
 		int actionx=((player().screen_x+player().size_x/2)-((px+8)/2))+8;//centered over player sprite
-		if(actionx+px>Display.getWidth())actionx=Display.getWidth()-px;//dont go past right
+		if(actionx+px>LWJGLUtils.SCREEN_SIZE_X)actionx=LWJGLUtils.SCREEN_SIZE_X-px;//dont go past right
 		if(actionx-8<0)actionx=0+8;//dont go past left
 		int actiony=player().screen_y-16;
 		*/

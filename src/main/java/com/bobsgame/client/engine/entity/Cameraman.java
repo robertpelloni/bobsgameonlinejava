@@ -615,9 +615,9 @@ public class Cameraman extends Entity
 			int maxCamHeight = cameraman.getMaxCameraBoundaryHeight();
 
 			if(maxCamWidth<maxCamHeight)
-			//if((float)Display.getWidth()>maxCamWidth*ZOOMto)
+			//if((float)LWJGLUtils.SCREEN_SIZE_X>maxCamWidth*ZOOMto)
 			{
-				ZOOMto=(float)Display.getWidth()/(float)maxCamWidth;
+				ZOOMto=(float)LWJGLUtils.SCREEN_SIZE_X/(float)maxCamWidth;
 
 				//round to nearest 0.25 (higher)
 				//1.77-> 2.0f
@@ -631,9 +631,9 @@ public class Cameraman extends Entity
 			}
 
 			if(maxCamHeight<maxCamWidth)
-			//if((float)Display.getHeight()>(float)maxCamHeight*ZOOMto)
+			//if((float)LWJGLUtils.SCREEN_SIZE_Y>(float)maxCamHeight*ZOOMto)
 			{
-				ZOOMto=(float)Display.getHeight()/(float)maxCamHeight;
+				ZOOMto=(float)LWJGLUtils.SCREEN_SIZE_Y/(float)maxCamHeight;
 				ZOOMto=((float)(((((int)(ZOOMto*100))/25)+1)*25))/100.0f;
 
 				if(ZOOMto<MINZOOM)ZOOMto=MINZOOM;
