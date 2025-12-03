@@ -36,6 +36,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.InetAddress;
+import java.nio.charset.StandardCharsets;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
@@ -122,11 +123,6 @@ public class ClientMain {
 		clientInfo.displayHeight = LWJGLUtils.desktopDisplayHeight;
 		clientInfo.displayBPP = LWJGLUtils.desktopDisplayBPP;
 		clientInfo.displayFreq = LWJGLUtils.desktopDisplayFreq;
-		// TODO: Update display info using GLFW
-		//clientInfo.displayWidth = Display.getDesktopDisplayMode().getWidth();
-		//clientInfo.displayHeight = Display.getDesktopDisplayMode().getHeight();
-		//clientInfo.displayBPP = Display.getDesktopDisplayMode().getBitsPerPixel();
-		//clientInfo.displayFreq = Display.getDesktopDisplayMode().getFrequency();
 
 		clientInfo.shaderCompiled = LWJGLUtils.useShader;
 		clientInfo.canUseFBO = LWJGLUtils.useFBO;
@@ -878,10 +874,6 @@ public class ClientMain {
 			int height = LWJGLUtils.SCREEN_SIZE_Y;
 
 			int bytesPerPixel = 4;
-			//int width = 1280; //Display.getWidth();
-			//int height = 720; //Display.getHeight();
-
-			//int bytesPerPixel = 4; //Display.getDisplayMode().getBitsPerPixel() / 8; // Assuming a 32-bit display with a byte each for red, green, blue, and alpha.
 
 			ByteBuffer buffer = BufferUtils.createByteBuffer(width * height * bytesPerPixel);
 			glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
@@ -935,7 +927,7 @@ public class ClientMain {
 			try {
 				output = new BufferedWriter(new FileWriter(fileName));
 
-				String s = FileUtils.readFileToString(new File(Cache.cacheDir + "log.txt"));
+				String s = FileUtils.readFileToString(new File(Cache.cacheDir + "log.txt"), StandardCharsets.UTF_8);
 				s = s + "\n";
 				output.write(s);
 

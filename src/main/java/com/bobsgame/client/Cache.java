@@ -474,7 +474,7 @@ public class Cache
 
 		try
 		{
-			fileURL = new URL(bigDataURL+fileName);
+			fileURL = java.net.URI.create(bigDataURL+fileName).toURL();
 		}
 		catch (MalformedURLException e1)
 		{
@@ -643,7 +643,7 @@ public class Cache
 
 		try
 		{
-			fileURL = new URL(bigDataURL+fileName);
+			fileURL = java.net.URI.create(bigDataURL+fileName).toURL();
 		}
 		catch (MalformedURLException e1)
 		{
@@ -786,7 +786,7 @@ public class Cache
 
 			try
 			{
-				fileURL = new URL(bigDataURL+fileName);
+				fileURL = java.net.URI.create(bigDataURL+fileName).toURL();
 			}
 			catch (MalformedURLException e1)
 			{
@@ -851,7 +851,7 @@ public class Cache
 
 			try
 			{
-				fileURL = new URL(smallDataURL+fileName);
+				fileURL = java.net.URI.create(smallDataURL+fileName).toURL();
 			}
 			catch (MalformedURLException e1)
 			{

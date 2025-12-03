@@ -10,9 +10,6 @@ import static org.lwjgl.opengl.GL11.*;
 
 import org.slf4j.LoggerFactory;
 
-<<<<<<< HEAD
-=======
-
 >>>>>>> main
 import com.bobsgame.client.Texture;
 

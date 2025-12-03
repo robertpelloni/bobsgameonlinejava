@@ -377,12 +377,11 @@ public class Settings
 		//Gson gson = new Gson();
 		//return gson.toJson(this);
 
-		JsonParser parser = new JsonParser();
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
 		String jsonString = gson.toJson(this);
 
-		JsonElement el = parser.parse(jsonString);
+		JsonElement el = JsonParser.parseString(jsonString);
 		jsonString = gson.toJson(el); // done
 
 		return jsonString;

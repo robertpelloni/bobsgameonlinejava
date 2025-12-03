@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 import com.bobsgame.client.Texture;
 <<<<<<< HEAD
 =======
-
 >>>>>>> main
 
 import ch.qos.logback.classic.Logger;

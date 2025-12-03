@@ -829,7 +829,7 @@ public class PlayerEditMenu extends MenuPanel
 		URL url = null;
 		try
 		{
-			url = new URL(GEOCODER_REQUEST_PREFIX_FOR_XML + "?q=" + URLEncoder.encode(address, "UTF-8"));
+			url = java.net.URI.create(GEOCODER_REQUEST_PREFIX_FOR_XML + "?q=" + URLEncoder.encode(address, "UTF-8")).toURL();
 		}
 		catch (MalformedURLException e1){e1.printStackTrace();return null;}
 		catch (UnsupportedEncodingException e1){e1.printStackTrace();return null;}
@@ -1027,7 +1027,7 @@ public class PlayerEditMenu extends MenuPanel
 		URL url = null;
 		try
 		{
-			url = new URL(GEOCODER_REQUEST_PREFIX_FOR_XML + "?address=" + URLEncoder.encode(address, "UTF-8") + "&sensor=false");
+			url = java.net.URI.create(GEOCODER_REQUEST_PREFIX_FOR_XML + "?address=" + URLEncoder.encode(address, "UTF-8") + "&sensor=false").toURL();
 		}
 		catch (MalformedURLException e1){e1.printStackTrace();return null;}
 		catch (UnsupportedEncodingException e1){e1.printStackTrace();return null;}
@@ -1497,7 +1497,7 @@ public class PlayerEditMenu extends MenuPanel
 								URL url = null;
 								try
 								{
-									url = new URL("http://www.bobsgame.com/facebook.php?u="+GameSave().userID);
+									url = java.net.URI.create("http://www.bobsgame.com/facebook.php?u="+GameSave().userID).toURL();
 								}
 								catch (MalformedURLException e)
 								{
