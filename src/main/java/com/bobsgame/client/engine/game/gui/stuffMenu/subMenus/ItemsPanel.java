@@ -1,7 +1,7 @@
 package com.bobsgame.client.engine.game.gui.stuffMenu.subMenus;
+import com.bobsgame.client.LWJGLUtils;
 import java.util.ArrayList;
 
-import org.lwjgl.opengl.Display;
 
 import com.bobsgame.client.engine.game.Item;
 import com.bobsgame.client.engine.game.gui.stuffMenu.SubPanel;
@@ -157,7 +157,7 @@ public class ItemsPanel extends SubPanel
 
 		for(int i=0;i<itemDialogLayout.length;i++)
 		{
-			itemDialogLayout[i].setMaxSize((int)((Display.getWidth()*StuffMenu().subPanelScreenWidthPercent)*0.80f), 500);
+			itemDialogLayout[i].setMaxSize((int)((LWJGLUtils.SCREEN_SIZE_X*StuffMenu().subPanelScreenWidthPercent)*0.80f), 500);
 		}
 
 

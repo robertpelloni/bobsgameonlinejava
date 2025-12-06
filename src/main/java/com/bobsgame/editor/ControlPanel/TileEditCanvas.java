@@ -147,10 +147,10 @@ public class TileEditCanvas extends JComponent implements MouseMotionListener, M
 	@Override
 	public void mouseClicked(MouseEvent me)
 	{//===============================================================================================
-		int leftMask = InputEvent.BUTTON1_MASK;
-		int rightMask = InputEvent.BUTTON3_MASK;
+		int leftMask = InputEvent.BUTTON1_DOWN_MASK;
+		int rightMask = InputEvent.BUTTON3_DOWN_MASK;
 
-		int ctrlClickMask = InputEvent.BUTTON1_MASK + InputEvent.CTRL_MASK;
+		int ctrlClickMask = InputEvent.BUTTON1_DOWN_MASK | InputEvent.CTRL_DOWN_MASK;
 
 
 
@@ -159,7 +159,7 @@ public class TileEditCanvas extends JComponent implements MouseMotionListener, M
 			&& me.getX() > EditGrid_x
 			&& me.getX() < EditGrid_x +(EditZoom * 8))
 		{
-			if(me.getModifiers() == leftMask) //&& E.tileCanvas.tileSelected!=0 //palettePanel.colorSelected != E.project.getSelectedPalette().num_Colors  &&
+			if(me.getModifiersEx() == leftMask) //&& E.tileCanvas.tileSelected!=0 //palettePanel.colorSelected != E.project.getSelectedPalette().num_Colors  &&
 			{
 				if(me.getClickCount() == 2)
 				{
@@ -177,7 +177,7 @@ public class TileEditCanvas extends JComponent implements MouseMotionListener, M
 				paint();
 
 			}
-			else if((me.getModifiers() == rightMask || me.getModifiers() == ctrlClickMask))
+			else if((me.getModifiersEx() == rightMask || me.getModifiersEx() == ctrlClickMask))
 			{
 				selectColor(Project.tileset.getPixel(EditorMain.tileCanvas.tileSelected, (me.getX() - EditGrid_x) / EditZoom, (me.getY() - EditGrid_y) / EditZoom));
 
@@ -195,7 +195,7 @@ public class TileEditCanvas extends JComponent implements MouseMotionListener, M
 	@Override
 	public void mouseReleased(MouseEvent me)
 	{//===============================================================================================
-		int leftMask = InputEvent.BUTTON1_MASK;
+		int leftMask = InputEvent.BUTTON1_DOWN_MASK;
 
 
 		if(me.getY() > EditGrid_y
@@ -203,7 +203,7 @@ public class TileEditCanvas extends JComponent implements MouseMotionListener, M
 			me.getX() > EditGrid_x
 			&& me.getX() < EditGrid_x + (EditZoom * 8))
 		{
-			if(me.getModifiers() == leftMask)//colorSelected != E.project.getSelectedPalette().num_Colors &&
+			if(me.getModifiersEx() == leftMask)//colorSelected != E.project.getSelectedPalette().num_Colors &&
 			{
 
 				EditorMain.tileCanvas.paint(EditorMain.tileCanvas.tileSelected);
@@ -231,14 +231,14 @@ public class TileEditCanvas extends JComponent implements MouseMotionListener, M
 	@Override
 	public void mouseDragged(MouseEvent me)
 	{//===============================================================================================
-		int leftMask = InputEvent.BUTTON1_MASK;
+		int leftMask = InputEvent.BUTTON1_DOWN_MASK;
 
 			if(me.getY() > EditGrid_y
 			&& me.getY() < EditGrid_y + (EditZoom * 8)
 			&& me.getX() > EditGrid_x
 			&& me.getX() < EditGrid_x + (EditZoom * 8))
 		{
-			if(me.getModifiers() == leftMask)//colorSelected != E.project.getSelectedPalette().num_Colors /*&& E.tileCanvas.tileSelected!=0*/ &&
+			if(me.getModifiersEx() == leftMask)//colorSelected != E.project.getSelectedPalette().num_Colors /*&& E.tileCanvas.tileSelected!=0*/ &&
 			{
 				Project.tileset.setPixel(EditorMain.tileCanvas.tileSelected, (me.getX() - EditGrid_x) / EditZoom, (me.getY() - EditGrid_y) / EditZoom, EditorMain.controlPanel.paletteCanvas.colorSelected);
 

@@ -303,10 +303,10 @@ public class PaletteCanvas extends JComponent implements MouseMotionListener, Mo
 	@Override
 	public void mouseReleased(MouseEvent me)
 	{//===============================================================================================
-		int leftMask = InputEvent.BUTTON1_MASK;
-		int rightMask = InputEvent.BUTTON3_MASK;
-		int shiftClickMask = InputEvent.BUTTON1_MASK + InputEvent.SHIFT_MASK;
-		int ctrlClickMask = InputEvent.BUTTON1_MASK + InputEvent.CTRL_MASK;
+		int leftMask = InputEvent.BUTTON1_DOWN_MASK;
+		int rightMask = InputEvent.BUTTON3_DOWN_MASK;
+		int shiftClickMask = InputEvent.BUTTON1_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK;
+		int ctrlClickMask = InputEvent.BUTTON1_DOWN_MASK | InputEvent.CTRL_DOWN_MASK;
 
 		if(
 				me.getY() > PaletteGrid_y &&
@@ -319,19 +319,19 @@ public class PaletteCanvas extends JComponent implements MouseMotionListener, Mo
 			int cs = (me.getY() - PaletteGrid_y) / swathSize * colorsPerRow + (me.getX() - PaletteGrid_x) / swathSize;
 
 
-			if(me.getModifiers() == leftMask)
+			if(me.getModifiersEx() == leftMask)
 			{
 				setText("PaletteCanvas: Color NOT Moved- hold [SHIFT] to move");//bob
 				return;
 			}
 			else
-			if(me.getModifiers() == shiftClickMask)
+			if(me.getModifiersEx() == shiftClickMask)
 			{
 				//move
 				moveColor(cs,draggedColor);
 			}
 			else
-			if((me.getModifiers() == rightMask || me.getModifiers() == ctrlClickMask))
+			if((me.getModifiersEx() == rightMask || me.getModifiersEx() == ctrlClickMask))
 			{
 				//copy
 				copyColor(cs,draggedColor);

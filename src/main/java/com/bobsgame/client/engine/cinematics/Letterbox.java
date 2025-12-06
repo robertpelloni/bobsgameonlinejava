@@ -1,8 +1,8 @@
 package com.bobsgame.client.engine.cinematics;
+import com.bobsgame.client.LWJGLUtils;
 
 import static org.lwjgl.opengl.GL11.glTexImage2D;
 
-import org.lwjgl.opengl.Display;
 
 import com.bobsgame.client.GLUtils;
 import com.bobsgame.client.engine.Engine;
@@ -84,7 +84,7 @@ public class Letterbox extends EnginePart
 	public void setOn(int ticksSlideDuration, float percentY)
 	{//=========================================================================================================================
 		this.ticksSlideDuration = ticksSlideDuration;
-		sizeY = (int)(Display.getHeight()*percentY);
+		sizeY = (int)(LWJGLUtils.SCREEN_SIZE_Y*percentY);
 		startTime = System.currentTimeMillis();
 		on=true;
 
@@ -153,9 +153,9 @@ public class Letterbox extends EnginePart
 	//=========================================================================================================================
 	public void render()
 	{//=========================================================================================================================
-		GLUtils.drawFilledRect(color.getRed(),color.getGreen(),color.getBlue(), 0, Display.getWidth(), 0, sizeY, alpha);
+		GLUtils.drawFilledRect(color.getRed(),color.getGreen(),color.getBlue(), 0, LWJGLUtils.SCREEN_SIZE_X, 0, sizeY, alpha);
 
-		GLUtils.drawFilledRect(color.getRed(),color.getGreen(),color.getBlue(), 0, Display.getWidth(), Display.getHeight()-sizeY, Display.getHeight(), alpha);
+		GLUtils.drawFilledRect(color.getRed(),color.getGreen(),color.getBlue(), 0, LWJGLUtils.SCREEN_SIZE_X, LWJGLUtils.SCREEN_SIZE_Y-sizeY, LWJGLUtils.SCREEN_SIZE_Y, alpha);
 	}
 
 

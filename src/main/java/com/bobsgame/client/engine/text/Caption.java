@@ -2,7 +2,7 @@ package com.bobsgame.client.engine.text;
 
 import static org.lwjgl.opengl.GL11.glTexImage2D;
 
-import slick.Texture;
+import com.bobsgame.client.Texture;
 
 
 import java.nio.ByteBuffer;

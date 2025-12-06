@@ -10,9 +10,7 @@ import static org.lwjgl.opengl.GL11.*;
 
 import org.slf4j.LoggerFactory;
 
-import slick.ImageData;
-import slick.InternalTextureLoader;
-import slick.Texture;
+import com.bobsgame.client.Texture;
 
 import ch.qos.logback.classic.Logger;
 
@@ -992,100 +990,6 @@ public class Light extends Entity
 	}
 
 
-	public class BufferedImageData implements ImageData
-	{
-
-		private int width;
-		private int height;
-
-		private byte[] byteArray;
-		private ByteBuffer byteBuffer;
-
-		private int texWidth;
-		private int texHeight;
-
-
-		public BufferedImageData(BufferedImage bufferedImage)
-		{
-			this.width = bufferedImage.getWidth();
-			this.height = bufferedImage.getHeight();
-
-			this.texWidth = InternalTextureLoader.get2Fold(width);
-			this.texHeight = InternalTextureLoader.get2Fold(height);
-
-			byteArray = new byte[texWidth*texHeight*4];
-
-			//direct method, uses ram outside of the JVM
-			byteBuffer = ByteBuffer.allocateDirect(byteArray.length);
-			byteBuffer.order(ByteOrder.nativeOrder());
-
-			for(int y=0;y<height;y++)
-			for(int x=0;x<width;x++)
-			{
-				int argb = bufferedImage.getRGB(x, y);
-				int alpha = (argb>>24)%256;
-				int red = (argb>>16)%256;
-				int green = (argb>>8)%256;
-				int blue = (argb)%256;
-
-				int i = (y*texWidth)+x;
-
-				byteArray[(i*4)+0]=(byte)red;
-				byteArray[(i*4)+1]=(byte)green;
-				byteArray[(i*4)+2]=(byte)blue;
-				byteArray[(i*4)+3]=(byte)alpha;
-			}
-
-			byteBuffer.put(byteArray);
-			//byteBuffer.flip();
-			byteBuffer.rewind();
-		}
-
-		/**
-		 * @see org.newdawn.slick.opengl.ImageData#getDepth()
-		 */
-		public int getDepth() {
-			return 32;
-		}
-
-		/**
-		 * @see org.newdawn.slick.opengl.ImageData#getHeight()
-		 */
-		public int getHeight() {
-			return height;
-		}
-
-		/**
-		 * @see org.newdawn.slick.opengl.ImageData#getImageBufferData()
-		 */
-		public ByteBuffer getImageBufferData() {
-			return byteBuffer;
-		}
-
-		/**
-		 * @see org.newdawn.slick.opengl.ImageData#getTexHeight()
-		 */
-		public int getTexHeight() {
-			return texHeight;
-		}
-
-		/**
-		 * @see org.newdawn.slick.opengl.ImageData#getTexWidth()
-		 */
-		public int getTexWidth() {
-			return texWidth;
-		}
-
-		/**
-		 * @see org.newdawn.slick.opengl.ImageData#getWidth()
-		 */
-		public int getWidth() {
-			return width;
-		}
-
-
-
-	}
 
 
 

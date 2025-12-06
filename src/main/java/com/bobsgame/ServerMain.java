@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
 import com.bobsgame.server.GameServerTCP;
 import com.bobsgame.server.IndexClientTCP;
@@ -539,7 +540,7 @@ public class ServerMain
 							//DONE: write system stats out to /var/www/stats.htm
 							try
 							{
-								FileUtils.writeStringToFile(new File("/var/www/html/stats.html"),statsString,false);
+								FileUtils.writeStringToFile(new File("/var/www/html/stats.html"),statsString, StandardCharsets.UTF_8, false);
 							}
 							catch(IOException e)
 							{
@@ -593,7 +594,7 @@ public class ServerMain
 		{
 			try
 			{
-				HttpURLConnection con = (HttpURLConnection) new URL("http://checkip.amazonaws.com").openConnection();
+				HttpURLConnection con = (HttpURLConnection) java.net.URI.create("http://checkip.amazonaws.com").toURL().openConnection();
 				//con.setRequestMethod("GET");
 				//con.getOutputStream().write("LOGIN".getBytes("UTF-8"));
 				BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
@@ -645,149 +646,7 @@ public class ServerMain
 
 		//System.exit(0);
 
-
-		/*
-
-		String password = "";
-		List<String> myList = null;
-		try
-		{
-			myList=gameServerTCP.new Sampler().sampler(4);
-		}
-		catch(FileNotFoundException e1)
-		{
-			e1.printStackTrace();
-		}
-		catch(IOException e1)
-		{
-			e1.printStackTrace();
-		}
-		for(int index = 0;index<myList.size();index++)
-		{
-			password = password + myList.get(index).trim()+" ";
-		}
-		password = password.trim();
-
-		System.out.println(password);
-
-
-
-		addKeyListener(this);
-		addMouseWheelListener(this);
-
-		addWindowListener(this);
-		setLayout(new BorderLayout());
-
-
-		setSize(400, 1400);
-
-		//setBackground(Color.GREEN);
-		//setForeground(Color.WHITE);
-
-		setVisible(true);
-		toFront();
-		setExtendedState(ICONIFIED);
-
-
-		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-
-		//ScrollPane textScrollPane = new ScrollPane(ScrollPane.SCROLLBARS_AS_NEEDED);
-
-
-		//add(textScrollPane,BorderLayout.CENTER);
-
-
-		Panel topPanel = new Panel();
-
-		topPanel.setBackground(Color.DARK_GRAY);
-
-
-
-		//-----------
-
-			Panel connectionsPanel = new Panel();
-
-			connectionsPanel.setBackground(Color.BLACK);
-			connectionsPanel.setForeground(Color.GREEN);
-
-			Label connectionsLabel = new Label("Connections:");
-			Label connectionsText = new Label("0");
-
-			connectionsPanel.add(connectionsLabel);
-			connectionsPanel.add(connectionsText);
-
-
-		//---------
-
-
-
-			Panel uptimePanel = new Panel();
-
-			uptimePanel.setBackground(Color.BLACK);
-			uptimePanel.setForeground(Color.GREEN);
-
-			Label uptimeLabel = new Label("Uptime:");
-			Label uptimeText = new Label("0");
-
-			uptimePanel.add(uptimeLabel);
-			uptimePanel.add(uptimeText);
-
-
-		topPanel.add(connectionsPanel);
-		topPanel.add(uptimePanel);
-
-
-
-		add(topPanel,BorderLayout.NORTH);
-
-
-
-		TextArea textArea = new TextArea("",0,0,TextArea.SCROLLBARS_VERTICAL_ONLY);
-		textArea.setText("Server started.");
-
-		textArea.setBackground(Color.BLACK);
-		textArea.setForeground(Color.GREEN);
-
-		textArea.append("\nWaiting for users.");
-
-
-		//textScrollPane.add(textArea);
-
-
-		add(textArea, BorderLayout.CENTER);
-
-
-
-		//textScrollPane.doLayout();
-		//doLayout();
-
-
-
-		//textScrollPane.repaint();
-		repaint();
-
-
-*/
 		//TODO: load log file
-
-
-		/*JEditorPane editorPane = new JEditorPane();
-		editorPane.setEditable(false);
-		editorPane.setText("hello");
-
-		//Put the editor pane in a scroll pane.
-		ScrollPane editorScrollPane = new ScrollPane(ScrollPane.SCROLLBARS_ALWAYS);
-		editorScrollPane.add(editorPane);
-		editorScrollPane.setPreferredSize(new Dimension(250, 145));
-		editorScrollPane.setMinimumSize(new Dimension(10, 10));
-
-		add(editorScrollPane,BorderLayout.CENTER);
-
-		editorScrollPane.doLayout();*/
-
-
-
-
 
 	}
 
