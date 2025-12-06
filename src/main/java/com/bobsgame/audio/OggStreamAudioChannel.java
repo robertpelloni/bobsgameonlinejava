@@ -8,7 +8,7 @@ import java.nio.IntBuffer;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.openal.AL10;
 import org.lwjgl.openal.AL11;
-import org.lwjgl.openal.OpenALException;
+//import org.lwjgl.openal.OpenALException;
 
 import com.bobsgame.shared.Utils;
 
@@ -17,10 +17,12 @@ public class OggStreamAudioChannel extends AudioChannel {
 	String fileName;
 
 	public OggStreamAudioChannel(URL fileURL) {
+        super(-1);
 		this.fileURL = fileURL;
 	}
 
 	public OggStreamAudioChannel(String fileName) {
+        super(-1);
 		this.fileName = fileName;
 	}
 
@@ -195,7 +197,7 @@ public class OggStreamAudioChannel extends AudioChannel {
 				int format = audio.getChannels() > 1 ? AL10.AL_FORMAT_STEREO16 : AL10.AL_FORMAT_MONO16;
 				try {
 					AL10.alBufferData(bufferId, format, bufferData, audio.getRate());
-				} catch (OpenALException e) {
+				} catch (Exception e) {
 					System.err.println("Failed to loop buffer: " + bufferId + " " + format + " " + count + " " + audio.getRate() + " " + e);
 					return false;
 				}
@@ -222,7 +224,7 @@ public class OggStreamAudioChannel extends AudioChannel {
 				init();
 			}
 
-			float sampleRate =a udio.getRate();
+			float sampleRate = audio.getRate();
 			float sampleSize;
 			if (audio.getChannels() > 1) {
 				sampleSize=4; // AL10.AL_FORMAT_STEREO16

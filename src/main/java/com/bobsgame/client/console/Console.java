@@ -3,7 +3,6 @@ package com.bobsgame.client.console;
 import java.util.ArrayList;
 
 
-import org.lwjgl.opengl.Display;
 import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.classic.Logger;
@@ -272,7 +271,7 @@ public class Console
 					if(x==-1)
 					{
 						//x=LWJGLUtils.SCREEN_SIZE_X/2;// make this get width of string to center it
-						x = Display.getWidth()/2-((GLUtils.font.getWidth(dt.text)+3)/2);
+						x = LWJGLUtils.SCREEN_SIZE_X/2-((GLUtils.font.getWidth(dt.text)+3)/2);
 					}
 
 

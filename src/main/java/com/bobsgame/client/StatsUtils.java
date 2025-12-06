@@ -2,7 +2,6 @@ package com.bobsgame.client;
 
 import java.lang.management.ManagementFactory;
 
-import org.lwjgl.Sys;
 import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.classic.Logger;
@@ -12,6 +11,8 @@ import com.bobsgame.client.console.ConsoleText;
 import com.bobsgame.client.state.State;
 import com.bobsgame.net.BobNet;
 import com.bobsgame.shared.BobColor;
+import org.lwjgl.Version;
+
 //=========================================================================================================================
 public class StatsUtils
 {//=========================================================================================================================
@@ -288,7 +289,7 @@ public class StatsUtils
 
 //		Console.debug("Display Adapter: " + Display.getAdapter());
 //		Console.debug("Display Driver Version: " + Display.getVersion());
-		Console.debug("LWJGL Version: " + Sys.getVersion() + " | 64 Bit: " + Sys.is64Bit());
+		Console.debug("LWJGL Version: " + Version.getVersion());
 //		Console.debug("LWJGL Platform: " + LWJGLUtil.getPlatformName());
 //		Console.debug("Num CPUs: " +rt.availableProcessors());
 

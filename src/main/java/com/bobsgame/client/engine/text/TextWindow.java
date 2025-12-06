@@ -21,7 +21,7 @@ import java.nio.ByteOrder;
 //import org.lwjgl.input.Keyboard;
         import org.slf4j.LoggerFactory;
 
-import slick.Texture;
+import com.bobsgame.client.Texture;
 
 import ch.qos.logback.classic.Logger;
 
