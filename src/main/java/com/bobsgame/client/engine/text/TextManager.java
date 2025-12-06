@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 
 import com.bobsgame.client.Texture;
 
-
 import ch.qos.logback.classic.Logger;
 
 import com.bobsgame.client.GLUtils;

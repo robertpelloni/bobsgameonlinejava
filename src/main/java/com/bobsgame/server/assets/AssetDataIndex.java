@@ -1,6 +1,7 @@
 package com.bobsgame.server.assets;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -63,7 +64,7 @@ public class AssetDataIndex
 
 		try
 		{
-			b64List = IOUtils.readLines(ServerMain.class.getClassLoader().getResourceAsStream("data/DialogueData"));
+			b64List = IOUtils.readLines(ServerMain.class.getClassLoader().getResourceAsStream("data/DialogueData"), StandardCharsets.UTF_8);
 		}
 		catch(IOException e)
 		{
@@ -120,7 +121,7 @@ public class AssetDataIndex
 
 		try
 		{
-			b64List = IOUtils.readLines(ServerMain.class.getClassLoader().getResourceAsStream("data/CutsceneEventData"));
+			b64List = IOUtils.readLines(ServerMain.class.getClassLoader().getResourceAsStream("data/CutsceneEventData"), StandardCharsets.UTF_8);
 		}
 		catch(IOException e)
 		{
@@ -179,7 +180,7 @@ public class AssetDataIndex
 
 		try
 		{
-			b64List = IOUtils.readLines(ServerMain.class.getClassLoader().getResourceAsStream("data/FlagData"));
+			b64List = IOUtils.readLines(ServerMain.class.getClassLoader().getResourceAsStream("data/FlagData"), StandardCharsets.UTF_8);
 		}
 		catch(IOException e)
 		{
@@ -232,7 +233,7 @@ public class AssetDataIndex
 
 		try
 		{
-			b64List = IOUtils.readLines(ServerMain.class.getClassLoader().getResourceAsStream("data/GameStringData"));
+			b64List = IOUtils.readLines(ServerMain.class.getClassLoader().getResourceAsStream("data/GameStringData"), StandardCharsets.UTF_8);
 		}
 		catch(IOException e)
 		{
@@ -289,7 +290,7 @@ public class AssetDataIndex
 
 		try
 		{
-			mapB64Strings = IOUtils.readLines(ServerMain.class.getClassLoader().getResourceAsStream("data/MapData"));
+			mapB64Strings = IOUtils.readLines(ServerMain.class.getClassLoader().getResourceAsStream("data/MapData"), StandardCharsets.UTF_8);
 		}
 		catch(IOException e)
 		{
@@ -409,7 +410,7 @@ public class AssetDataIndex
 
 		try
 		{
-			b64List = IOUtils.readLines(ServerMain.class.getClassLoader().getResourceAsStream("data/MusicData"));
+			b64List = IOUtils.readLines(ServerMain.class.getClassLoader().getResourceAsStream("data/MusicData"), StandardCharsets.UTF_8);
 		}
 		catch(IOException e)
 		{
@@ -465,7 +466,7 @@ public class AssetDataIndex
 
 		try
 		{
-			b64List = IOUtils.readLines(ServerMain.class.getClassLoader().getResourceAsStream("data/SkillData"));
+			b64List = IOUtils.readLines(ServerMain.class.getClassLoader().getResourceAsStream("data/SkillData"), StandardCharsets.UTF_8);
 		}
 		catch(IOException e)
 		{
@@ -522,7 +523,7 @@ public class AssetDataIndex
 
 		try
 		{
-			b64List = IOUtils.readLines(ServerMain.class.getClassLoader().getResourceAsStream("data/SoundData"));
+			b64List = IOUtils.readLines(ServerMain.class.getClassLoader().getResourceAsStream("data/SoundData"), StandardCharsets.UTF_8);
 		}
 		catch(IOException e)
 		{
@@ -574,7 +575,7 @@ public class AssetDataIndex
 
 		try
 		{
-			b64List = IOUtils.readLines(ServerMain.class.getClassLoader().getResourceAsStream("data/SpriteData"));
+			b64List = IOUtils.readLines(ServerMain.class.getClassLoader().getResourceAsStream("data/SpriteData"), StandardCharsets.UTF_8);
 		}
 		catch(IOException e)
 		{
