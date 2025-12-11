@@ -295,7 +295,24 @@ public class StatsUtils
 
 
 
-		//TODO: mxbeans get arch, cores, more OS information
+		// OS Information
+		Console.debug("OS Name: " + System.getProperty("os.name"));
+		Console.debug("OS Arch: " + System.getProperty("os.arch"));
+		Console.debug("OS Version: " + System.getProperty("os.version"));
+		Console.debug("Available Processors (Cores): " + rt.availableProcessors());
+
+		java.lang.management.OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
+		Console.debug("System Load Average: " + osBean.getSystemLoadAverage());
+
+        // Try to cast to com.sun.management.OperatingSystemMXBean for more info if available
+        if (osBean instanceof com.sun.management.OperatingSystemMXBean) {
+            com.sun.management.OperatingSystemMXBean sunOsBean = (com.sun.management.OperatingSystemMXBean) osBean;
+            Console.debug("Total Physical Memory: " + sunOsBean.getTotalMemorySize() / (1024*1024) + " MB");
+            Console.debug("Free Physical Memory: " + sunOsBean.getFreeMemorySize() / (1024*1024) + " MB");
+            Console.debug("Process CPU Load: " + String.format("%.2f", sunOsBean.getProcessCpuLoad() * 100) + "%");
+            Console.debug("System CPU Load: " + String.format("%.2f", sunOsBean.getCpuLoad() * 100) + "%");
+        }
+
 		//TODO: lwjgl can get graphics driver information, need to get more of that.
 		//TODO: slick-network-game example gets sound card info, joystick info, part of slick. need to use this.
 
