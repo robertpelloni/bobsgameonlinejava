@@ -49,6 +49,8 @@ import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.util.ArrayList;
@@ -250,6 +252,34 @@ public class Utils
             e.printStackTrace();
             return null;
         }
+    }
+
+    public static ByteBuffer ioResourceToByteBuffer(String resource, int bufferSize) throws IOException {
+        ByteBuffer buffer;
+
+        try (InputStream source = getResourceAsStream(resource)) {
+            if (source == null) return null;
+
+            try (ReadableByteChannel rbc = Channels.newChannel(source)) {
+                buffer = ByteBuffer.allocateDirect(bufferSize);
+
+                while (true) {
+                    int bytes = rbc.read(buffer);
+                    if (bytes == -1) {
+                        break;
+                    }
+                    if (buffer.remaining() == 0) {
+                        ByteBuffer newBuffer = ByteBuffer.allocateDirect(buffer.capacity() * 3 / 2);
+                        buffer.flip();
+                        newBuffer.put(buffer);
+                        buffer = newBuffer;
+                    }
+                }
+            }
+        }
+
+        buffer.flip();
+        return buffer;
     }
 
 
