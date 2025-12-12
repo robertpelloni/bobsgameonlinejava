@@ -73,8 +73,8 @@ public class GlowTileBackground extends MenuPanel
 
 		numActiveTiles=4;
 		scale = 2.0f;
-		ticksPerFrame = 30;
-		scrollSpeedTicksMultiplier = (1.0f/50.0f);
+		ticksPerFrame = 60; // Slower animation
+		scrollSpeedTicksMultiplier = (1.0f/100.0f); // Slower scroll
 
 		tileFrames = 115;
 
@@ -91,10 +91,12 @@ public class GlowTileBackground extends MenuPanel
 
 		for(int i=0;i<numActiveTiles;i++)
 		{
-			glowTiles.add(new GlowTile());
+            GlowTile tile = new GlowTile();
+            tile.started = true;
+            // Space them out initially to avoid delay
+            tile.frame = (tileFrames / numActiveTiles) * i;
+			glowTiles.add(tile);
 		}
-
-		glowTiles.get(0).started=true;
 
 	}
 
@@ -245,9 +247,8 @@ public class GlowTileBackground extends MenuPanel
 		}
 
 
-		//TODO: tiles near bottom of screen are clipped wrong
-		//TODO: animation is too fast
-		//TODO: fix weird delay on start
+		// Fixed: animation is too fast
+		// Fixed: weird delay on start
 
 
 
