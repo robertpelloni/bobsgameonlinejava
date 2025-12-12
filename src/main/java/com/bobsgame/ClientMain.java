@@ -287,9 +287,15 @@ public class ClientMain {
 				}
 
 				if(haveTime==false) {
-					log.error("Could not get time from NTP server!");
+					log.warn("Could not get time from NTP server! Falling back to local system time.");
 
-					//TODO: just set to local clock time.
+					Calendar localCalendar = Calendar.getInstance();
+					int hour = localCalendar.get(Calendar.HOUR_OF_DAY);
+					int minute = localCalendar.get(Calendar.MINUTE);
+					int second = localCalendar.get(Calendar.SECOND);
+					int day = localCalendar.get(Calendar.DAY_OF_WEEK) - 1;
+
+					clientGameEngine.clock.setTime(day, hour, minute, second);
 				}
 			}
 		}).start();
