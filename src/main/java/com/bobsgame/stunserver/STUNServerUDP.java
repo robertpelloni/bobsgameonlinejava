@@ -1,30 +1,26 @@
 package com.bobsgame.stunserver;
 
-import static org.jboss.netty.channel.Channels.pipeline;
-
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Vector;
 import java.util.concurrent.Executors;
 
 import com.bobsgame.STUNServerMain;
-import org.jboss.netty.bootstrap.ConnectionlessBootstrap;
-import org.jboss.netty.channel.AdaptiveReceiveBufferSizePredictorFactory;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ChannelPipeline;
-import org.jboss.netty.channel.ChannelPipelineFactory;
-import org.jboss.netty.channel.ChannelStateEvent;
-import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.channel.SimpleChannelHandler;
-import org.jboss.netty.channel.socket.DatagramChannelFactory;
-import org.jboss.netty.channel.socket.nio.NioDatagramChannelFactory;
-import org.jboss.netty.handler.codec.frame.DelimiterBasedFrameDecoder;
-import org.jboss.netty.handler.codec.frame.Delimiters;
-import org.jboss.netty.handler.codec.string.StringDecoder;
-import org.jboss.netty.handler.codec.string.StringEncoder;
-import org.jboss.netty.handler.execution.ExecutionHandler;
-import org.jboss.netty.handler.execution.OrderedMemoryAwareThreadPoolExecutor;
+import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelPipeline;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.DatagramPacket;
+import io.netty.channel.socket.nio.NioDatagramChannel;
+import io.netty.util.CharsetUtil;
+import io.netty.buffer.Unpooled;
+import io.netty.util.concurrent.DefaultEventExecutorGroup;
+import io.netty.util.concurrent.EventExecutorGroup;
 
 import org.slf4j.LoggerFactory;
 import ch.qos.logback.classic.Logger;
@@ -38,12 +34,12 @@ public class STUNServerUDP
 
 
 	//TODO: are we sure we want 16 threads??? optimise this.
-	static public ExecutionHandler executionHandler = new ExecutionHandler(new OrderedMemoryAwareThreadPoolExecutor(16, 1048576, 1048576));
+	static final EventExecutorGroup group = new DefaultEventExecutorGroup(16);
 
 
-	ConnectionlessBootstrap connectionlessBootstrap;
-	DatagramChannelFactory channelFactory;
+	Bootstrap connectionlessBootstrap;
 	Channel channel;
+    EventLoopGroup workerGroup;
 
 	public static Logger log = (Logger)LoggerFactory.getLogger(STUNServerUDP.class);
 
@@ -53,78 +49,30 @@ public class STUNServerUDP
 	{//===============================================================================================
 
 
-		channelFactory = new NioDatagramChannelFactory(Executors.newCachedThreadPool());
-		connectionlessBootstrap = new ConnectionlessBootstrap(channelFactory);
+        workerGroup = new NioEventLoopGroup();
+		connectionlessBootstrap = new Bootstrap();
+        connectionlessBootstrap.group(workerGroup)
+            .channel(NioDatagramChannel.class)
+            .handler(new ChannelInitializer<NioDatagramChannel>() {
+                @Override
+                public void initChannel(NioDatagramChannel ch) throws Exception {
+                    ChannelPipeline pipeline = ch.pipeline();
+                    pipeline.addLast(group, "handler", new UDPHandler());
+                }
+            });
 
-		final ChannelPipelineFactory perDatagramFactory = new ChannelPipelineFactory()
-		{
-
-			public ChannelPipeline getPipeline() throws Exception
-			{
-
-				//Create a default pipeline implementation.
-				ChannelPipeline pipeline = pipeline();
-
-
-
-				//Add the text line codec combination first,
-				pipeline.addLast("framer", new DelimiterBasedFrameDecoder(768, Delimiters.lineDelimiter()));//8192
-				pipeline.addLast("decoder", new StringDecoder());
-				pipeline.addLast("encoder", new StringEncoder());
-
-				//this is needed because of DB access stuff, otherwise threads will stall and drop packets
-				pipeline.addLast("execution-handler", executionHandler);//this helped when buffer got full, 49/100 -> 65/100
-
-
-				//and then business logic.
-				pipeline.addLast("handler", new UDPHandler());
-
-				return pipeline;
-
-				// Add your handlers here
-				//return Channels.pipeline();
-			}
-
-		};
-
-
-		connectionlessBootstrap.setPipelineFactory(perDatagramFactory);
-
-
-
-		//if i want a new pipeline for each datagram
-//		new ChannelPipelineFactory()
-//		{
-//			public ChannelPipeline getPipeline() throws Exception
-//			{
-//				return Channels.pipeline(new DistinctChannelPipelineHandler(perDatagramFactory));
-//			}
-//		});
-
-		int min = 64;
-		int init = 1024;
-		int max = 524288;//these don't matter so much?
-
-		connectionlessBootstrap.setOption("sendBufferSize", 524288);//if these are small it drops packets when sending 10000+
-		connectionlessBootstrap.setOption("receiveBufferSize", 524288);
-		connectionlessBootstrap.setOption("receiveBufferSizePredictorFactory", new AdaptiveReceiveBufferSizePredictorFactory(min,init,max));//this doesnt even seem to be needed?
-
-		//udpConnectionlessBootstrap.setOption("broadcast", "true");
-		connectionlessBootstrap.setOption("broadcast", "false");
-
-		//connectionlessBootstrap.setOption("reuseAddress", "true");
+		//connectionlessBootstrap.setOption("sendBufferSize", 524288);
+		//connectionlessBootstrap.setOption("receiveBufferSize", 524288);
+		//connectionlessBootstrap.setOption("broadcast", "false");
 
 		int serverPort = BobNet.STUNServerUDPPort;
-		//if(new File("/localServer").exists())serverPort++;
 
-		connectionlessBootstrap.setOption("localAddress", new InetSocketAddress(serverPort));
-		//connectionlessBootstrap.setOption("tcpNoDelay", true);
-
-		channel = connectionlessBootstrap.bind(new InetSocketAddress(serverPort));
-
-		log.info("udp Channel: "+channel.getId().toString());
-
-
+        try {
+		    channel = connectionlessBootstrap.bind(serverPort).sync().channel();
+		    log.info("udp Channel: "+channel.id().toString());
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
 	}
 
@@ -134,75 +82,33 @@ public class STUNServerUDP
 	//===============================================================================================
 	public void cleanup()
 	{//===============================================================================================
-		connectionlessBootstrap.releaseExternalResources();
+		workerGroup.shutdownGracefully();
 	}
 
-//	//===============================================================================================
-//	private static final class DistinctChannelPipelineHandler implements ChannelDownstreamHandler, ChannelUpstreamHandler
-//	{//===============================================================================================
-//		private ChannelPipelineFactory factory;
-//
-//		public DistinctChannelPipelineHandler(ChannelPipelineFactory factory)
-//		{
-//			this.factory = factory;
-//		}
-//
-//		public void handleUpstream(ChannelHandlerContext ctx, ChannelEvent e) throws Exception
-//		{
-//			ChannelPipeline pipeline = factory.getPipeline();
-//			pipeline.attach(ctx.getChannel(), ctx.getPipeline().getSink());
-//			pipeline.sendUpstream(e);
-//
-//			ctx.sendUpstream(e);
-//
-//		}
-//
-//		public void handleDownstream(ChannelHandlerContext ctx, ChannelEvent e) throws Exception
-//		{
-//			ChannelPipeline pipeline = factory.getPipeline();
-//			pipeline.attach(ctx.getChannel(), ctx.getPipeline().getSink());
-//			pipeline.sendDownstream(e);
-//
-//			ctx.sendDownstream(e);
-//		}
-//
-//	}
 
 	//===============================================================================================
-	public class UDPHandler extends SimpleChannelHandler
+	public class UDPHandler extends SimpleChannelInboundHandler<DatagramPacket>
 	{//===============================================================================================
 
 		//===============================================================================================
 		@Override
-		public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception
+		public void channelActive(ChannelHandlerContext ctx) throws Exception
 		{//===============================================================================================
-			log.debug("UDP channelConnected:"+e.getChannel().getId());
+			log.debug("UDP channelConnected:"+ctx.channel().id());
 		}
 		//===============================================================================================
 		@Override
-		public void channelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent e)
+		public void channelInactive(ChannelHandlerContext ctx) throws Exception
 		{//===============================================================================================
-			log.debug("UDP channelDisconnected:"+e.getChannel().getId());
-		}
-		//===============================================================================================
-		@Override
-		public void channelClosed(ChannelHandlerContext ctx, ChannelStateEvent e)
-		{//===============================================================================================
-			log.debug("UDP channelClosed:"+e.getChannel().getId());
-		}
-		//===============================================================================================
-		@Override
-		public void channelUnbound(ChannelHandlerContext ctx, ChannelStateEvent e)
-		{//===============================================================================================
-			log.debug("UDP channelUnbound:"+e.getChannel().getId());
+			log.debug("UDP channelDisconnected:"+ctx.channel().id());
 		}
 
 		//===============================================================================================
 		@Override
-		public void messageReceived(ChannelHandlerContext ctx, MessageEvent e)
+		protected void channelRead0(ChannelHandlerContext ctx, DatagramPacket packet) throws Exception
 		{//===============================================================================================
 
-			String s = (String) e.getMessage();
+			String s = packet.content().toString(CharsetUtil.UTF_8);
 
 			//if(BobNet.debugMode)
 			{
@@ -211,7 +117,7 @@ public class STUNServerUDP
 
 			STUNServerMain.totalConnections++;
 
-			if(s.startsWith(BobNet.STUN_Request)){incomingSTUNRequest(e);return;}
+			if(s.startsWith(BobNet.STUN_Request)){incomingSTUNRequest(packet, s);return;}
 
 
 		}
@@ -229,11 +135,11 @@ public class STUNServerUDP
 		public int user1Port = -1;
 		public int user2Port = -1;
 
-		public SocketAddress userIP1 = null;
-		public SocketAddress userIP2 = null;
+		public InetSocketAddress userIP1 = null;
+		public InetSocketAddress userIP2 = null;
 
 
-		public STUNRequest(long userID1, long userID2, SocketAddress userIP1, int user1Port)
+		public STUNRequest(long userID1, long userID2, InetSocketAddress userIP1, int user1Port)
 		{
 			lastHeardFromTime = System.currentTimeMillis();
 			this.userID1 = userID1;
@@ -321,10 +227,10 @@ public class STUNServerUDP
 	}
 
 	//===============================================================================================
-	private void incomingSTUNRequest(MessageEvent e)
+	private void incomingSTUNRequest(DatagramPacket packet, String s)
 	{//===============================================================================================
 
-		String s = (String) e.getMessage();
+		//String s = (String) e.getMessage();
 
 		//STUNRequest:userID,friendID
 		s = s.substring(s.indexOf(":")+1);
@@ -347,7 +253,7 @@ public class STUNServerUDP
 		if(r==null)
 		{
 			log.debug("Created request, waiting: userID: "+userID+" friendID:"+friendID);
-			addToSTUNRequestList(new STUNRequest(userID,friendID,e.getRemoteAddress(),port));
+			addToSTUNRequestList(new STUNRequest(userID,friendID,packet.sender(),port));
 		}
 		else
 		{
@@ -357,11 +263,16 @@ public class STUNServerUDP
 			{
 				log.debug("Found pair: userID2: "+r.userID2+" userID1:"+r.userID1);
 				//we have a completed pair
-				r.userIP2 = e.getRemoteAddress();
+				r.userIP2 = packet.sender();
 				r.user2Port = port;
 
-				channel.write(BobNet.STUN_Response+r.userID2+","+r.userIP2.toString()+","+r.user2Port+","+BobNet.endline,r.userIP1);
-				channel.write(BobNet.STUN_Response+r.userID1+","+r.userIP1.toString()+","+r.user1Port+","+BobNet.endline,r.userIP2);
+                channel.writeAndFlush(new DatagramPacket(
+                    Unpooled.copiedBuffer(BobNet.STUN_Response+r.userID2+","+r.userIP2.toString()+","+r.user2Port+","+BobNet.endline, CharsetUtil.UTF_8),
+                    r.userIP1));
+
+                channel.writeAndFlush(new DatagramPacket(
+                    Unpooled.copiedBuffer(BobNet.STUN_Response+r.userID1+","+r.userIP1.toString()+","+r.user1Port+","+BobNet.endline, CharsetUtil.UTF_8),
+                    r.userIP2));
 
 				//removeFromSTUNRequestList(r);
 			}
@@ -371,8 +282,13 @@ public class STUNServerUDP
 				{
 					log.debug("Found late pair: userID1: "+r.userID1+" userID2:"+r.userID2);
 
-					channel.write(BobNet.STUN_Response+r.userID2+","+r.userIP2.toString()+","+r.user2Port+","+BobNet.endline,r.userIP1);
-					channel.write(BobNet.STUN_Response+r.userID1+","+r.userIP1.toString()+","+r.user1Port+","+BobNet.endline,r.userIP2);
+                    channel.writeAndFlush(new DatagramPacket(
+                        Unpooled.copiedBuffer(BobNet.STUN_Response+r.userID2+","+r.userIP2.toString()+","+r.user2Port+","+BobNet.endline, CharsetUtil.UTF_8),
+                        r.userIP1));
+
+                    channel.writeAndFlush(new DatagramPacket(
+                        Unpooled.copiedBuffer(BobNet.STUN_Response+r.userID1+","+r.userIP1.toString()+","+r.user1Port+","+BobNet.endline, CharsetUtil.UTF_8),
+                        r.userIP2));
 				}
 				else
 				{

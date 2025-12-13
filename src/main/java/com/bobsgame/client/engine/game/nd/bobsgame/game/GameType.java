@@ -14,8 +14,49 @@ import com.google.gson.JsonParser;
 
 
 // =========================================================================================================================
-public class Settings
+public class GameType
 {// =========================================================================================================================
+
+    public String uuid = "";
+    public boolean downloaded = false;
+
+    public long creatorUserID = 0;
+    public String creatorUserName = "";
+    public long dateCreated = 0;
+    public long lastModified = 0;
+    public long howManyTimesUpdated = 0;
+    public long upVotes = 0;
+    public long downVotes = 0;
+    public String yourVote = "none";
+
+    public ArrayList<DifficultyType> difficultyTypes = new ArrayList<DifficultyType>();
+
+    public enum GameMode
+    {
+        DROP,
+        STACK,
+    }
+    public GameMode gameMode = GameMode.DROP;
+
+    public void applyDifficulty(String difficultyName) {
+        for(DifficultyType d : difficultyTypes) {
+            if(d.name.equalsIgnoreCase(difficultyName)) {
+                this.initialLineDropSpeedTicks = d.initialLineDropSpeedTicks;
+                this.minimumLineDropSpeedTicks = d.minimumLineDropSpeedTicks;
+                this.extraStage1Level = d.extraStage1Level;
+                this.extraStage2Level = d.extraStage2Level;
+                this.extraStage3Level = d.extraStage3Level;
+                this.extraStage4Level = d.extraStage4Level;
+                this.creditsLevel = d.creditsLevel;
+                this.garbageSpawnRuleAmount = d.playingFieldGarbageSpawnRuleAmount;
+                this.randomlyFillGrid = d.randomlyFillGrid;
+                this.randomlyFillGridStartY = d.randomlyFillGridStartY;
+                this.randomlyFillGridAmount = d.randomlyFillGridAmount;
+
+                // TODO: Handle block/piece type restrictions
+            }
+        }
+    }
 
 	//---------------------------------------------------
 	//controls
@@ -390,10 +431,10 @@ public class Settings
 
 
 	//=========================================================================================================================
-	public Settings fromGSON(String gsonString)
+	public GameType fromGSON(String gsonString)
 	{//=========================================================================================================================
 		Gson gson = new Gson();
-		return gson.fromJson(gsonString,Settings.class);
+		return gson.fromJson(gsonString,GameType.class);
 
 	}
 
@@ -411,7 +452,7 @@ public class Settings
 	}
 
 	//=========================================================================================================================
-	public Settings fromBase64GZippedGSON(String b64GZipJSON)
+	public GameType fromBase64GZippedGSON(String b64GZipJSON)
 	{//=========================================================================================================================
 
 		Gson gson = new Gson();
@@ -421,7 +462,7 @@ public class Settings
 
 		if(json==null||json.length()==0){return null;}
 
-		return gson.fromJson(json,Settings.class);
+		return gson.fromJson(json,GameType.class);
 
 	}
 

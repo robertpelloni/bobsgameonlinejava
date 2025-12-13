@@ -11,7 +11,7 @@ import com.bobsgame.client.GLUtils;
 import com.bobsgame.client.engine.game.nd.bobsgame.BobsGame;
 import com.bobsgame.client.engine.game.nd.bobsgame.game.BlockType.TurnFromBlockTypeToType;
 import com.bobsgame.client.engine.game.nd.bobsgame.game.GameLogic.MovementType;
-import com.bobsgame.client.engine.game.nd.bobsgame.game.Settings.*;
+import com.bobsgame.client.engine.game.nd.bobsgame.game.GameType.*;
 import com.bobsgame.shared.BobColor;
 
 import easing.Easing;
@@ -83,9 +83,9 @@ public class Grid
 	}
 
 	//=========================================================================================================================
-	public Settings Settings()
+	public GameType GameType()
 	{//=========================================================================================================================
-		return Game().Settings();
+		return Game().GameType();
 	}
 
 	//=========================================================================================================================
@@ -134,13 +134,13 @@ public class Grid
 	//=========================================================================================================================
 	public int h()
 	{//=========================================================================================================================
-		return Settings().gridHeight;
+		return GameType().gridHeight;
 	}
 
 	//=========================================================================================================================
 	public int w()
 	{//=========================================================================================================================
-		return Settings().gridWidth;
+		return GameType().gridWidth;
 	}
 
 	// =========================================================================================================================
@@ -305,13 +305,13 @@ public class Grid
 
 					Block a = remove(x,y);
 
-					Piece p = getRandomPiece(Settings().playingFieldPieceTypes, Settings().playingFieldBlockTypes);
+					Piece p = getRandomPiece(GameType().playingFieldPieceTypes, GameType().playingFieldBlockTypes);
 
 
 					int maxHeight = 0;
 
-					if(Settings().difficulty==Difficulty.HARD)maxHeight = h()/3;
-					if(Settings().difficulty==Difficulty.NORMAL)maxHeight = h()/2;
+					if(GameType().difficulty==Difficulty.HARD)maxHeight = h()/3;
+					if(GameType().difficulty==Difficulty.NORMAL)maxHeight = h()/2;
 					else maxHeight = (h()/3)*2;
 
 
@@ -350,9 +350,9 @@ public class Grid
 
 
 		ArrayList<BobColor> acceptableColors = new ArrayList<BobColor>();
-		for(int b=0;b<Settings().playingFieldBlockTypes.size();b++)
+		for(int b=0;b<GameType().playingFieldBlockTypes.size();b++)
 		{
-			BlockType blockType = Settings().playingFieldBlockTypes.get(b);
+			BlockType blockType = GameType().playingFieldBlockTypes.get(b);
 
 			if(blockType.colors!=null)
 			{
@@ -375,7 +375,7 @@ public class Grid
 
 			BobColor color = acceptableColors.get(Game().getRandomIntLessThan(acceptableColors.size()));
 
-			Piece p = getRandomPiece(Settings().playingFieldPieceTypes, Settings().playingFieldBlockTypes);
+			Piece p = getRandomPiece(GameType().playingFieldPieceTypes, GameType().playingFieldBlockTypes);
 
 			for(int i=0; i<p.blocks.size(); i++)
 			{
@@ -399,9 +399,9 @@ public class Grid
 
 
 		ArrayList<BobColor> acceptableColors = new ArrayList<BobColor>();
-		for(int b=0;b<Settings().playingFieldBlockTypes.size();b++)
+		for(int b=0;b<GameType().playingFieldBlockTypes.size();b++)
 		{
-			BlockType blockType = Settings().playingFieldBlockTypes.get(b);
+			BlockType blockType = GameType().playingFieldBlockTypes.get(b);
 
 			if(blockType.colors!=null)
 			{
@@ -419,7 +419,7 @@ public class Grid
 		{
 			BobColor color = acceptableColors.get(Game().getRandomIntLessThan(acceptableColors.size()));
 
-			Piece p = getRandomPiece(Settings().playingFieldPieceTypes, Settings().playingFieldBlockTypes);
+			Piece p = getRandomPiece(GameType().playingFieldPieceTypes, GameType().playingFieldBlockTypes);
 
 			for(int i=0; i<p.blocks.size(); i++)
 			{
@@ -442,7 +442,7 @@ public class Grid
 
 
 		ArrayList<BlockType> acceptableBlockTypes = new ArrayList<BlockType>();
-		for(int i=0;i<Settings().playingFieldBlockTypes.size();i++)acceptableBlockTypes.add(Settings().playingFieldBlockTypes.get(i));
+		for(int i=0;i<GameType().playingFieldBlockTypes.size();i++)acceptableBlockTypes.add(GameType().playingFieldBlockTypes.get(i));
 
 
 		//dont use the same color as left, above, or below
@@ -453,7 +453,7 @@ public class Grid
 
 		if(acceptableBlockTypes.size()>0)
 		{
-			PieceType pieceType = getRandomPieceType(Settings().playingFieldPieceTypes);
+			PieceType pieceType = getRandomPieceType(GameType().playingFieldPieceTypes);
 			Piece p = new Piece(game, this, pieceType, acceptableBlockTypes.get(Game().getRandomIntLessThan(acceptableBlockTypes.size())));
 
 			return p;
@@ -468,15 +468,15 @@ public class Grid
 
 
 
-		if(Settings().stackDontPutSameColorNextToEachOther)p = dontPutSameColorNextToEachOtherOrReturnNull(x,y);
-		if(Settings().stackDontPutSameBlockTypeNextToEachOther)p = dontPutSameBlockTypeNextToEachOtherOrReturnNull(x,y);
-		if(Settings().stackDontPutSameColorDiagonalOrNextToEachOtherReturnNull)p = dontPutSameColorDiagonalOrNextToEachOtherReturnNull(x,y);
+		if(GameType().stackDontPutSameColorNextToEachOther)p = dontPutSameColorNextToEachOtherOrReturnNull(x,y);
+		if(GameType().stackDontPutSameBlockTypeNextToEachOther)p = dontPutSameBlockTypeNextToEachOtherOrReturnNull(x,y);
+		if(GameType().stackDontPutSameColorDiagonalOrNextToEachOtherReturnNull)p = dontPutSameColorDiagonalOrNextToEachOtherReturnNull(x,y);
 
 		if(p!=null)
 		{
 			setPiece(p,x,y);
 
-			if(Settings().stackLeaveAtLeastOneGapPerRow)
+			if(GameType().stackLeaveAtLeastOneGapPerRow)
 			{
 
 				boolean isFull = true;
@@ -550,7 +550,7 @@ public class Grid
 
 			if(get(x,y)==null)
 			{
-				Piece p = getRandomPiece(Settings().playingFieldPieceTypes, Settings().playingFieldBlockTypes);
+				Piece p = getRandomPiece(GameType().playingFieldPieceTypes, GameType().playingFieldBlockTypes);
 				putPieceInGridCheckingForFillRules(p,x,y);
 			}
 		}
@@ -617,7 +617,7 @@ public class Grid
 				}
 				else
 				{
-					Piece p = getRandomPiece(Settings().playingFieldPieceTypes, Settings().playingFieldBlockTypes);
+					Piece p = getRandomPiece(GameType().playingFieldPieceTypes, GameType().playingFieldBlockTypes);
 					putPieceInGridCheckingForFillRules(p,x,y);
 					piecesPlaced++;
 				}
@@ -717,7 +717,7 @@ public class Grid
 			int y = h()-1;
 			for(int x=0;x<w();x++)
 			{
-				Piece p = getRandomPiece(Settings().playingFieldPieceTypes, Settings().playingFieldBlockTypes);
+				Piece p = getRandomPiece(GameType().playingFieldPieceTypes, GameType().playingFieldBlockTypes);
 				putPieceInGridCheckingForFillRules(p,x,y);
 			}
 
@@ -732,7 +732,7 @@ public class Grid
 	public void putGarbageBlock(int x, int y)
 	{//=========================================================================================================================
 
-		Piece p = getRandomPiece(Settings().garbagePieceTypes, Settings().garbageBlockTypes);
+		Piece p = getRandomPiece(GameType().garbagePieceTypes, GameType().garbageBlockTypes);
 		putPieceInGridCheckingForFillRules(p,x,y);
 
 	}
@@ -763,7 +763,7 @@ public class Grid
 
 
 		//make last row filled depending on garbage rule
-		if(Settings().garbageType == GarbageType.MATCH_BOTTOM_ROW)
+		if(GameType().garbageType == GarbageType.MATCH_BOTTOM_ROW)
 		{
 
 			int y = h()-1;
@@ -779,7 +779,7 @@ public class Grid
 		}
 
 
-		if(Settings().garbageType == GarbageType.RANDOM)
+		if(GameType().garbageType == GarbageType.RANDOM)
 		{
 
 			int y = h()-1;
@@ -796,7 +796,7 @@ public class Grid
 		}
 
 
-		if(Settings().garbageType == GarbageType.SET_PATTERN)
+		if(GameType().garbageType == GarbageType.SET_PATTERN)
 		{
 
 			int y = h()-1;
@@ -1634,17 +1634,17 @@ public class Grid
 			for(int y=-1;y<h();y++)
 			{
 
-				BobColor color = Settings().gridCheckeredBackgroundColor1;
+				BobColor color = GameType().gridCheckeredBackgroundColor1;
 
 				if(y%2==0)
 				{
-					if(x%2==0)color = Settings().gridCheckeredBackgroundColor1;
-					else color = Settings().gridCheckeredBackgroundColor2;
+					if(x%2==0)color = GameType().gridCheckeredBackgroundColor1;
+					else color = GameType().gridCheckeredBackgroundColor2;
 				}
 				else
 				{
-					if(x%2==0)color = Settings().gridCheckeredBackgroundColor2;
-					else color = Settings().gridCheckeredBackgroundColor1;
+					if(x%2==0)color = GameType().gridCheckeredBackgroundColor2;
+					else color = GameType().gridCheckeredBackgroundColor1;
 				}
 
 				float bgX = bgX() + (x*cellW());
@@ -1655,9 +1655,9 @@ public class Grid
 			}
 		}
 
-		float r = Settings().gridCheckeredBackgroundColor1.rf();
-		float g = Settings().gridCheckeredBackgroundColor1.gf();
-		float b = Settings().gridCheckeredBackgroundColor1.bf();
+		float r = GameType().gridCheckeredBackgroundColor1.rf();
+		float g = GameType().gridCheckeredBackgroundColor1.gf();
+		float b = GameType().gridCheckeredBackgroundColor1.bf();
 
 
 
@@ -1752,9 +1752,9 @@ public class Grid
 
 
 
-//			float r = Settings().gridBorderColor.rf() - (float)((float)(i-1)/(float)cellH());
-//			float g = Settings().gridBorderColor.gf() - (float)((float)(i-1)/(float)cellH());
-//			float b = Settings().gridBorderColor.bf() - (float)((float)(i-1)/(float)cellH());
+//			float r = GameType().gridBorderColor.rf() - (float)((float)(i-1)/(float)cellH());
+//			float g = GameType().gridBorderColor.gf() - (float)((float)(i-1)/(float)cellH());
+//			float b = GameType().gridBorderColor.bf() - (float)((float)(i-1)/(float)cellH());
 
 
 			float ratio = (float)((float)(i-1)/(float)cellH());
@@ -1765,9 +1765,9 @@ public class Grid
 
 			if(i<3)amt=1.0f;
 
-			float r = Settings().gridBorderColor.rf() - amt;
-			float g = Settings().gridBorderColor.gf() - amt;
-			float b = Settings().gridBorderColor.bf() - amt;
+			float r = GameType().gridBorderColor.rf() - amt;
+			float g = GameType().gridBorderColor.gf() - amt;
+			float b = GameType().gridBorderColor.bf() - amt;
 
 			if(r<0)r=0;
 			if(g<0)g=0;
@@ -2595,13 +2595,13 @@ public class Grid
 	{//=========================================================================================================================
 
 		ArrayList<Piece> tempBag = new ArrayList<Piece>();
-		for(int i=0;i<Settings().normalPieceTypes.size();i++)
+		for(int i=0;i<GameType().normalPieceTypes.size();i++)
 		{
-			PieceType type = Settings().normalPieceTypes.get(i);
+			PieceType type = GameType().normalPieceTypes.get(i);
 
 			if(type.randomSpecialPieceChanceOneOutOf==0&&type.frequencySpecialPieceTypeOnceEveryNPieces==0)
 			{
-				Piece tempPiece = new Piece(Game(), this, type, Settings().normalBlockTypes);
+				Piece tempPiece = new Piece(Game(), this, type, GameType().normalBlockTypes);
 				tempBag.add(tempPiece);
 			}
 		}
@@ -2630,7 +2630,7 @@ public class Grid
 				int i = Game().getRandomIntLessThan(tempBag.size());
 				if(randomBag.size()==0)
 				{
-					while(Settings().isFirstPieceTypeAllowed(tempBag.get(i).pieceType)==false)
+					while(GameType().isFirstPieceTypeAllowed(tempBag.get(i).pieceType)==false)
 					{
 						i = Game().getRandomIntLessThan(tempBag.size());
 					}
@@ -2670,13 +2670,13 @@ public class Grid
 		//make piece
 		{
 
-			PieceType pieceType = getRandomSpecialPieceTypeFromArrayExcludingNormalPiecesOrNull(Settings().normalPieceTypes);
+			PieceType pieceType = getRandomSpecialPieceTypeFromArrayExcludingNormalPiecesOrNull(GameType().normalPieceTypes);
 
-			if(Settings().currentPieceRule_getNewPiecesRandomlyOutOfBagWithOneOfEachPieceUntilEmpty)
+			if(GameType().currentPieceRule_getNewPiecesRandomlyOutOfBagWithOneOfEachPieceUntilEmpty)
 			{
 				if(pieceType!=null)
 				{
-					piece = new Piece(Game(), this, pieceType, Settings().normalBlockTypes);
+					piece = new Piece(Game(), this, pieceType, GameType().normalBlockTypes);
 				}
 				else
 				{
@@ -2685,8 +2685,8 @@ public class Grid
 			}
 			else
 			{
-				if(pieceType==null)pieceType = getRandomPieceTypeFromArrayExcludingSpecialPieceTypes(Settings().normalPieceTypes);
-				piece = new Piece(Game(), this, pieceType, Settings().normalBlockTypes);
+				if(pieceType==null)pieceType = getRandomPieceTypeFromArrayExcludingSpecialPieceTypes(GameType().normalPieceTypes);
+				piece = new Piece(Game(), this, pieceType, GameType().normalBlockTypes);
 			}
 
 

@@ -120,9 +120,9 @@ public class Piece
 	}
 
 
-	public Settings Settings()
+	public GameType GameType()
 	{
-		return Game().Settings();
+		return Game().GameType();
 	}
 
 	public GameLogic Game()
@@ -216,7 +216,7 @@ public class Piece
 		}
 
 
-		if(Settings().whenGeneratingPieceDontMatchTwoBlocksOfTheSameSpecialRandomTypeAndColor)
+		if(GameType().whenGeneratingPieceDontMatchTwoBlocksOfTheSameSpecialRandomTypeAndColor)
 		{
 
 			//don't match a green crash piece with a green crash piece
@@ -249,7 +249,7 @@ public class Piece
 
 		}
 
-		if(Settings().whenGeneratingPieceDontMatchNormalBlockWithBlockOfDifferentTypeAndSameColor)
+		if(GameType().whenGeneratingPieceDontMatchNormalBlockWithBlockOfDifferentTypeAndSameColor)
 		{
 
 			//don't match a green crash piece with a green gem
@@ -288,7 +288,7 @@ public class Piece
 
 		}
 
-		if(Settings().whenGeneratingPieceDontMatchAllBlockColors)
+		if(GameType().whenGeneratingPieceDontMatchAllBlockColors)
 		{
 
 			//don't make 3 jewels of the same color
@@ -455,7 +455,7 @@ public class Piece
 					{
 						b.counterCount=-2;
 						BobColor color = b.color();
-						b.blockType = grid.getRandomBlockTypeFromArrayExcludingSpecialBlockTypes(Settings().normalBlockTypes);
+						b.blockType = grid.getRandomBlockTypeFromArrayExcludingSpecialBlockTypes(GameType().normalBlockTypes);
 						b.setColor(color);
 					}
 				}
@@ -598,20 +598,20 @@ public class Piece
 		int h = cellH();
 
 
-		if(Settings().currentPieceMoveUpHalfABlock)y-=cellH()/3;
+		if(GameType().currentPieceMoveUpHalfABlock)y-=cellH()/3;
 
-		if(Settings().currentPieceRenderAsNormalPiece)
+		if(GameType().currentPieceRenderAsNormalPiece)
 		{
 			render(x,y);
 		}
 
-		if(Settings().currentPieceRule_OutlineBlockAtZeroZero)renderOutlineBlockZeroZero(x,y,cursorAlpha,false);
+		if(GameType().currentPieceRule_OutlineBlockAtZeroZero)renderOutlineBlockZeroZero(x,y,cursorAlpha,false);
 
-		if(Settings().currentPieceOutlineFirstBlockRegardlessOfPosition)renderOutlineFirstBlock(x, y, cursorAlpha,false);
+		if(GameType().currentPieceOutlineFirstBlockRegardlessOfPosition)renderOutlineFirstBlock(x, y, cursorAlpha,false);
 
 
 
-		if(Settings().currentPieceRenderHoldingBlock)
+		if(GameType().currentPieceRenderHoldingBlock)
 		{
 			if(holdingBlock!=null)
 			{
@@ -619,12 +619,12 @@ public class Piece
 			}
 		}
 
-		if(Settings().currentPieceOutlineAllPieces)
+		if(GameType().currentPieceOutlineAllPieces)
 		{
 			for(int i=0;i<blocks.size();i++)
 			{
-				int ox = Settings().gridPixelsBetweenColumns;
-				int oy = Settings().gridPixelsBetweenRows;
+				int ox = GameType().gridPixelsBetweenColumns;
+				int oy = GameType().gridPixelsBetweenRows;
 
 
 				Block b = blocks.get(i);
@@ -682,7 +682,7 @@ public class Piece
 		{
 			Block b = blocks.get(i);
 
-			BobColor c = Settings().gridCheckeredBackgroundColor1;
+			BobColor c = GameType().gridCheckeredBackgroundColor1;
 			// fill in black square so background doesnt show through alpha
 			GLUtils.drawFilledRectXYWH(x+b.xInPiece*cellW(),y+b.yInPiece*cellH(),cellW(),cellH(),c.r(),c.g(),c.b(),1.0f);
 
@@ -690,9 +690,9 @@ public class Piece
 
 		}
 
-		if(Settings().currentPieceRule_OutlineBlockAtZeroZero)renderOutlineBlockZeroZero(x,y,ghostAlpha/2*alpha,true);
+		if(GameType().currentPieceRule_OutlineBlockAtZeroZero)renderOutlineBlockZeroZero(x,y,ghostAlpha/2*alpha,true);
 
-		if(Settings().currentPieceOutlineFirstBlockRegardlessOfPosition)renderOutlineFirstBlock(x, y, ghostAlpha/2*alpha,true);
+		if(GameType().currentPieceOutlineFirstBlockRegardlessOfPosition)renderOutlineFirstBlock(x, y, ghostAlpha/2*alpha,true);
 
 
 
