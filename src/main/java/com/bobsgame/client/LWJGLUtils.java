@@ -27,6 +27,10 @@ import de.matthiasmann.twl.input.Input;
 import de.matthiasmann.twl.input.lwjgl.LWJGLInput;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFW;
+import org.lwjgl.glfw.GLFWImage;
+import org.lwjgl.glfw.GLFWVidMode;
+import org.lwjgl.opengl.*;
+import org.lwjgl.stb.STBImage;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.MemoryStack;
@@ -179,6 +183,31 @@ public class LWJGLUtils
         GLFW.glfwSetWindowSizeCallback(window, (window, width, height) -> {
             doResize();
         });
+
+        // Set window icon
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            IntBuffer w = stack.mallocInt(1);
+            IntBuffer h = stack.mallocInt(1);
+            IntBuffer comp = stack.mallocInt(1);
+
+            // Use the icon from the resources
+            java.nio.ByteBuffer iconBuf = Utils.ioResourceToByteBuffer("res/nD/nDicon.png", 1024);
+            if (iconBuf != null) {
+                java.nio.ByteBuffer pixels = STBImage.stbi_load_from_memory(iconBuf, w, h, comp, 4);
+                if (pixels != null) {
+                    GLFWImage.Buffer icons = GLFWImage.malloc(1, stack);
+                    icons.position(0).width(w.get(0)).height(h.get(0)).pixels(pixels);
+                    GLFW.glfwSetWindowIcon(window, icons);
+                    STBImage.stbi_image_free(pixels);
+                } else {
+                    log.warn("Could not load icon: res/nD/nDicon.png");
+                }
+            } else {
+                log.warn("Could not find icon: res/nD/nDicon.png");
+            }
+        } catch (Exception e) {
+            log.error("Error setting window icon: " + e.getMessage());
+        }
 
         GLFW.glfwShowWindow(window);
 

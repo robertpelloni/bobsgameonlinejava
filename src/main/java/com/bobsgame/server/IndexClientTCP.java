@@ -457,7 +457,7 @@ public class IndexClientTCP
 
 		try
 		{
-			Process p = Runtime.getRuntime().exec("reboot");
+			Process p = Runtime.getRuntime().exec(new String[]{"reboot"});
 		}
 		catch(IOException ex)
 		{

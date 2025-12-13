@@ -269,7 +269,12 @@ public class Area extends EnginePart
 							if(Math.random()<randomSpawnChance())//this is correct.
 							{
 
-								//TODO: don't spawn if there are too many randoms, have map limit?
+								// Limit number of random entities
+								int randomsCount = 0;
+								for(Entity e : map.activeEntityList) {
+									if(e instanceof RandomCharacter) randomsCount++;
+								}
+								if(randomsCount > 50) return; // Hard limit for now, could be configurable
 
 
 								if(randomNPCStayHere()==true)

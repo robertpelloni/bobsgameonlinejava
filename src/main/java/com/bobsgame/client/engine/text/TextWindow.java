@@ -611,7 +611,8 @@ public class TextWindow extends EnginePart
 			}
 
 			// else, follow npc and use gfx for sprite window :)
-			spriteWindowEntity=entity;// TODO: each npc should have a voice pitch!!!
+			spriteWindowEntity=entity;
+            if(entity!=null) voicePitch=entity.voicePitch();
 			spriteWindowTexture=texture;
 
 
