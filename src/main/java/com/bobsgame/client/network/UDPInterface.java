@@ -1,13 +1,11 @@
 package com.bobsgame.client.network;
 
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.MessageEvent;
+import java.net.InetSocketAddress;
+import io.netty.channel.ChannelHandlerContext;
 
-public interface UDPInterface {
-	void sendAddressRequest();
-	void sendPeerConnectRequest();
-	void handleDisconnected();
-	void incomingPeerConnectResponse(MessageEvent e);
-	void update();
-	void handleMessage(ChannelHandlerContext ctx, MessageEvent e);
+public interface UDPInterface
+{
+	void incomingPeerConnectResponse(String s);
+
+	void handleMessage(ChannelHandlerContext ctx, String s, InetSocketAddress sender);
 }

@@ -15,9 +15,8 @@ import static org.lwjgl.opengl.GL13.*;
 //import static org.lwjgl.opengl.GL33.*;
 //import static org.lwjgl.opengl.GL40.*;
 
-import org.jboss.netty.channel.ChannelFuture;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.MessageEvent;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.LoggerFactory;
 
 import com.bobsgame.client.Texture;
@@ -31,7 +30,7 @@ import com.bobsgame.client.engine.entity.SpriteManager;
 import com.bobsgame.client.engine.game.nd.ND;
 import com.bobsgame.client.engine.game.nd.NDGameEngine;
 import com.bobsgame.client.engine.game.nd.bobsgame.game.GameLogic;
-import com.bobsgame.client.engine.game.nd.bobsgame.game.Settings;
+import com.bobsgame.client.engine.game.nd.bobsgame.game.GameType;
 import com.bobsgame.client.engine.game.nd.bobsgame.game.GameLogic.FrameState;
 import com.bobsgame.client.engine.game.nd.bobsgame.game.GameLogic.NetworkPacket;
 import com.bobsgame.client.engine.text.BobFont;
@@ -62,7 +61,7 @@ public class BobsGame extends NDGameEngine
 
 	public long randomSeed = -1;
 
-	Settings originalSettings = null;
+	GameType originalSettings = null;
 
 
 	long timeRenderBegan = System.currentTimeMillis();
@@ -143,7 +142,7 @@ public class BobsGame extends NDGameEngine
 
 			randomSeed = ME.randomSeed;
 
-			originalSettings = ME.Settings();
+			originalSettings = ME.GameType();
 		}
 
 	}
@@ -262,10 +261,8 @@ public class BobsGame extends NDGameEngine
 
 
 	//=========================================================================================================================
-	public void handleMessage(ChannelHandlerContext ctx,MessageEvent e)
+	public void handleMessage(ChannelHandlerContext ctx, String s)
 	{//=========================================================================================================================
-
-		String s = (String) e.getMessage();
 
 		//log.debug(s);
 
@@ -290,7 +287,7 @@ public class BobsGame extends NDGameEngine
 
 		setLastTimeGotIncomingTraffic_S();
 
-		super.handleMessage(ctx,e);
+		super.handleMessage(ctx,s);
 
 	}
 
@@ -479,7 +476,7 @@ public class BobsGame extends NDGameEngine
 		s = s.substring(s.indexOf(":")+1);
 
 		String compMD5 = Utils.getStringMD5(s);
-		if(md5.equals(compMD5)==false){log.error("Settings MD5 did not match!");return;}
+		if(md5.equals(compMD5)==false){log.error("GameType MD5 did not match!");return;}
 
 		if(debug)log.error("incoming_Settings: Their Seed: "+theirRandomSeed);
 
@@ -491,14 +488,14 @@ public class BobsGame extends NDGameEngine
 			String json = Utils.unzipString(zip);
 
 			if(json==null||json.length()==0){log.error("Their settings were invalid!");return;}
-			Settings settings = gson.fromJson(json,Settings.class);
+			GameType settings = gson.fromJson(json,GameType.class);
 			if(settings==null){log.error("Their settings were null!");return;}
 
 			getTheirSettings(settings);
 
 			//gotTheirSettings(true);
 
-			if(debug)log.debug("Got their Settings");
+			if(debug)log.debug("Got their GameType");
 
 		}
 //		else
@@ -696,7 +693,7 @@ public class BobsGame extends NDGameEngine
 
 
 	private long _theirSeed = -1;
-	private Settings _theirSettings = null;
+	private GameType _theirSettings = null;
 
 	boolean setSettings = false;
 
@@ -719,7 +716,7 @@ public class BobsGame extends NDGameEngine
 
 	public synchronized long theirSeed(){return _theirSeed;}
 
-	public synchronized Settings theirSettings(){return _theirSettings;}
+	public synchronized GameType theirSettings(){return _theirSettings;}
 
 
 	public synchronized void gotReplyToMySeed(boolean gotReplyToMySeed){this._gotReplyToMySeed = gotReplyToMySeed;}
@@ -729,7 +726,7 @@ public class BobsGame extends NDGameEngine
 	public synchronized void gotTheirStart(boolean gotTheirStart){this._gotTheirStart = gotTheirStart;}
 
 	public synchronized void theirSeed(long theirSeed){this._theirSeed = theirSeed;}
-	public synchronized void getTheirSettings(Settings theirSettings){this._theirSettings = theirSettings;}
+	public synchronized void getTheirSettings(GameType theirSettings){this._theirSettings = theirSettings;}
 
 
 	public synchronized long getLastTimeGotIncomingTraffic_S(){return _lastIncomingTrafficTime;}
@@ -1411,7 +1408,7 @@ public class BobsGame extends NDGameEngine
 
 
 
-			int blurPasses = ME.Settings().bloomTimes;
+			int blurPasses = ME.GameType().bloomTimes;
 
 			for (int i = 0; i < blurPasses; i++)
 			{
@@ -1478,7 +1475,7 @@ public class BobsGame extends NDGameEngine
 			LWJGLUtils.useShader(LWJGLUtils.bloomShader);
 			{
 				LWJGLUtils.setShaderVar1f(LWJGLUtils.bloomShader, "OriginalIntensity", 0.8f);
-				LWJGLUtils.setShaderVar1f(LWJGLUtils.bloomShader, "BloomIntensity", ME.Settings().bloomIntensity);
+				LWJGLUtils.setShaderVar1f(LWJGLUtils.bloomShader, "BloomIntensity", ME.GameType().bloomIntensity);
 				LWJGLUtils.setShaderVar1i(LWJGLUtils.bloomShader, "u_texture0", 0);
 				LWJGLUtils.setShaderVar1i(LWJGLUtils.bloomShader, "u_texture1", 1);
 				GLUtils.drawTexture(LWJGLUtils.nDFBO_MaskTexture, 0.0f, 1.0f, 1.0f, 0.0f, 0, getWidth(), 0, getHeight(), 1.0f, GLUtils.FILTER_FBO_LINEAR_NO_MIPMAPPING);

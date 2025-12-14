@@ -6,29 +6,24 @@ import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPipeline;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.DelimiterBasedFrameDecoder;
+import io.netty.handler.codec.Delimiters;
+import io.netty.handler.codec.string.StringDecoder;
+import io.netty.handler.codec.string.StringEncoder;
+import io.netty.handler.timeout.ReadTimeoutException;
+import io.netty.channel.SimpleChannelInboundHandler;
 
-import org.jboss.netty.bootstrap.ClientBootstrap;
-import org.jboss.netty.channel.AdaptiveReceiveBufferSizePredictorFactory;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelEvent;
-import org.jboss.netty.channel.ChannelFuture;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ChannelPipeline;
-import org.jboss.netty.channel.ChannelPipelineFactory;
-import org.jboss.netty.channel.ChannelStateEvent;
-import org.jboss.netty.channel.Channels;
-import org.jboss.netty.channel.ExceptionEvent;
-import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
-import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
-import org.jboss.netty.handler.codec.frame.DelimiterBasedFrameDecoder;
-import org.jboss.netty.handler.codec.frame.Delimiters;
-import org.jboss.netty.handler.codec.string.StringDecoder;
-import org.jboss.netty.handler.codec.string.StringEncoder;
-import org.jboss.netty.handler.timeout.ReadTimeoutException;
 import org.slf4j.LoggerFactory;
-
-
 import ch.qos.logback.classic.Logger;
 
 import com.bobsgame.ClientMain;
@@ -63,12 +58,9 @@ import com.bobsgame.shared.SpriteData;
 public class GameClientTCP extends EnginePart
 {//=========================================================================================================================
 
-
-
-
-	private static ClientBootstrap clientBootstrap;
+	private static Bootstrap clientBootstrap;
 	private static ChannelFuture channelFuture;
-
+    private static EventLoopGroup workerGroup;
 
 	//Timer timer;
 
@@ -93,47 +85,29 @@ public class GameClientTCP extends EnginePart
 		//timer = new HashedWheelTimer();
 
 		//Configure the client.
-		clientBootstrap = new ClientBootstrap(new NioClientSocketChannelFactory(Executors.newCachedThreadPool(), Executors.newCachedThreadPool()));
+        workerGroup = new NioEventLoopGroup();
+		clientBootstrap = new Bootstrap();
+        clientBootstrap.group(workerGroup);
+        clientBootstrap.channel(NioSocketChannel.class);
+        clientBootstrap.handler(new ChannelInitializer<SocketChannel>() {
+            @Override
+            public void initChannel(SocketChannel ch) throws Exception {
+                ChannelPipeline pipeline = ch.pipeline();
+                pipeline.addLast("framer", new DelimiterBasedFrameDecoder(65536, Delimiters.lineDelimiter()));
+                pipeline.addLast("decoder", new StringDecoder());
+                pipeline.addLast("encoder", new StringEncoder());
+                pipeline.addLast("handler", new BobsGameClientHandler());
+            }
+        });
 
+		//clientBootstrap.setOption("sendBufferSize", 65536);
+		//clientBootstrap.setOption("receiveBufferSize", 65536);
+		//clientBootstrap.setOption("receiveBufferSizePredictorFactory", new AdaptiveReceiveBufferSizePredictorFactory());
 
-		//Configure the pipeline factory.
-		clientBootstrap.setPipelineFactory
-		(
-			new ChannelPipelineFactory()
-			{
-				//===============================================================================================
-				public ChannelPipeline getPipeline() throws Exception
-				{//===============================================================================================
-					//Create a default pipeline implementation.
-					ChannelPipeline pipeline = Channels.pipeline();
-
-
-					//Add the text line codec combination first,
-					pipeline.addLast("framer", new DelimiterBasedFrameDecoder(65536, Delimiters.lineDelimiter()));
-					pipeline.addLast("decoder", new StringDecoder());
-					pipeline.addLast("encoder", new StringEncoder());
-
-
-
-					//and then business logic.
-					pipeline.addLast("handler", new BobsGameClientHandler());
-
-					return pipeline;
-				}
-			}
-		);
-
-
-		clientBootstrap.setOption("sendBufferSize", 65536);
-		clientBootstrap.setOption("receiveBufferSize", 65536);
-		clientBootstrap.setOption("receiveBufferSizePredictorFactory", new AdaptiveReceiveBufferSizePredictorFactory());
-
-		clientBootstrap.setOption("tcpNoDelay", true);
-		clientBootstrap.setOption("keepAlive", true);
+		//clientBootstrap.setOption("tcpNoDelay", true);
+		//clientBootstrap.setOption("keepAlive", true);
 
 		//clientBootstrap.setOption("remoteAddress", new InetSocketAddress(ClientMain.serverAddress, BobNet.serverTCPPort));
-
-
 
 	}
 
@@ -141,11 +115,8 @@ public class GameClientTCP extends EnginePart
 
 
 	//===============================================================================================
-	public class BobsGameClientHandler extends SimpleChannelUpstreamHandler
+	public class BobsGameClientHandler extends SimpleChannelInboundHandler<String>
 	{//===============================================================================================
-
-
-
 
 		//===============================================================================================
 		public BobsGameClientHandler()
@@ -156,21 +127,10 @@ public class GameClientTCP extends EnginePart
 
 		//===============================================================================================
 		@Override
-		public void handleUpstream(ChannelHandlerContext ctx, ChannelEvent e) throws Exception
-		{//===============================================================================================
-			if(e instanceof ChannelStateEvent)
-			{
-				log.debug("handleUpstream: "+e.toString());
-			}
-			super.handleUpstream(ctx, e);
-		}
-
-		//===============================================================================================
-		@Override
-		public void channelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent e)
+		public void channelInactive(ChannelHandlerContext ctx) throws Exception
 		{//===============================================================================================
 
-			log.warn("channelDisconnected from Server: ChannelID: "+e.getChannel().getId());
+			log.warn("channelDisconnected from Server: ChannelID: "+ctx.channel().id());
 
 			Console.add("Disconnected from Server.", BobColor.red, 5000);
 
@@ -179,29 +139,12 @@ public class GameClientTCP extends EnginePart
 			setServerIPAddress_S(null);
 		}
 
-
 		//===============================================================================================
 		@Override
-		public void channelClosed(ChannelHandlerContext ctx, ChannelStateEvent e)
+		public void channelActive(ChannelHandlerContext ctx) throws Exception
 		{//===============================================================================================
 
-			final int RECONNECT_DELAY = 2;//seconds
-
-			log.warn("channelClosed to Server: ChannelID: "+e.getChannel().getId());
-
-			setConnectedToServer_S(false);
-			setNotAuthorizedOnServer();
-			setServerIPAddress_S(null);
-
-		}
-
-
-		//===============================================================================================
-		@Override
-		public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e)
-		{//===============================================================================================
-
-			log.info("channelConnected to Server: ChannelID: "+e.getChannel().getId());
+			log.info("channelConnected to Server: ChannelID: "+ctx.channel().id());
 			Console.add("Connected to Server!", BobColor.green, 5000);
 
 		}
@@ -209,50 +152,45 @@ public class GameClientTCP extends EnginePart
 
 		//===============================================================================================
 		@Override
-		public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e)
+		public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
 		{//===============================================================================================
-			Throwable cause = e.getCause();
 			if(cause instanceof ConnectException)
 			{
-				log.error("Exception caught connecting to Server - ConnectException: "+e.getCause().getMessage());
+				log.error("Exception caught connecting to Server - ConnectException: "+cause.getMessage());
 			}
 			else
 			if(cause instanceof ReadTimeoutException)
 			{
-				log.error("Exception caught connecting to Server - ReadTimeoutException: "+e.getCause().getMessage());
+				log.error("Exception caught connecting to Server - ReadTimeoutException: "+cause.getMessage());
 			}
 			else
 			{
-				log.error("Unexpected Exception caught connecting to Server: "+e.getCause().getMessage());
+				log.error("Unexpected Exception caught connecting to Server: "+cause.getMessage());
 				cause.printStackTrace();
 			}
 
-			ctx.getChannel().close();
-			e.getChannel().close();
+			ctx.close();
 		}
 
 
 		//===============================================================================================
 		@Override
-		public void messageReceived(ChannelHandlerContext ctx, MessageEvent e)
+		public void channelRead0(ChannelHandlerContext ctx, String s) throws Exception
 		{//===============================================================================================
 			//Print out the line received from the server.
 
 			try{Thread.currentThread().setName("ClientTCP_BobsGameClientHandler");}catch(SecurityException ex){ex.printStackTrace();}
 
-
-			String s = (String) e.getMessage();
-
 			if(BobNet.debugMode)
 			{
-				log.warn("FROM SERVER: cID:"+e.getChannel().getId()+" | "+s);
+				log.warn("FROM SERVER: cID:"+ctx.channel().id()+" | "+s);
 			}
 
 
 			if(s.startsWith("ping"))
 			{
 				//log.debug("SERVER: ping");
-				write(e.getChannel(),"pong"+BobNet.endline);
+				write(ctx.channel(),"pong"+BobNet.endline);
 				return;
 			}
 
@@ -316,11 +254,11 @@ public class GameClientTCP extends EnginePart
 
 		if(BobNet.debugMode)
 		{
-			log.debug("SEND SERVER: cID:"+c.getId()+" | "+s.substring(0,s.length()-2));
+			log.debug("SEND SERVER: cID:"+c.id()+" | "+s.substring(0,s.length()-2));
 		}
 
 
-		ChannelFuture cf = c.write(s);
+		ChannelFuture cf = c.writeAndFlush(s);
 
 		return cf;
 	}
@@ -360,11 +298,11 @@ public class GameClientTCP extends EnginePart
 
 			Channel c = getChannel_S();
 
-			if(c.isConnected()||c.isOpen())
+			if(c.isActive()||c.isOpen())
 			{
 				try
 				{
-					c.close().await();
+					c.close().sync();
 				}
 				catch(InterruptedException e)
 				{
@@ -375,7 +313,7 @@ public class GameClientTCP extends EnginePart
 		}
 
 
-		if(clientBootstrap!=null)clientBootstrap.shutdown();
+		if(workerGroup!=null)workerGroup.shutdownGracefully();
 
 		//timer.stop();
 
@@ -511,7 +449,7 @@ public class GameClientTCP extends EnginePart
 				try
 				{
 					Channel c = getChannel_S();
-					if(c!=null)c.close().await();
+					if(c!=null)c.close().sync();
 				}
 				catch(InterruptedException e1)
 				{
@@ -519,7 +457,7 @@ public class GameClientTCP extends EnginePart
 					return;
 				}
 
-				if(clientBootstrap!=null)clientBootstrap.shutdown();
+				if(workerGroup!=null)workerGroup.shutdownGracefully();
 
 				initBootstrap();
 
@@ -532,13 +470,13 @@ public class GameClientTCP extends EnginePart
 				{
 					try
 					{
-						channelFuture.await();
+						channelFuture.sync();
 						connected=true;
 					}
 					catch(InterruptedException e){log.error("InterruptedException while connecting to Load Balancer. "+e.getMessage());return;}
 				}
 
-				setChannel_S(channelFuture.getChannel());
+				setChannel_S(channelFuture.channel());
 
 
 				//when connected to load balancer, send getServerIPCommand to get the servers real IP behind the load balancer
@@ -549,7 +487,7 @@ public class GameClientTCP extends EnginePart
 				{
 					try
 					{
-						c.await();
+						c.sync();
 						connected=true;
 					}
 					catch(InterruptedException e){log.error("InterruptedException while sending GetIP to Server behind LB. "+e.getMessage());return;}
@@ -586,7 +524,7 @@ public class GameClientTCP extends EnginePart
 			try
 			{
 				Channel c = getChannel_S();
-				if(c!=null)c.close().await();
+				if(c!=null)c.close().sync();
 			}
 			catch(InterruptedException e1)
 			{
@@ -594,7 +532,7 @@ public class GameClientTCP extends EnginePart
 				return;
 			}
 
-			if(clientBootstrap!=null)clientBootstrap.shutdown();
+			if(workerGroup!=null)workerGroup.shutdownGracefully();
 
 			initBootstrap();
 
@@ -607,12 +545,12 @@ public class GameClientTCP extends EnginePart
 			{
 				try
 				{
-					channelFuture.await();
+					channelFuture.sync();
 					connected=true;
 				}
 				catch(InterruptedException e){log.error("InterruptedException while connecting to Server. "+e.getMessage());return;}
 			}
-			setChannel_S(channelFuture.getChannel());
+			setChannel_S(channelFuture.channel());
 
 
 
