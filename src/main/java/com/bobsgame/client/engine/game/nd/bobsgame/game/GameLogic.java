@@ -37,8 +37,9 @@ public class GameLogic extends EnginePart
 	int side = 0;
 
 
+    GameSequence currentGameSequence = new GameSequence();
 
-	ArrayList<Integer> gameTypeRandomBag = new ArrayList<Integer>();
+	ArrayList<GameType> gameTypeRandomBag = new ArrayList<GameType>();
 
 
 	//===============================================================================================
@@ -69,13 +70,14 @@ public class GameLogic extends EnginePart
 
 
 
+        initBuiltInGameTypes();
 
 		fillGameTypeRandomBag();
 
-		int gameType = TETRID;
+		//int gameType = TETRID;
 
-		gameTypeRandomBag.remove(Integer.valueOf(gameType));
-		setGameType(gameType);//getGameTypeFromRandomBag();
+		//gameTypeRandomBag.remove(Integer.valueOf(gameType));
+		setGameType(getGameTypeFromRandomBag());//getGameTypeFromRandomBag();
 
 
 		//DONE: init randomseed
@@ -103,27 +105,57 @@ public class GameLogic extends EnginePart
 	//=========================================================================================================================
 	public void fillGameTypeRandomBag()
 	{//=========================================================================================================================
-		ArrayList<Integer> tempBag = new ArrayList<Integer>();
-		for(int i=0;i<gameCount;i++)
-		{
-			tempBag.add(Integer.valueOf(i));
-		}
+        if (currentGameSequence.randomizeSequence) {
+		    ArrayList<GameType> tempBag = new ArrayList<GameType>();
+		    for(int i=0;i<currentGameSequence.gameTypes.size();i++)
+		    {
+			    tempBag.add(currentGameSequence.gameTypes.get(i));
+		    }
 
-		while(tempBag.size()>0)
-		{
-			int i = getRandomIntLessThan(tempBag.size());
-			gameTypeRandomBag.add(tempBag.get(i));
-			tempBag.remove(i);
-		}
+		    while(tempBag.size()>0)
+		    {
+			    int i = getRandomIntLessThan(tempBag.size());
+			    gameTypeRandomBag.add(tempBag.get(i));
+			    tempBag.remove(i);
+		    }
+        } else {
+            for(int i=0;i<currentGameSequence.gameTypes.size();i++)
+		    {
+			    gameTypeRandomBag.add(currentGameSequence.gameTypes.get(i));
+		    }
+        }
 	}
 
 	//=========================================================================================================================
-	public int getGameTypeFromRandomBag()
+	public GameType getGameTypeFromRandomBag()
 	{//=========================================================================================================================
 		if(gameTypeRandomBag.size()==0)fillGameTypeRandomBag();
 
-		return gameTypeRandomBag.remove(0).intValue();
+		return gameTypeRandomBag.remove(0);
 	}
+
+    public static ArrayList<GameType> getBuiltInGameTypes() {
+        ArrayList<GameType> types = new ArrayList<GameType>();
+        GameType t;
+
+        t = new GameType(); t.tetrid(); t.name="Tetrid"; types.add(t);
+        t = new GameType(); t.tetsosumi(); t.name="Tetsosumi"; types.add(t);
+        t = new GameType(); t.boblob(); t.name="Boblob"; types.add(t);
+        t = new GameType(); t.jewels(); t.name="Jewels"; types.add(t);
+        t = new GameType(); t.pop(); t.name="Pop"; types.add(t);
+        t = new GameType(); t.gemfight(); t.name="GemFight"; types.add(t);
+        t = new GameType(); t.gemfight_columns(); t.name="GemFightColumns"; types.add(t);
+        t = new GameType(); t.popswap(); t.name="PopSwap"; types.add(t);
+        t = new GameType(); t.gemfight_swap(); t.name="GemFightSwap"; types.add(t);
+        t = new GameType(); t.panelswap(); t.name="PanelSwap"; types.add(t);
+        t = new GameType(); t.mrbob(); t.name="MrBob"; types.add(t);
+
+        return types;
+    }
+
+    public void initBuiltInGameTypes() {
+        currentGameSequence.gameTypes.addAll(getBuiltInGameTypes());
+    }
 
 
 
@@ -258,7 +290,6 @@ public class GameLogic extends EnginePart
 	public boolean forceGravity = false;
 	public String previousGameString = "";
 	public String currentGameString = "";
-	int currentGameType = 0;
 
 	boolean mute = false;
 
@@ -293,17 +324,8 @@ public class GameLogic extends EnginePart
 
 
 
-	int gameCount = 0;
 
-	int TETRID = gameCount++;
-	int TETSOSUMI = gameCount++;//tetris dontsuetris tetsosumi
-	int BOBLOB = gameCount++;//bobubobu? bubobubo? bubobob? bobu's bean avalanche (was BLOB)
-	int JEWELS = gameCount++;//gems jewels genegems pillars columbines (was JEWEL)
-	int GEMFIGHT_COLUMNS_TYPE_Y = gameCount++;
-	int POP = gameCount++;//dancinglady, "puzzle sphere war" is apparently translation
 	/** <img src="C:/Users/Administrator/workspace/_screenshots/puzzlefighter.png" />*/
-	int GEMFIGHT = gameCount++;
-	int MRBOB = gameCount++;//dr patent? dr patentio? quack? rockdoc? Mario's Addiction? MDMA? Drugz4Kidz? EnslavedJapaneseEngineersOnSpeed
 
 
 
@@ -323,9 +345,6 @@ public class GameLogic extends EnginePart
 
 	//swap games --------------------
 	/** <img src="C:/Users/Administrator/workspace/_screenshots/damaswap.png" />*/
-	int POPSWAP_TOKKAE = gameCount++;
-	int PANELSWAP = gameCount++;//panel de planet puzzle attack league //TODO: check gamecube version
-	int GEMFIGHT_SWAP_TYPE_Z = gameCount++;
 
 
 //	int YOSHISCOOKIE = gameType++;//TODO
@@ -381,55 +400,21 @@ public class GameLogic extends EnginePart
 
 
 	//=========================================================================================================================
-	public void setGameType(int gameType)
+    public void setGameSequence(GameSequence seq) {
+		this.currentGameSequence = seq;
+		fillGameTypeRandomBag();
+		setGameType(getGameTypeFromRandomBag());
+	}
+
+	public void setGameType(GameType gameType)
 	{//=========================================================================================================================
 
 		previousGameString = currentGameString;
-		currentGameType = gameType;
+		this.settings = gameType;
 
-		if(gameType==TETSOSUMI){GameType().tetsosumi(this);currentGameString=("Tetsosumi");}
-		else if(gameType==TETRID){GameType().tetrid(this);currentGameString=("Tetrid");}
-		else if(gameType==MRBOB){GameType().mrbob(this);currentGameString=("MrBob");}
-		else if(gameType==BOBLOB){GameType().boblob(this);currentGameString=("Boblob");}
-		else if(gameType==JEWELS){GameType().jewels(this);currentGameString=("Jewels");}
-		else if(gameType==POP){GameType().pop(this);currentGameString=("Pop");}
-		else if(gameType==GEMFIGHT){GameType().gemfight(this);currentGameString=("GemFight");}
-		else if(gameType==GEMFIGHT_COLUMNS_TYPE_Y){GameType().gemfight_columns(this);currentGameString=("GemFightColumns");}
-		else if(gameType==POPSWAP_TOKKAE){GameType().popswap(this);currentGameString=("PopSwap");}
-		else if(gameType==GEMFIGHT_SWAP_TYPE_Z){GameType().gemfight_swap(this);currentGameString=("GemFightSwap");}
-		else if(gameType==PANELSWAP){GameType().panelswap(this);currentGameString=("PanelSwap");}
-		else {GameType().tetrid(this);currentGameString=("Tetrid");}
+        currentGameString = gameType.name;
 
-
-
-//		if(gameType==YOSHISCOOKIE);
-//		if(gameType==METEOS);
-//		if(gameType==LUMINES);
-//		if(gameType==GUNPEY);
-//		if(gameType==KIRBYSTARSTACK);
-//		if(gameType==DRILLER);
-
-//		if(gameType==KLAX);
-//		if(gameType==WARIOSWOODS);
-//		if(gameType==YOSHI_HATRIS);
-//		if(gameType==ZOOP);
-
-//		if(gameType==MAGICALDROP);
-//		if(gameType==PUZZLEBUBBLE_BUSTAMOVE);
-//		if(gameType==PANG_BUSTERBROS);
-
-//		if(gameType==POLARIUM);
-//		if(gameType==PIPEDREAM);
-
-//		if(gameType==FLIPULL);
-//		if(gameType==PUZZNIC);
-//		if(gameType==PACATTACK);
-
-//		if(gameType==DENKIBLOX);
-//		if(gameType==SOKOBAN);
-
-
-
+        initGame();
 	}
 
 
@@ -1274,8 +1259,8 @@ public class GameLogic extends EnginePart
 
 		currentChainBlocks = null;
 
-		ArrayList<BlockType> ignoreTypes = GameType().blockTypesToIgnoreWhenCheckingChainConnections;
-		ArrayList<BlockType> mustContainAtLeastOneTypes = GameType().blockTypesMustContainWhenCheckingChainConnections;
+		ArrayList<BlockType> ignoreTypes = GameType().getBlockTypesToIgnoreWhenCheckingChainConnections();
+		ArrayList<BlockType> mustContainAtLeastOneTypes = GameType().getBlockTypesMustContainWhenCheckingChainConnections();
 
 
 		//can use this while blocks are falling to detect sticky colors
@@ -1319,7 +1304,7 @@ public class GameLogic extends EnginePart
 
 		if(GameType().chainRule_CheckTouchingBreakerBlocksChain)
 		{
-			ArrayList<Block> chainBlocks = grid.checkBreakerBlocks(toRow,GameType().blockTypesToIgnoreWhenCheckingChainConnections,GameType().blockTypesMustContainWhenCheckingChainConnections);
+			ArrayList<Block> chainBlocks = grid.checkBreakerBlocks(toRow,GameType().getBlockTypesToIgnoreWhenCheckingChainConnections(),GameType().getBlockTypesMustContainWhenCheckingChainConnections());
 			addToChainBlocks(chainBlocks);
 		}
 
@@ -1628,9 +1613,9 @@ public class GameLogic extends EnginePart
 				{
 
 					if(GameType().gravityRule_onlyMoveDownDisconnectedBlocks)
-					movedDownBlocks = grid.moveDownDisconnectedBlocksAboveBlankSpacesOneLine(GameType().blockTypesToIgnoreWhenMovingDownBlocks);
+					movedDownBlocks = grid.moveDownDisconnectedBlocksAboveBlankSpacesOneLine(GameType().getBlockTypesToIgnoreWhenMovingDownBlocks());
 					else
-					movedDownBlocks = grid.moveDownAnyBlocksAboveBlankSpacesOneLine(GameType().blockTypesToIgnoreWhenMovingDownBlocks);
+					movedDownBlocks = grid.moveDownAnyBlocksAboveBlankSpacesOneLine(GameType().getBlockTypesToIgnoreWhenMovingDownBlocks());
 				}
 
 			}
@@ -2322,7 +2307,7 @@ public class GameLogic extends EnginePart
 
 		if(garbageBlock==null)
 		{
-			Piece p = new Piece(this,grid,new PieceType(),grid.getRandomBlockType(GameType().garbageBlockTypes));
+			Piece p = new Piece(this,grid,new PieceType(),grid.getRandomBlockType(GameType().getGarbageBlockTypes()));
 			garbageBlock = p.blocks.get(0);
 		}
 
@@ -3914,17 +3899,6 @@ public class GameLogic extends EnginePart
 		int oldWidth = gridW();
 		int oldHeight = gridH();
 
-		GameType s = new GameType();
-		setGameType(s);
-
-
-
-		//setGameType(currentGameType+1);
-
-
-
-		//int newGame = 0;
-		//do{newGame = getRandomIntLessThan(gameCount);}while(newGame==currentGameType);
 		setGameType(getGameTypeFromRandomBag());
 
 
@@ -4104,11 +4078,6 @@ public class GameLogic extends EnginePart
 	}
 
 	//=========================================================================================================================
-	public void setGameType(GameType settings)
-	{//=========================================================================================================================
-		this.settings = settings;
-	}
-
 
 
 	//=========================================================================================================================

@@ -305,7 +305,7 @@ public class Grid
 
 					Block a = remove(x,y);
 
-					Piece p = getRandomPiece(GameType().playingFieldPieceTypes, GameType().playingFieldBlockTypes);
+					Piece p = getRandomPiece(GameType().getPlayingFieldPieceTypes(), GameType().getPlayingFieldBlockTypes());
 
 
 					int maxHeight = 0;
@@ -350,9 +350,9 @@ public class Grid
 
 
 		ArrayList<BobColor> acceptableColors = new ArrayList<BobColor>();
-		for(int b=0;b<GameType().playingFieldBlockTypes.size();b++)
+		for(int b=0;b<GameType().getPlayingFieldBlockTypes().size();b++)
 		{
-			BlockType blockType = GameType().playingFieldBlockTypes.get(b);
+			BlockType blockType = GameType().getPlayingFieldBlockTypes().get(b);
 
 			if(blockType.colors!=null)
 			{
@@ -375,7 +375,7 @@ public class Grid
 
 			BobColor color = acceptableColors.get(Game().getRandomIntLessThan(acceptableColors.size()));
 
-			Piece p = getRandomPiece(GameType().playingFieldPieceTypes, GameType().playingFieldBlockTypes);
+			Piece p = getRandomPiece(GameType().getPlayingFieldPieceTypes(), GameType().getPlayingFieldBlockTypes());
 
 			for(int i=0; i<p.blocks.size(); i++)
 			{
@@ -399,9 +399,9 @@ public class Grid
 
 
 		ArrayList<BobColor> acceptableColors = new ArrayList<BobColor>();
-		for(int b=0;b<GameType().playingFieldBlockTypes.size();b++)
+		for(int b=0;b<GameType().getPlayingFieldBlockTypes().size();b++)
 		{
-			BlockType blockType = GameType().playingFieldBlockTypes.get(b);
+			BlockType blockType = GameType().getPlayingFieldBlockTypes().get(b);
 
 			if(blockType.colors!=null)
 			{
@@ -419,7 +419,7 @@ public class Grid
 		{
 			BobColor color = acceptableColors.get(Game().getRandomIntLessThan(acceptableColors.size()));
 
-			Piece p = getRandomPiece(GameType().playingFieldPieceTypes, GameType().playingFieldBlockTypes);
+			Piece p = getRandomPiece(GameType().getPlayingFieldPieceTypes(), GameType().getPlayingFieldBlockTypes());
 
 			for(int i=0; i<p.blocks.size(); i++)
 			{
@@ -442,7 +442,7 @@ public class Grid
 
 
 		ArrayList<BlockType> acceptableBlockTypes = new ArrayList<BlockType>();
-		for(int i=0;i<GameType().playingFieldBlockTypes.size();i++)acceptableBlockTypes.add(GameType().playingFieldBlockTypes.get(i));
+		for(int i=0;i<GameType().getPlayingFieldBlockTypes().size();i++)acceptableBlockTypes.add(GameType().getPlayingFieldBlockTypes().get(i));
 
 
 		//dont use the same color as left, above, or below
@@ -453,7 +453,7 @@ public class Grid
 
 		if(acceptableBlockTypes.size()>0)
 		{
-			PieceType pieceType = getRandomPieceType(GameType().playingFieldPieceTypes);
+			PieceType pieceType = getRandomPieceType(GameType().getPlayingFieldPieceTypes());
 			Piece p = new Piece(game, this, pieceType, acceptableBlockTypes.get(Game().getRandomIntLessThan(acceptableBlockTypes.size())));
 
 			return p;
@@ -550,7 +550,7 @@ public class Grid
 
 			if(get(x,y)==null)
 			{
-				Piece p = getRandomPiece(GameType().playingFieldPieceTypes, GameType().playingFieldBlockTypes);
+				Piece p = getRandomPiece(GameType().getPlayingFieldPieceTypes(), GameType().getPlayingFieldBlockTypes());
 				putPieceInGridCheckingForFillRules(p,x,y);
 			}
 		}
@@ -617,7 +617,7 @@ public class Grid
 				}
 				else
 				{
-					Piece p = getRandomPiece(GameType().playingFieldPieceTypes, GameType().playingFieldBlockTypes);
+					Piece p = getRandomPiece(GameType().getPlayingFieldPieceTypes(), GameType().getPlayingFieldBlockTypes());
 					putPieceInGridCheckingForFillRules(p,x,y);
 					piecesPlaced++;
 				}
@@ -717,7 +717,7 @@ public class Grid
 			int y = h()-1;
 			for(int x=0;x<w();x++)
 			{
-				Piece p = getRandomPiece(GameType().playingFieldPieceTypes, GameType().playingFieldBlockTypes);
+				Piece p = getRandomPiece(GameType().getPlayingFieldPieceTypes(), GameType().getPlayingFieldBlockTypes());
 				putPieceInGridCheckingForFillRules(p,x,y);
 			}
 
@@ -732,7 +732,7 @@ public class Grid
 	public void putGarbageBlock(int x, int y)
 	{//=========================================================================================================================
 
-		Piece p = getRandomPiece(GameType().garbagePieceTypes, GameType().garbageBlockTypes);
+		Piece p = getRandomPiece(GameType().getGarbagePieceTypes(), GameType().getGarbageBlockTypes());
 		putPieceInGridCheckingForFillRules(p,x,y);
 
 	}
@@ -2595,13 +2595,13 @@ public class Grid
 	{//=========================================================================================================================
 
 		ArrayList<Piece> tempBag = new ArrayList<Piece>();
-		for(int i=0;i<GameType().normalPieceTypes.size();i++)
+		for(int i=0;i<GameType().getNormalPieceTypes().size();i++)
 		{
-			PieceType type = GameType().normalPieceTypes.get(i);
+			PieceType type = GameType().getNormalPieceTypes().get(i);
 
 			if(type.randomSpecialPieceChanceOneOutOf==0&&type.frequencySpecialPieceTypeOnceEveryNPieces==0)
 			{
-				Piece tempPiece = new Piece(Game(), this, type, GameType().normalBlockTypes);
+				Piece tempPiece = new Piece(Game(), this, type, GameType().getNormalBlockTypes());
 				tempBag.add(tempPiece);
 			}
 		}
@@ -2670,13 +2670,13 @@ public class Grid
 		//make piece
 		{
 
-			PieceType pieceType = getRandomSpecialPieceTypeFromArrayExcludingNormalPiecesOrNull(GameType().normalPieceTypes);
+			PieceType pieceType = getRandomSpecialPieceTypeFromArrayExcludingNormalPiecesOrNull(GameType().getNormalPieceTypes());
 
 			if(GameType().currentPieceRule_getNewPiecesRandomlyOutOfBagWithOneOfEachPieceUntilEmpty)
 			{
 				if(pieceType!=null)
 				{
-					piece = new Piece(Game(), this, pieceType, GameType().normalBlockTypes);
+					piece = new Piece(Game(), this, pieceType, GameType().getNormalBlockTypes());
 				}
 				else
 				{
@@ -2685,8 +2685,8 @@ public class Grid
 			}
 			else
 			{
-				if(pieceType==null)pieceType = getRandomPieceTypeFromArrayExcludingSpecialPieceTypes(GameType().normalPieceTypes);
-				piece = new Piece(Game(), this, pieceType, GameType().normalBlockTypes);
+				if(pieceType==null)pieceType = getRandomPieceTypeFromArrayExcludingSpecialPieceTypes(GameType().getNormalPieceTypes());
+				piece = new Piece(Game(), this, pieceType, GameType().getNormalBlockTypes());
 			}
 
 

@@ -7,6 +7,7 @@ import com.bobsgame.shared.Utils;
 public class GameSequence {
     public String uuid = "";
     public String name = "My New Game Sequence";
+    @Override public String toString() { return name; }
     public String description = "This is an empty game sequence.";
 
     public ArrayList<String> importExport_gameUUIDs = new ArrayList<String>();

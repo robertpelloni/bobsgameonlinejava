@@ -455,7 +455,7 @@ public class Piece
 					{
 						b.counterCount=-2;
 						BobColor color = b.color();
-						b.blockType = grid.getRandomBlockTypeFromArrayExcludingSpecialBlockTypes(GameType().normalBlockTypes);
+						b.blockType = grid.getRandomBlockTypeFromArrayExcludingSpecialBlockTypes(GameType().getNormalBlockTypes());
 						b.setColor(color);
 					}
 				}
@@ -781,7 +781,7 @@ public class Piece
 	// =========================================================================================================================
 	public void rotateCCW()
 	{// =========================================================================================================================
-		if(currentRotation==0)currentRotation=pieceType.lastRotation;
+		if(currentRotation==0)currentRotation=(pieceType.rotationSet.size() - 1);
 		else currentRotation=currentRotation-1;
 		setRotation(currentRotation);
 	}
@@ -790,7 +790,7 @@ public class Piece
 	// =========================================================================================================================
 	public void rotateCW()
 	{// =========================================================================================================================
-		if(currentRotation==pieceType.lastRotation)currentRotation=0;
+		if(currentRotation==(pieceType.rotationSet.size() - 1))currentRotation=0;
 		else currentRotation=currentRotation+1;
 		setRotation(currentRotation);
 	}
