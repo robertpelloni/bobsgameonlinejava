@@ -2,8 +2,7 @@ package com.bobsgame.client.engine.game.nd;
 
 import java.util.ArrayList;
 
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.MessageEvent;
+import io.netty.channel.ChannelHandlerContext;
 
 import com.bobsgame.client.Texture;
 
@@ -124,10 +123,8 @@ public class NDGameEngine extends MiniGameEngine
 	}
 
 	//=========================================================================================================================
-	public void handleMessage(ChannelHandlerContext ctx,MessageEvent e)
+	public void handleMessage(ChannelHandlerContext ctx, String s)
 	{//=========================================================================================================================
-
-		String s = (String) e.getMessage();
 
 		//log.debug(s);
 

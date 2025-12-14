@@ -2,8 +2,10 @@ package com.bobsgame.client.network;
 
 import java.net.InetSocketAddress;
 
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.MessageEvent;
+import io.netty.channel.ChannelHandlerContext;
+import org.slf4j.LoggerFactory;
+
+import ch.qos.logback.classic.Logger;
 
 import com.bobsgame.ClientMain;
 import com.bobsgame.client.engine.Engine;
@@ -30,32 +32,26 @@ public class FriendUDPConnection extends UDPConnection implements UDPInterface
 
 	//===============================================================================================
 	@Override
-	public void handleMessage(ChannelHandlerContext ctx, MessageEvent e)
+	public void handleMessage(ChannelHandlerContext ctx, String s, InetSocketAddress sender)
 	{//===============================================================================================
 
+		if(s.startsWith(BobNet.STUN_Response)){incomingSTUNReply(s, sender);return;}
 
-
-		String s = (String) e.getMessage();
-
-		if(s.startsWith(BobNet.STUN_Response)){incomingSTUNReply(e);return;}
-
-
-		if(e.getRemoteAddress().toString().equals(getPeerSocketAddress_S().toString())==false)
+        InetSocketAddress peer = getPeerSocketAddress_S();
+		if(peer == null || sender.toString().equals(peer.toString())==false)
 		{
-			log.error("Peer IP address didn't match on handleMessage");
+            if (peer != null)
+			    log.error("Peer IP address didn't match on handleMessage. Expected: " + peer + " Got: " + sender);
+            else
+                log.error("Peer address is null on handleMessage. Got: " + sender);
 			return;
 		}
 
-
-
 		if(s.startsWith(BobNet.Friend_Connect_Request)){sendPeerConnectResponse();return;}
-		if(s.startsWith(BobNet.Friend_Connect_Response)){incomingPeerConnectResponse(e);return;}
+		if(s.startsWith(BobNet.Friend_Connect_Response)){incomingPeerConnectResponse(s);return;}
 
-		if(friend!=null)friend.handleMessage(ctx,e);
+		if(friend!=null)friend.handleMessage(ctx,s,sender);
 	}
-
-
-
 
 
 	//===============================================================================================
@@ -74,19 +70,19 @@ public class FriendUDPConnection extends UDPConnection implements UDPInterface
 
 
 	//===============================================================================================
-	public void incomingSTUNReply(MessageEvent e)
+	public void incomingSTUNReply(String s, InetSocketAddress sender)
 	{//===============================================================================================
 
 
 		//make sure it is from the correct IP
-		if(e.getRemoteAddress().toString().equals(stunServerAddress.toString())==false)
+		if(sender.toString().equals(stunServerAddress.toString())==false)
 		{
 			log.error("STUN IP address didn't match stunServerAddress");
 			return;
 		}
 
 
-		String s = e.getMessage().toString();
+		//String s = e.getMessage().toString();
 		String friendIP = "";
 		int friendPort = -1;
 
@@ -112,12 +108,6 @@ public class FriendUDPConnection extends UDPConnection implements UDPInterface
 	}
 
 
-
-
-
-
-
-
 	//===============================================================================================
 	@Override
 	public void sendPeerConnectRequest()
@@ -134,10 +124,10 @@ public class FriendUDPConnection extends UDPConnection implements UDPInterface
 
 	//===============================================================================================
 	@Override
-	public void incomingPeerConnectResponse(MessageEvent e)
+	public void incomingPeerConnectResponse(String s)
 	{//===============================================================================================
 
-		String s = e.getMessage().toString();
+		//String s = e.getMessage().toString();
 
 		//FriendConnectResponse:friendUserID
 		s = s.substring(s.indexOf(":")+1);
@@ -152,14 +142,6 @@ public class FriendUDPConnection extends UDPConnection implements UDPInterface
 
 		setGotPeerConnectResponse_S(true);
 	}
-
-
-
-
-
-
-
-
 
 
 	//===============================================================================================
@@ -211,11 +193,5 @@ public class FriendUDPConnection extends UDPConnection implements UDPInterface
 
 
 	}
-
-
-
-
-
-
 
 }

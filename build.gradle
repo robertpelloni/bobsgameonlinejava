@@ -53,7 +53,7 @@ dependencies {
     implementation 'org.slf4j:log4j-over-slf4j:2.0.3'
     implementation 'ch.qos.logback:logback-classic:1.4.4'
     implementation 'commons-net:commons-net:3.8.0'
-    implementation 'io.netty:netty:3.10.6.Final'
+    implementation 'io.netty:netty-all:4.1.86.Final'
     implementation 'com.restfb:restfb:2022.10.0'
     implementation 'commons-codec:commons-codec:1.15'
     implementation 'commons-io:commons-io:2.11.0'

@@ -29,6 +29,15 @@ public class GUIManager extends EnginePart
 	public PlayerEditMenu playerEditMenu = null;
 	public GUI playerEditGUI = null;
 
+    public com.bobsgame.client.engine.game.gui.gameSequenceEditor.GameSequenceEditor gameSequenceEditor = null;
+    public GUI gameSequenceEditorGUI = null;
+
+    public com.bobsgame.client.engine.game.gui.customGameEditor.CustomGameEditor customGameEditor = null;
+    public GUI customGameEditorGUI = null;
+
+    public com.bobsgame.client.engine.game.gui.GameSelector gameSelector = null;
+    public GUI gameSelectorGUI = null;
+
 	public ArrayList<GameChallengeNotificationPanel> gameChallenges = new ArrayList<GameChallengeNotificationPanel>();
 	public ArrayList<GUI> gameChallengesGUIs = new ArrayList<GUI>();
 
@@ -98,6 +107,17 @@ public class GUIManager extends EnginePart
 		playerEditGUI = new GUI(playerEditMenu, LWJGLUtils.TWLrenderer);
 		playerEditGUI.applyTheme(LWJGLUtils.TWLthemeManager);
 
+        gameSequenceEditor = new com.bobsgame.client.engine.game.gui.gameSequenceEditor.GameSequenceEditor();
+        gameSequenceEditorGUI = new GUI(gameSequenceEditor, LWJGLUtils.TWLrenderer);
+        gameSequenceEditorGUI.applyTheme(LWJGLUtils.TWLthemeManager);
+
+        customGameEditor = new com.bobsgame.client.engine.game.gui.customGameEditor.CustomGameEditor();
+        customGameEditorGUI = new GUI(customGameEditor, LWJGLUtils.TWLrenderer);
+        customGameEditorGUI.applyTheme(LWJGLUtils.TWLthemeManager);
+
+        gameSelector = new com.bobsgame.client.engine.game.gui.GameSelector();
+        gameSelectorGUI = new GUI(gameSelector, LWJGLUtils.TWLrenderer);
+        gameSelectorGUI.applyTheme(LWJGLUtils.TWLthemeManager);
 
 		keyboardScreen = new KeyboardScreen();
 		keyboardScreenGUI = new GUI(keyboardScreen, LWJGLUtils.TWLrenderer);
@@ -132,6 +152,9 @@ public class GUIManager extends EnginePart
 		gameStore.update();
 		playerEditMenu.update();
 		keyboardScreen.update();
+        gameSequenceEditor.update();
+        customGameEditor.update();
+        gameSelector.update();
 
 		for(int i=0;i<gameChallenges.size();i++)
 		{
@@ -155,6 +178,9 @@ public class GUIManager extends EnginePart
 		if(gameStore.isActivated()){gameStore.renderBefore();gameStoreGUI.update();gameStore.render();}
 		if(playerEditMenu.isActivated()){playerEditMenu.renderBefore();playerEditGUI.update();playerEditMenu.render();}
 		if(keyboardScreen.isActivated()){keyboardScreen.renderBefore();keyboardScreenGUI.update();keyboardScreen.render();}
+        if(gameSequenceEditor.isActivated()){gameSequenceEditor.renderBefore();gameSequenceEditorGUI.update();gameSequenceEditor.render();}
+        if(customGameEditor.isActivated()){customGameEditor.renderBefore();customGameEditorGUI.update();customGameEditor.render();}
+        if(gameSelector.isActivated()){gameSelector.renderBefore();gameSelectorGUI.update();gameSelector.render();}
 
 		for(int i=0;i<gameChallenges.size();i++)
 		{
@@ -212,6 +238,9 @@ public class GUIManager extends EnginePart
 		gameStoreGUI.destroy();
 		playerEditGUI.destroy();
 		keyboardScreenGUI.destroy();
+        gameSequenceEditorGUI.destroy();
+        customGameEditorGUI.destroy();
+        gameSelectorGUI.destroy();
 
 		for(int i=0;i<gameChallenges.size();i++)
 		{
@@ -238,6 +267,15 @@ public class GUIManager extends EnginePart
 
 		playerEditMenu.mainPanelLayout.setTheme(GUIManager.darkThemeString);
 		playerEditMenu.mainPanelLayout.reapplyTheme();
+
+        gameSequenceEditor.mainPanelLayout.setTheme(GUIManager.darkThemeString);
+        gameSequenceEditor.mainPanelLayout.reapplyTheme();
+
+        customGameEditor.mainPanelLayout.setTheme(GUIManager.darkThemeString);
+        customGameEditor.mainPanelLayout.reapplyTheme();
+
+        gameSelector.mainPanelLayout.setTheme(GUIManager.darkThemeString);
+        gameSelector.mainPanelLayout.reapplyTheme();
 
 		keyboardScreen.mainPanelLayout.setTheme(GUIManager.darkThemeString);
 		keyboardScreen.mainPanelLayout.reapplyTheme();
@@ -266,6 +304,15 @@ public class GUIManager extends EnginePart
 
 		playerEditMenu.mainPanelLayout.setTheme(GUIManager.lightThemeString);
 		playerEditMenu.mainPanelLayout.reapplyTheme();
+
+        gameSequenceEditor.mainPanelLayout.setTheme(GUIManager.lightThemeString);
+        gameSequenceEditor.mainPanelLayout.reapplyTheme();
+
+        customGameEditor.mainPanelLayout.setTheme(GUIManager.lightThemeString);
+        customGameEditor.mainPanelLayout.reapplyTheme();
+
+        gameSelector.mainPanelLayout.setTheme(GUIManager.lightThemeString);
+        gameSelector.mainPanelLayout.reapplyTheme();
 
 		keyboardScreen.mainPanelLayout.setTheme(GUIManager.lightThemeString);
 		keyboardScreen.mainPanelLayout.reapplyTheme();
@@ -362,11 +409,28 @@ public class GUIManager extends EnginePart
 
 		ND().setActivated(false);
 		GameStore().setActivated(false);
-
+        gameSequenceEditor.setActivated(false);
+        customGameEditor.setActivated(false);
+        gameSelector.setActivated(false);
 
 		StuffMenu().setActivated(true);
 
 	}
+
+    public void openGameSequenceEditor() {
+        closeAllMenusAndND();
+        gameSequenceEditor.setActivated(true);
+    }
+
+    public void openCustomGameEditor() {
+        closeAllMenusAndND();
+        customGameEditor.setActivated(true);
+    }
+
+    public void openGameSelector() {
+        closeAllMenusAndND();
+        gameSelector.setActivated(true);
+    }
 
 
 	//=========================================================================================================================
@@ -403,7 +467,9 @@ public class GUIManager extends EnginePart
 		closeND();
 		GameStore().setActivated(false);
 		StuffMenu().setActivated(false);
-
+        gameSequenceEditor.setActivated(false);
+        customGameEditor.setActivated(false);
+        gameSelector.setActivated(false);
 	}
 
 

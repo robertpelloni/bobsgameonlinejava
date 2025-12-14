@@ -1,79 +1,56 @@
 package com.bobsgame.serverindex;
 
-import static org.jboss.netty.channel.Channels.pipeline;
-
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
-
-
-
 import java.util.*;
-
-
 import ch.qos.logback.classic.Logger;
-
 import com.bobsgame.net.*;
-
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
 
-
-import org.jboss.netty.bootstrap.ServerBootstrap;
-import org.jboss.netty.channel.AdaptiveReceiveBufferSizePredictorFactory;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelEvent;
-import org.jboss.netty.channel.ChannelHandler;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ChannelPipeline;
-import org.jboss.netty.channel.ChannelPipelineFactory;
-import org.jboss.netty.channel.ChannelStateEvent;
-import org.jboss.netty.channel.ExceptionEvent;
-import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
-
-
-import org.jboss.netty.handler.codec.frame.DelimiterBasedFrameDecoder;
-import org.jboss.netty.handler.codec.frame.Delimiters;
-import org.jboss.netty.handler.codec.string.StringDecoder;
-import org.jboss.netty.handler.codec.string.StringEncoder;
-import org.jboss.netty.handler.execution.ExecutionHandler;
-import org.jboss.netty.handler.execution.OrderedMemoryAwareThreadPoolExecutor;
-import org.jboss.netty.handler.timeout.IdleState;
-import org.jboss.netty.handler.timeout.IdleStateAwareChannelHandler;
-import org.jboss.netty.handler.timeout.IdleStateEvent;
-import org.jboss.netty.handler.timeout.IdleStateHandler;
-import org.jboss.netty.handler.timeout.ReadTimeoutException;
-import org.jboss.netty.util.HashedWheelTimer;
-import org.jboss.netty.util.Timer;
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPipeline;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.DelimiterBasedFrameDecoder;
+import io.netty.handler.codec.Delimiters;
+import io.netty.handler.codec.string.StringDecoder;
+import io.netty.handler.codec.string.StringEncoder;
+import io.netty.handler.timeout.IdleState;
+import io.netty.handler.timeout.IdleStateEvent;
+import io.netty.handler.timeout.IdleStateHandler;
+import io.netty.handler.timeout.ReadTimeoutException;
+import io.netty.util.concurrent.DefaultEventExecutorGroup;
+import io.netty.util.concurrent.EventExecutorGroup;
+import io.netty.channel.SimpleChannelInboundHandler;
 
 import org.slf4j.LoggerFactory;
-
-
-
 
 //===============================================================================================
 public class IndexServerTCP
 {//===============================================================================================
 
 
-	//TODO: are we sure we want 16 threads??? optimise this.
-	static public ExecutionHandler executionHandler = new ExecutionHandler(new OrderedMemoryAwareThreadPoolExecutor(16, 1048576, 1048576));
+	static public EventExecutorGroup executionGroup = new DefaultEventExecutorGroup(16);
 
-
-
-	Timer timer;
-
+	//Timer timer;
 
 	//DONE: add any other server channels to this vector
 	public Vector<BobsGameServer> serverList = new Vector<BobsGameServer>();
 	public ConcurrentHashMap<Channel,BobsGameServer> serversByChannel = new ConcurrentHashMap<Channel,BobsGameServer>();
 	public ConcurrentHashMap<Integer,BobsGameServer> serversByServerID = new ConcurrentHashMap<Integer,BobsGameServer>();
 
-
-	ServerBootstrap tcpServerBootstrap;
-	NioServerSocketChannelFactory tcpChannelFactory;
+    EventLoopGroup bossGroup;
+    EventLoopGroup workerGroup;
 	Channel tcpChannel;
-
 
 	public static Logger log = (Logger) LoggerFactory.getLogger(IndexServerTCP.class);
 
@@ -82,42 +59,34 @@ public class IndexServerTCP
 	public IndexServerTCP()
 	{//===============================================================================================
 
-		timer = new HashedWheelTimer();
+        bossGroup = new NioEventLoopGroup(1);
+        workerGroup = new NioEventLoopGroup();
 
-
-
-
-		// Configure the channel factory.
-		tcpChannelFactory = new NioServerSocketChannelFactory(Executors.newCachedThreadPool(), Executors.newCachedThreadPool());
-		tcpServerBootstrap = new ServerBootstrap(tcpChannelFactory);
-
-
-		// Configure the pipeline factory.
-		tcpServerBootstrap.setPipelineFactory(new TimeOutChannelPipelineFactory(timer));
-
-		tcpServerBootstrap.setOption("child.tcpNoDelay", true);
-		tcpServerBootstrap.setOption("child.keepAlive", true);
-
-		tcpServerBootstrap.setOption("tcpNoDelay", true);
-		tcpServerBootstrap.setOption("keepAlive", true);
-
-		//tcpServerBootstrap.setOption("reuseAddress", "true");
-
-		tcpServerBootstrap.setOption("sendBufferSize", 524288);
-		tcpServerBootstrap.setOption("receiveBufferSize", 524288);
-		tcpServerBootstrap.setOption("receiveBufferSizePredictorFactory", new AdaptiveReceiveBufferSizePredictorFactory());
-
-		//tcpServerBootstrap.setOption("broadcast", "true");
-
+        ServerBootstrap b = new ServerBootstrap();
+        b.group(bossGroup, workerGroup)
+         .channel(NioServerSocketChannel.class)
+         .childHandler(new ChannelInitializer<SocketChannel>() {
+             @Override
+             public void initChannel(SocketChannel ch) throws Exception {
+                 ChannelPipeline p = ch.pipeline();
+                 p.addLast("framer", new DelimiterBasedFrameDecoder(65536, Delimiters.lineDelimiter()));
+                 p.addLast("decoder", new StringDecoder());
+                 p.addLast("encoder", new StringEncoder());
+                 p.addLast("idle", new IdleStateHandler(120, 30, 0));
+                 p.addLast(executionGroup, "handler", new BobsGameServerHandler());
+             }
+         });
 
 		int serverPort = BobNet.INDEXServerTCPPort;
 		//if(new File("/localServer").exists())serverPort++;
 
 		// Bind and start to accept incoming connections.
-		tcpChannel = tcpServerBootstrap.bind(new InetSocketAddress(serverPort));
-
-		log.info("INDEX Server TCP ChannelID: "+tcpChannel.getId().toString());
-
+        try {
+		    tcpChannel = b.bind(serverPort).sync().channel();
+		    log.info("INDEX Server TCP ChannelID: "+tcpChannel.id().toString());
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
 	}
 
@@ -125,99 +94,52 @@ public class IndexServerTCP
 	//===============================================================================================
 	public void cleanup()
 	{//===============================================================================================
-		tcpServerBootstrap.releaseExternalResources();
-		timer.stop();
+        bossGroup.shutdownGracefully();
+        workerGroup.shutdownGracefully();
 	}
 
 
 	//===============================================================================================
-	public class TimeOutChannelPipelineFactory implements ChannelPipelineFactory
-	{//===============================================================================================
-
-
-		private final ChannelHandler idleStateHandler;
-
-		public TimeOutChannelPipelineFactory(Timer timer)
-		{
-			this.idleStateHandler = new IdleStateHandler(timer, 120, 30, 0); // timer must be shared.
-		}
-
-		public ChannelPipeline getPipeline() throws Exception
-		{
-			//Create a default pipeline implementation.
-			ChannelPipeline pipeline = pipeline(idleStateHandler);
-
-
-			//Add the text line codec combination first,
-			pipeline.addLast("framer", new DelimiterBasedFrameDecoder(65536, Delimiters.lineDelimiter()));//8192
-			pipeline.addLast("decoder", new StringDecoder());
-			pipeline.addLast("encoder", new StringEncoder());
-
-			//this should help not stall threads when doing db access
-			pipeline.addLast("execution-handler", executionHandler);
-
-			//and then business logic.
-			pipeline.addLast("handler", new BobsGameServerHandler());
-
-			return pipeline;
-		}
-
-	}
-
-
-
-
-
-
-	//===============================================================================================
-	public class BobsGameServerHandler extends IdleStateAwareChannelHandler
+	public class BobsGameServerHandler extends SimpleChannelInboundHandler<String>
 	{//===============================================================================================
 
 		Logger log = (Logger)LoggerFactory.getLogger(this.getClass());
 
 		//===============================================================================================
-		public void channelIdle(ChannelHandlerContext ctx, IdleStateEvent e)
+        @Override
+		public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception
 		{//===============================================================================================
 
-			int id = -1;
-			BobsGameServer s = getServerByChannel(e.getChannel());
-			if(s!=null)id=s.serverID;
+            if (evt instanceof IdleStateEvent) {
+                IdleStateEvent e = (IdleStateEvent) evt;
+			    int id = -1;
+			    BobsGameServer s = getServerByChannel(ctx.channel());
+			    if(s!=null)id=s.serverID;
 
-			if(e.getState() == IdleState.READER_IDLE)
-			{
-				log.warn("channelIdle: No incoming traffic from server timeout. Closing channel. ServerID: "+id);
+			    if(e.state() == IdleState.READER_IDLE)
+			    {
+				    log.warn("channelIdle: No incoming traffic from server timeout. Closing channel. ServerID: "+id);
 
-				e.getChannel().close();
+				    ctx.close();
 
-			}
-			else if(e.getState() == IdleState.WRITER_IDLE)
-			{
+			    }
+			    else if(e.state() == IdleState.WRITER_IDLE)
+			    {
 
-				e.getChannel().write("ping"+BobNet.endline);
+				    ctx.writeAndFlush("ping"+BobNet.endline);
 
-				if(BobNet.debugMode)log.debug("channelIdle: ping ServerID: "+id);
-			}
+				    if(BobNet.debugMode)log.debug("channelIdle: ping ServerID: "+id);
+			    }
+            }
 		}
 
 
 
 		//===============================================================================================
 		@Override
-		public void handleUpstream(ChannelHandlerContext ctx, ChannelEvent e) throws Exception
+		public void channelActive(ChannelHandlerContext ctx) throws Exception
 		{//===============================================================================================
-			if (e instanceof ChannelStateEvent)
-			{
-				log.debug("handleUpstream: "+e.toString());
-			}
-			super.handleUpstream(ctx, e);
-		}
-
-
-		//===============================================================================================
-		@Override
-		public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception
-		{//===============================================================================================
-			log.info("channelConnected: from Server. ChannelID: "+e.getChannel().getId());
+			log.info("channelConnected: from Server. ChannelID: "+ctx.channel().id());
 
 		}
 
@@ -226,21 +148,21 @@ public class IndexServerTCP
 
 		//===============================================================================================
 		@Override
-		public void channelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent e)
+		public void channelInactive(ChannelHandlerContext ctx) throws Exception
 		{//===============================================================================================
 
 
-			log.warn("channelDisconnected: from Server. ChannelID: "+e.getChannel().getId());
+			log.warn("channelDisconnected: from Server. ChannelID: "+ctx.channel().id());
 
 
 
-			BobsGameServer s = getServerByChannel(e.getChannel());
+			BobsGameServer s = getServerByChannel(ctx.channel());
 
 
 			if(s!=null)
 			{
 				serverList.remove(s);
-				serversByChannel.remove(e.getChannel());
+				serversByChannel.remove(ctx.channel());
 				serversByServerID.remove(s.serverID);
 			}
 
@@ -250,16 +172,11 @@ public class IndexServerTCP
 
 		//===============================================================================================
 		@Override
-		public void messageReceived(ChannelHandlerContext ctx, MessageEvent e)
+		public void channelRead0(ChannelHandlerContext ctx, String message) throws Exception
 		{//===============================================================================================
 
-
-			String message = (String) e.getMessage();
-
-
-
 			int serverID = -1;
-			BobsGameServer s = getServerByChannel(e.getChannel());
+			BobsGameServer s = getServerByChannel(ctx.channel());
 			if(s!=null)serverID=s.serverID;
 
 
@@ -281,47 +198,45 @@ public class IndexServerTCP
 
 			if(BobNet.debugMode)
 			{
-				log.warn("FROM SERVER: cID:"+e.getChannel().getId()+" sID:"+serverID+" | "+message);
+				log.warn("FROM SERVER: cID:"+ctx.channel().id()+" sID:"+serverID+" | "+message);
 			}
 
-			if(message.startsWith(BobNet.INDEX_Register_Server_With_INDEX_Request)){incoming_INDEX_Register_Server_Request(e);return;}
+			if(message.startsWith(BobNet.INDEX_Register_Server_With_INDEX_Request)){incoming_INDEX_Register_Server_Request(ctx.channel(), message);return;}
 
 
-			if(message.startsWith(BobNet.INDEX_Tell_All_Servers_To_Tell_FacebookIDs_That_UserID_Is_Online)){incoming_INDEX_Tell_All_Servers_To_Tell_FacebookIDs_That_UserID_Is_Online(e);return;}
-			if(message.startsWith(BobNet.INDEX_Tell_All_Servers_To_Tell_UserNames_That_UserID_Is_Online)){incoming_INDEX_Tell_All_Servers_To_Tell_UserNames_That_UserID_Is_Online(e);return;}
-			if(message.startsWith(BobNet.INDEX_Tell_ServerID_To_Tell_UserID_That_UserIDs_Are_Online)){incoming_INDEX_Tell_ServerID_To_Tell_UserID_That_UserIDs_Are_Online(e);return;}
-			if(message.startsWith(BobNet.INDEX_UserID_Logged_On_This_Server_Log_Them_Off_Other_Servers)){incoming_INDEX_User_Logged_On_This_Server_Log_Them_Off_Other_Servers(e);return;}
+			if(message.startsWith(BobNet.INDEX_Tell_All_Servers_To_Tell_FacebookIDs_That_UserID_Is_Online)){incoming_INDEX_Tell_All_Servers_To_Tell_FacebookIDs_That_UserID_Is_Online(ctx.channel(), message);return;}
+			if(message.startsWith(BobNet.INDEX_Tell_All_Servers_To_Tell_UserNames_That_UserID_Is_Online)){incoming_INDEX_Tell_All_Servers_To_Tell_UserNames_That_UserID_Is_Online(ctx.channel(), message);return;}
+			if(message.startsWith(BobNet.INDEX_Tell_ServerID_To_Tell_UserID_That_UserIDs_Are_Online)){incoming_INDEX_Tell_ServerID_To_Tell_UserID_That_UserIDs_Are_Online(ctx.channel(), message);return;}
+			if(message.startsWith(BobNet.INDEX_UserID_Logged_On_This_Server_Log_Them_Off_Other_Servers)){incoming_INDEX_User_Logged_On_This_Server_Log_Them_Off_Other_Servers(ctx.channel(), message);return;}
 
-			if(message.startsWith(BobNet.INDEX_Tell_All_Servers_Bobs_Game_Hosting_Room_Update)){incoming_INDEX_Tell_All_Servers_Bobs_Game_Hosting_Room_Update(e);return;}
-			if(message.startsWith(BobNet.INDEX_Tell_All_Servers_Bobs_Game_Remove_Room)){incoming_INDEX_Tell_All_Servers_Bobs_Game_Remove_Room(e);return;}
-			if(message.startsWith(BobNet.INDEX_Tell_All_Servers_To_Send_Activity_Update_To_All_Clients)){incoming_INDEX_Tell_All_Servers_To_Send_Activity_Update_To_All_Clients(e);return;}
-			if(message.startsWith(BobNet.INDEX_Tell_All_Servers_To_Send_Chat_Message_To_All_Clients)){incoming_INDEX_Tell_All_Servers_To_Send_Chat_Message_To_All_Clients(e);return;}
+			if(message.startsWith(BobNet.INDEX_Tell_All_Servers_Bobs_Game_Hosting_Room_Update)){incoming_INDEX_Tell_All_Servers_Bobs_Game_Hosting_Room_Update(ctx.channel(), message);return;}
+			if(message.startsWith(BobNet.INDEX_Tell_All_Servers_Bobs_Game_Remove_Room)){incoming_INDEX_Tell_All_Servers_Bobs_Game_Remove_Room(ctx.channel(), message);return;}
+			if(message.startsWith(BobNet.INDEX_Tell_All_Servers_To_Send_Activity_Update_To_All_Clients)){incoming_INDEX_Tell_All_Servers_To_Send_Activity_Update_To_All_Clients(ctx.channel(), message);return;}
+			if(message.startsWith(BobNet.INDEX_Tell_All_Servers_To_Send_Chat_Message_To_All_Clients)){incoming_INDEX_Tell_All_Servers_To_Send_Chat_Message_To_All_Clients(ctx.channel(), message);return;}
 
 
 		}
 
 		//===============================================================================================
 		@Override
-		public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e)
+		public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
 		{//===============================================================================================
-			Throwable cause = e.getCause();
 			if(cause instanceof ConnectException)
 			{
-				log.error("Exception caught from Server connection - ConnectException: "+e.getCause().getMessage());
+				log.error("Exception caught from Server connection - ConnectException: "+cause.getMessage());
 			}
 			else
 			if(cause instanceof ReadTimeoutException)
 			{
-				log.error("Exception caught from Server connection - ReadTimeoutException: "+e.getCause().getMessage());
+				log.error("Exception caught from Server connection - ReadTimeoutException: "+cause.getMessage());
 			}
 			else
 			{
-				log.error("Unexpected Exception caught from Server connection: "+e.getCause().getMessage());
+				log.error("Unexpected Exception caught from Server connection: "+cause.getMessage());
 				cause.printStackTrace();
 			}
 
-			ctx.getChannel().close();
-			e.getChannel().close();
+			ctx.close();
 		}
 
 
@@ -345,11 +260,11 @@ public class IndexServerTCP
 
 
 	//===============================================================================================
-	public void incoming_INDEX_Register_Server_Request(MessageEvent e)
+	public void incoming_INDEX_Register_Server_Request(Channel channel, String message)
 	{//===============================================================================================
 
 		//INDEX_Register_Server_Request:passCode,serverID,ipAddress
-		String s = (String) e.getMessage();
+		String s = message;
 		s = s.substring(s.indexOf(":")+1);//passCode,serverID,ipAddress
 		String passCode = s.substring(0, s.indexOf(","));
 		s = s.substring(s.indexOf(",")+1);
@@ -360,8 +275,8 @@ public class IndexServerTCP
 
 		if(passCode.equals(PrivateCredentials.passwordSalt)==false)
 		{
-			e.getChannel().write(BobNet.Server_Register_Server_With_INDEX_Response+"Incorrect passcode, cannot register with index.:-1:"+BobNet.endline);
-			e.getChannel().close();
+			channel.writeAndFlush(BobNet.Server_Register_Server_With_INDEX_Response+"Incorrect passcode, cannot register with index.:-1:"+BobNet.endline);
+			channel.close();
 		}
 		
 
@@ -386,17 +301,17 @@ public class IndexServerTCP
 		if(server==null)
 		{
 			//make a new serverID, add to hashtables.
-			server = new BobsGameServer(e.getChannel(), ipAddressString);
+			server = new BobsGameServer(channel, ipAddressString);
 		}
 
 		serverID = server.serverID;
 
 		serverList.add(server);
-		serversByChannel.put(e.getChannel(),server);
+		serversByChannel.put(channel,server);
 		serversByServerID.put(server.serverID,server);
 
 
-		e.getChannel().write(BobNet.Server_Register_Server_With_INDEX_Response+"Successfully registered with index.:"+serverID+":"+BobNet.endline);
+		channel.writeAndFlush(BobNet.Server_Register_Server_With_INDEX_Response+"Successfully registered with index.:"+serverID+":"+BobNet.endline);
 
 	}
 
@@ -404,14 +319,14 @@ public class IndexServerTCP
 
 
 	//===============================================================================================
-	public void incoming_INDEX_Tell_All_Servers_To_Tell_FacebookIDs_That_UserID_Is_Online(MessageEvent e)
+	public void incoming_INDEX_Tell_All_Servers_To_Tell_FacebookIDs_That_UserID_Is_Online(Channel channel, String message)
 	{//===============================================================================================
 
 
-		BobsGameServer thisServer = getServerByChannel(e.getChannel());
+		BobsGameServer thisServer = getServerByChannel(channel);
 
 		//ServerNotifyFacebookFriendsUserIsOnline:userID,`facebookFriendsCSV,`
-		String s = (String) e.getMessage();
+		String s = message;
 		s = s.substring(s.indexOf(":")+1);//userID,`facebookFriendsCSV,`
 		int userID = -1;
 		try{userID = Integer.parseInt(s.substring(0,s.indexOf(',')));}catch(NumberFormatException ex){ex.printStackTrace();return;}
@@ -427,9 +342,9 @@ public class IndexServerTCP
 		{
 			Channel c = serverList.get(i).channel;
 
-			if(c.isConnected())
+			if(c.isActive())
 			{
-				c.write(BobNet.Server_Tell_All_FacebookIDs_That_UserID_Is_Online+thisServer.serverID+","+userID+",`"+facebookIDsCSV+"`"+BobNet.endline);
+				c.writeAndFlush(BobNet.Server_Tell_All_FacebookIDs_That_UserID_Is_Online+thisServer.serverID+","+userID+",`"+facebookIDsCSV+"`"+BobNet.endline);
 			}
 			else
 			{
@@ -445,14 +360,14 @@ public class IndexServerTCP
 	}
 
 	//===============================================================================================
-	public void incoming_INDEX_Tell_All_Servers_To_Tell_UserNames_That_UserID_Is_Online(MessageEvent e)
+	public void incoming_INDEX_Tell_All_Servers_To_Tell_UserNames_That_UserID_Is_Online(Channel channel, String message)
 	{//===============================================================================================
 
 
-		BobsGameServer thisServer = getServerByChannel(e.getChannel());
+		BobsGameServer thisServer = getServerByChannel(channel);
 
 		//ServerNotifyUserNameFriendsUserIsOnline:userID,`facebookFriendsCSV,`
-		String s = (String) e.getMessage();
+		String s = message;
 		s = s.substring(s.indexOf(":")+1);//userID,`facebookFriendsCSV,`
 		int userID = -1;
 		try{userID = Integer.parseInt(s.substring(0,s.indexOf(',')));}catch(NumberFormatException ex){ex.printStackTrace();return;}
@@ -468,9 +383,9 @@ public class IndexServerTCP
 		{
 			Channel c = serverList.get(i).channel;
 
-			if(c.isConnected())
+			if(c.isActive())
 			{
-				c.write(BobNet.Server_Tell_All_UserNames_That_UserID_Is_Online+thisServer.serverID+","+userID+",`"+userNamesCSV+"`"+BobNet.endline);
+				c.writeAndFlush(BobNet.Server_Tell_All_UserNames_That_UserID_Is_Online+thisServer.serverID+","+userID+",`"+userNamesCSV+"`"+BobNet.endline);
 			}
 			else
 			{
@@ -481,7 +396,7 @@ public class IndexServerTCP
 
 	}
 	//===============================================================================================
-	public void incoming_INDEX_Tell_ServerID_To_Tell_UserID_That_UserIDs_Are_Online(MessageEvent e)
+	public void incoming_INDEX_Tell_ServerID_To_Tell_UserID_That_UserIDs_Are_Online(Channel channel, String message)
 	{//===============================================================================================
 
 		//after a user logs in, we sent a list of all their facebook friends to notify to every server.
@@ -494,7 +409,7 @@ public class IndexServerTCP
 		int userID = -1;
 
 		//INDEXTellServerNotifyUserFriendsAreOnline:serverID,userID,`onlineUserIDCSV,`
-		String s = (String) e.getMessage();
+		String s = message;
 		s = s.substring(s.indexOf(":")+1);//serverID,userID,`onlineUserIDCSV,`
 		try{serverID = Integer.parseInt(s.substring(0,s.indexOf(',')));}catch(NumberFormatException ex){ex.printStackTrace();}
 		s = s.substring(s.indexOf(",")+1);//userID,`onlineUserIDCSV,`
@@ -511,7 +426,7 @@ public class IndexServerTCP
 		BobsGameServer originalUserServer = getServerByServerID(serverID);
 		if(originalUserServer!=null)
 		{
-			originalUserServer.channel.write(BobNet.Server_Tell_UserID_That_UserIDs_Are_Online+userID+",`"+onlineUserIDCSV+"`"+BobNet.endline);
+			originalUserServer.channel.writeAndFlush(BobNet.Server_Tell_UserID_That_UserIDs_Are_Online+userID+",`"+onlineUserIDCSV+"`"+BobNet.endline);
 		}
 		else
 		{
@@ -522,13 +437,13 @@ public class IndexServerTCP
 
 
 	//===============================================================================================
-	public void incoming_INDEX_User_Logged_On_This_Server_Log_Them_Off_Other_Servers(MessageEvent e)
+	public void incoming_INDEX_User_Logged_On_This_Server_Log_Them_Off_Other_Servers(Channel channel, String message)
 	{//===============================================================================================
 
 		//INDEX_User_Logged_On_This_Server_Log_Them_Off_Other_Servers:serverID,userID
 		int serverID = -1;
 		int userID = -1;
-		String s = (String) e.getMessage();
+		String s = message;
 		s = s.substring(s.indexOf(":")+1);//serverID,userID
 		try{serverID = Integer.parseInt(s.substring(0,s.indexOf(',')));}catch(NumberFormatException ex){ex.printStackTrace();}
 		s = s.substring(s.indexOf(",")+1);//userID
@@ -547,9 +462,9 @@ public class IndexServerTCP
 
 				Channel c = serverList.get(i).channel;
 
-				if(c.isConnected())
+				if(c.isActive())
 				{
-					c.write(BobNet.Server_UserID_Logged_On_Other_Server_So_Log_Them_Off+userID+BobNet.endline);
+					c.writeAndFlush(BobNet.Server_UserID_Logged_On_Other_Server_So_Log_Them_Off+userID+BobNet.endline);
 				}
 				else
 				{
@@ -565,13 +480,13 @@ public class IndexServerTCP
 
 
 	//===============================================================================================
-	public void incoming_INDEX_Tell_All_Servers_Bobs_Game_Hosting_Room_Update(MessageEvent e)
+	public void incoming_INDEX_Tell_All_Servers_Bobs_Game_Hosting_Room_Update(Channel channel, String message)
 	{//===============================================================================================
 
 		//INDEX_Tell_All_Servers_Bobs_Game_Hosting_Room_Update,serverID,userID,roomString:
 		int serverID = -1;
 		int userID = -1;
-		String s = (String) e.getMessage();
+		String s = message;
 		s = s.substring(s.indexOf(":")+1);//serverID,userID
 		try{serverID = Integer.parseInt(s.substring(0,s.indexOf(',')));}catch(NumberFormatException ex){ex.printStackTrace();}
 		s = s.substring(s.indexOf(",")+1);//userID
@@ -592,9 +507,9 @@ public class IndexServerTCP
 
 				Channel c = serverList.get(i).channel;
 
-				if(c.isConnected())
+				if(c.isActive())
 				{
-					c.write(BobNet.Server_Bobs_Game_Hosting_Room_Update+serverID+","+userID+","+roomString+":"+BobNet.endline);
+					c.writeAndFlush(BobNet.Server_Bobs_Game_Hosting_Room_Update+serverID+","+userID+","+roomString+":"+BobNet.endline);
 				}
 				else
 				{
@@ -609,13 +524,13 @@ public class IndexServerTCP
 
 	
 	//===============================================================================================
-	public void incoming_INDEX_Tell_All_Servers_Bobs_Game_Remove_Room(MessageEvent e)
+	public void incoming_INDEX_Tell_All_Servers_Bobs_Game_Remove_Room(Channel channel, String message)
 	{//===============================================================================================
 		
 		//INDEX_Tell_All_Servers_Bobs_Game_Remove_Room,serverID,userID,roomString:
 		int serverID = -1;
 		int userID = -1;
-		String s = (String) e.getMessage();
+		String s = message;
 		s = s.substring(s.indexOf(":")+1);//serverID,userID
 		try{serverID = Integer.parseInt(s.substring(0,s.indexOf(',')));}catch(NumberFormatException ex){ex.printStackTrace();}
 		s = s.substring(s.indexOf(",")+1);//userID
@@ -636,9 +551,9 @@ public class IndexServerTCP
 				
 				Channel c = serverList.get(i).channel;
 				
-				if(c.isConnected())
+				if(c.isActive())
 				{
-					c.write(BobNet.Server_Bobs_Game_Remove_Room+serverID+","+userID+","+roomString+":"+BobNet.endline);
+					c.writeAndFlush(BobNet.Server_Bobs_Game_Remove_Room+serverID+","+userID+","+roomString+":"+BobNet.endline);
 				}
 				else
 				{
@@ -651,12 +566,12 @@ public class IndexServerTCP
 	}
 
 	//===============================================================================================
-	public void incoming_INDEX_Tell_All_Servers_To_Send_Activity_Update_To_All_Clients(MessageEvent e)
+	public void incoming_INDEX_Tell_All_Servers_To_Send_Activity_Update_To_All_Clients(Channel channel, String message)
 	{//===============================================================================================
 		
 		//INDEX_Tell_All_Servers_To_Send_Activity_Update_To_All_Clients,serverID,activityString:END:
 		int serverID = -1;
-		String s = (String) e.getMessage();
+		String s = message;
 		s = s.substring(s.indexOf(":")+1);//serverID
 		try{serverID = Integer.parseInt(s.substring(0,s.indexOf(',')));}catch(NumberFormatException ex){ex.printStackTrace();}
 		s = s.substring(s.indexOf(",")+1);
@@ -674,9 +589,9 @@ public class IndexServerTCP
 				
 				Channel c = serverList.get(i).channel;
 				
-				if(c.isConnected())
+				if(c.isActive())
 				{
-					c.write(BobNet.Server_Send_Activity_Update_To_All_Clients+activityString+":END:"+BobNet.endline);
+					c.writeAndFlush(BobNet.Server_Send_Activity_Update_To_All_Clients+activityString+":END:"+BobNet.endline);
 				}
 				else
 				{
@@ -686,12 +601,12 @@ public class IndexServerTCP
 		}
 	}
 	//===============================================================================================
-	public void incoming_INDEX_Tell_All_Servers_To_Send_Chat_Message_To_All_Clients(MessageEvent e)
+	public void incoming_INDEX_Tell_All_Servers_To_Send_Chat_Message_To_All_Clients(Channel channel, String message)
 	{//===============================================================================================
 
 		//INDEX_Tell_All_Servers_To_Send_Chat_Message_To_All_Clients,serverID,activityString:END:
 		int serverID = -1;
-		String s = (String) e.getMessage();
+		String s = message;
 		s = s.substring(s.indexOf(":")+1);//serverID
 		try{serverID = Integer.parseInt(s.substring(0,s.indexOf(',')));}catch(NumberFormatException ex){ex.printStackTrace();}
 		s = s.substring(s.indexOf(",")+1);
@@ -709,9 +624,9 @@ public class IndexServerTCP
 
 				Channel c = serverList.get(i).channel;
 
-				if(c.isConnected())
+				if(c.isActive())
 				{
-					c.write(BobNet.Server_Send_Chat_Message_To_All_Clients+activityString+":END:"+BobNet.endline);
+					c.writeAndFlush(BobNet.Server_Send_Chat_Message_To_All_Clients+activityString+":END:"+BobNet.endline);
 				}
 				else
 				{
@@ -729,9 +644,9 @@ public class IndexServerTCP
 		{
 			Channel c = serverList.get(i).channel;
 
-			if(c.isConnected())
+			if(c.isActive())
 			{
-				c.write(BobNet.Server_Tell_All_Users_Servers_Are_Shutting_Down+BobNet.endline);
+				c.writeAndFlush(BobNet.Server_Tell_All_Users_Servers_Are_Shutting_Down+BobNet.endline);
 			}
 			else
 			{
@@ -749,9 +664,9 @@ public class IndexServerTCP
 		{
 			Channel c = serverList.get(i).channel;
 
-			if(c.isConnected())
+			if(c.isActive())
 			{
-				c.write(BobNet.Server_Tell_All_Users_Servers_Have_Shut_Down+BobNet.endline);
+				c.writeAndFlush(BobNet.Server_Tell_All_Users_Servers_Have_Shut_Down+BobNet.endline);
 			}
 			else
 			{
