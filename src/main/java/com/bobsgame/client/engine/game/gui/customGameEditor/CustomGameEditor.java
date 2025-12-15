@@ -13,7 +13,9 @@ import de.matthiasmann.twl.ComboBox;
 import de.matthiasmann.twl.TabbedPane;
 import de.matthiasmann.twl.DialogLayout;
 import de.matthiasmann.twl.ListBox;
+import de.matthiasmann.twl.ToggleButton;
 import de.matthiasmann.twl.model.SimpleChangableListModel;
+import de.matthiasmann.twl.model.SimpleBooleanModel;
 
 public class CustomGameEditor extends MenuPanel {
 
@@ -26,6 +28,17 @@ public class CustomGameEditor extends MenuPanel {
     private EditField nameField;
     private ComboBox<GameType.GameMode> gameModeBox;
     private SimpleChangableListModel<GameType.GameMode> modeModel;
+
+    // Expanded Settings
+    private EditField gridWidthField;
+    private EditField gridHeightField;
+    private SimpleBooleanModel holdPieceModel;
+    private SimpleBooleanModel nextPieceModel;
+    private SimpleBooleanModel hardDropPunchModel;
+    private EditField gravityTicksField;
+    private EditField lockDelayTicksField;
+    private EditField chainAmountField;
+
 
     // Blocks Tab
     private DialogLayout blocksPanel;
@@ -66,15 +79,56 @@ public class CustomGameEditor extends MenuPanel {
         modeModel.addElement(GameType.GameMode.STACK);
         gameModeBox = new ComboBox<GameType.GameMode>(modeModel);
 
+        // Expanded Settings Init
+        gridWidthField = new EditField();
+        gridHeightField = new EditField();
+        gravityTicksField = new EditField();
+        lockDelayTicksField = new EditField();
+        chainAmountField = new EditField();
+
+        holdPieceModel = new SimpleBooleanModel();
+        nextPieceModel = new SimpleBooleanModel();
+        hardDropPunchModel = new SimpleBooleanModel();
+
+        EditField.Callback intCallback = new EditField.Callback() {
+            public void callback(int key) { saveToGameType(); }
+        };
+        gridWidthField.addCallback(intCallback);
+        gridHeightField.addCallback(intCallback);
+        gravityTicksField.addCallback(intCallback);
+        lockDelayTicksField.addCallback(intCallback);
+        chainAmountField.addCallback(intCallback);
+
+        holdPieceModel.addCallback(new Runnable(){public void run(){saveToGameType();}});
+        nextPieceModel.addCallback(new Runnable(){public void run(){saveToGameType();}});
+        hardDropPunchModel.addCallback(new Runnable(){public void run(){saveToGameType();}});
+
+        ToggleButton holdBtn = new ToggleButton(holdPieceModel); holdBtn.setText("Hold Piece");
+        ToggleButton nextBtn = new ToggleButton(nextPieceModel); nextBtn.setText("Next Piece");
+        ToggleButton hardDropBtn = new ToggleButton(hardDropPunchModel); hardDropBtn.setText("Hard Drop Punch");
+
+
         settingsPanel.setHorizontalGroup(
             settingsPanel.createParallelGroup()
                 .addGroup(settingsPanel.createSequentialGroup().addWidget(new Label("Name")).addWidget(nameField))
                 .addGroup(settingsPanel.createSequentialGroup().addWidget(new Label("Mode")).addWidget(gameModeBox))
+                .addGroup(settingsPanel.createSequentialGroup().addWidget(new Label("Grid W")).addWidget(gridWidthField).addWidget(new Label("Grid H")).addWidget(gridHeightField))
+                .addGroup(settingsPanel.createSequentialGroup().addWidget(new Label("Gravity Ticks")).addWidget(gravityTicksField))
+                .addGroup(settingsPanel.createSequentialGroup().addWidget(new Label("Lock Delay")).addWidget(lockDelayTicksField))
+                .addGroup(settingsPanel.createSequentialGroup().addWidget(new Label("Chain Amount")).addWidget(chainAmountField))
+                .addGroup(settingsPanel.createSequentialGroup().addWidget(holdBtn).addWidget(nextBtn))
+                .addWidget(hardDropBtn)
         );
         settingsPanel.setVerticalGroup(
             settingsPanel.createSequentialGroup()
                 .addGroup(settingsPanel.createParallelGroup().addWidget(new Label("Name")).addWidget(nameField))
                 .addGroup(settingsPanel.createParallelGroup().addWidget(new Label("Mode")).addWidget(gameModeBox))
+                .addGroup(settingsPanel.createParallelGroup().addWidget(new Label("Grid W")).addWidget(gridWidthField).addWidget(new Label("Grid H")).addWidget(gridHeightField))
+                .addGroup(settingsPanel.createParallelGroup().addWidget(new Label("Gravity Ticks")).addWidget(gravityTicksField))
+                .addGroup(settingsPanel.createParallelGroup().addWidget(new Label("Lock Delay")).addWidget(lockDelayTicksField))
+                .addGroup(settingsPanel.createParallelGroup().addWidget(new Label("Chain Amount")).addWidget(chainAmountField))
+                .addGroup(settingsPanel.createParallelGroup().addWidget(holdBtn).addWidget(nextBtn))
+                .addWidget(hardDropBtn)
         );
 
         tabbedPane.addTab("Settings", settingsPanel);
@@ -255,6 +309,17 @@ public class CustomGameEditor extends MenuPanel {
                     break;
                 }
             }
+
+            gridWidthField.setText(""+type.gridWidth);
+            gridHeightField.setText(""+type.gridHeight);
+            gravityTicksField.setText(""+type.gravityRule_ticksToMoveDownBlocksOverBlankSpaces);
+            lockDelayTicksField.setText(""+type.maxLockDelayTicks);
+            chainAmountField.setText(""+type.chainRule_AmountPerChain);
+
+            holdPieceModel.setValue(type.holdPieceEnabled);
+            nextPieceModel.setValue(type.nextPieceEnabled);
+            hardDropPunchModel.setValue(type.hardDropPunchThroughToLowestValidGridPosition);
+
             refreshBlockList();
             refreshPieceList();
         }
@@ -283,6 +348,16 @@ public class CustomGameEditor extends MenuPanel {
             currentGameType.name = nameField.getText();
             int sel = gameModeBox.getSelected();
             if(sel >= 0) currentGameType.gameMode = modeModel.getEntry(sel);
+
+            try { currentGameType.gridWidth = Integer.parseInt(gridWidthField.getText()); } catch(Exception e){}
+            try { currentGameType.gridHeight = Integer.parseInt(gridHeightField.getText()); } catch(Exception e){}
+            try { currentGameType.gravityRule_ticksToMoveDownBlocksOverBlankSpaces = Long.parseLong(gravityTicksField.getText()); } catch(Exception e){}
+            try { currentGameType.maxLockDelayTicks = Integer.parseInt(lockDelayTicksField.getText()); } catch(Exception e){}
+            try { currentGameType.chainRule_AmountPerChain = Integer.parseInt(chainAmountField.getText()); } catch(Exception e){}
+
+            currentGameType.holdPieceEnabled = holdPieceModel.getValue();
+            currentGameType.nextPieceEnabled = nextPieceModel.getValue();
+            currentGameType.hardDropPunchThroughToLowestValidGridPosition = hardDropPunchModel.getValue();
         }
     }
 }
