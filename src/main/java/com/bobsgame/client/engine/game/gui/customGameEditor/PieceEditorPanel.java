@@ -1,13 +1,18 @@
 package com.bobsgame.client.engine.game.gui.customGameEditor;
 
 import com.bobsgame.client.engine.game.nd.bobsgame.game.PieceType;
+import com.bobsgame.client.engine.game.nd.bobsgame.game.Piece.Rotation;
 import com.bobsgame.shared.BobColor;
 
+import de.matthiasmann.twl.Button;
 import de.matthiasmann.twl.DialogLayout;
 import de.matthiasmann.twl.EditField;
 import de.matthiasmann.twl.Label;
+import de.matthiasmann.twl.ListBox;
 import de.matthiasmann.twl.ToggleButton;
 import de.matthiasmann.twl.model.SimpleBooleanModel;
+import de.matthiasmann.twl.model.SimpleChangableListModel;
+import java.util.ArrayList;
 
 public class PieceEditorPanel extends DialogLayout {
 
@@ -27,8 +32,13 @@ public class PieceEditorPanel extends DialogLayout {
     private SimpleBooleanModel bombModel;
     private SimpleBooleanModel weightModel;
 
+    private RotationEditorWidget rotationEditor;
+    private ListBox<String> rotationList;
+    private SimpleChangableListModel<String> rotationListModel;
+    private Button addRotationButton;
+    private Button removeRotationButton;
+
     public PieceEditorPanel() {
-        //this.setTheme("pieceeditorpanel");
 
         nameField = new EditField();
         nameField.addCallback(new EditField.Callback() {
@@ -74,6 +84,44 @@ public class PieceEditorPanel extends DialogLayout {
         ToggleButton bombBtn = new ToggleButton(bombModel); bombBtn.setText("Bomb");
         ToggleButton weightBtn = new ToggleButton(weightModel); weightBtn.setText("Weight");
 
+        rotationEditor = new RotationEditorWidget();
+        rotationListModel = new SimpleChangableListModel<String>();
+        rotationList = new ListBox<String>(rotationListModel);
+
+        addRotationButton = new Button("Add Rot");
+        addRotationButton.addCallback(new Runnable() {
+            public void run() {
+                if(pieceType != null) {
+                    if(pieceType.rotationSet == null) pieceType.rotationSet = new ArrayList<Rotation>();
+                    pieceType.rotationSet.add(new Rotation());
+                    refreshRotationList();
+                }
+            }
+        });
+
+        removeRotationButton = new Button("Remove Rot");
+        removeRotationButton.addCallback(new Runnable() {
+            public void run() {
+                int sel = rotationList.getSelected();
+                if(sel >= 0 && pieceType != null && pieceType.rotationSet != null) {
+                    pieceType.rotationSet.remove(sel);
+                    refreshRotationList();
+                    rotationEditor.setRotation(null);
+                }
+            }
+        });
+
+        rotationList.getSelectionModel().addCallback(new Runnable() {
+            public void run() {
+                int sel = rotationList.getSelected();
+                if(sel >= 0 && pieceType != null && pieceType.rotationSet != null && sel < pieceType.rotationSet.size()) {
+                    rotationEditor.setRotation(pieceType.rotationSet.get(sel));
+                } else {
+                    rotationEditor.setRotation(null);
+                }
+            }
+        });
+
         Group hGroup = createParallelGroup()
             .addGroup(createSequentialGroup().addWidget(new Label("Name")).addWidget(nameField))
             .addGroup(createSequentialGroup().addWidget(new Label("Sprite")).addWidget(spriteField))
@@ -84,7 +132,11 @@ public class PieceEditorPanel extends DialogLayout {
             .addWidget(disallowFirstBtn)
             .addWidget(flashingBtn)
             .addWidget(bombBtn)
-            .addWidget(weightBtn);
+            .addWidget(weightBtn)
+            .addGroup(createSequentialGroup()
+                .addGroup(createParallelGroup().addWidget(rotationList).addGroup(createSequentialGroup().addWidget(addRotationButton).addWidget(removeRotationButton)))
+                .addWidget(rotationEditor)
+            );
 
         Group vGroup = createSequentialGroup()
             .addGroup(createParallelGroup().addWidget(new Label("Name")).addWidget(nameField))
@@ -96,7 +148,11 @@ public class PieceEditorPanel extends DialogLayout {
             .addWidget(disallowFirstBtn)
             .addWidget(flashingBtn)
             .addWidget(bombBtn)
-            .addWidget(weightBtn);
+            .addWidget(weightBtn)
+            .addGroup(createParallelGroup()
+                .addGroup(createSequentialGroup().addWidget(rotationList).addGroup(createParallelGroup().addWidget(addRotationButton).addWidget(removeRotationButton)))
+                .addWidget(rotationEditor)
+            );
 
         setHorizontalGroup(hGroup);
         setVerticalGroup(vGroup);
@@ -121,6 +177,20 @@ public class PieceEditorPanel extends DialogLayout {
             flashingModel.setValue(p.flashingSpecialType);
             bombModel.setValue(p.bombPiece);
             weightModel.setValue(p.weightPiece);
+
+            refreshRotationList();
+        } else {
+            rotationListModel.clear();
+            rotationEditor.setRotation(null);
+        }
+    }
+
+    private void refreshRotationList() {
+        rotationListModel.clear();
+        if(pieceType != null && pieceType.rotationSet != null) {
+            for(int i=0; i<pieceType.rotationSet.size(); i++) {
+                rotationListModel.addElement("Rotation " + i);
+            }
         }
     }
 
