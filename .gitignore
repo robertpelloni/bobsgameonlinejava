@@ -29,3 +29,4 @@ build/
 .gradle/8.8/fileHashes/fileHashes.lock
 .gradle/8.8/fileHashes/resourceHashesCache.bin
 .gradle/buildOutputCleanup/buildOutputCleanup.lock
+.gradle

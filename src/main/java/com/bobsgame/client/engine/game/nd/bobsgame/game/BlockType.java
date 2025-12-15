@@ -10,6 +10,7 @@ public class BlockType
 
     public String uuid = "";
     public String name = "New Block Type";
+    @Override public String toString() { return name; }
 
 	public String sprite = null;
 	public String specialSprite = null;

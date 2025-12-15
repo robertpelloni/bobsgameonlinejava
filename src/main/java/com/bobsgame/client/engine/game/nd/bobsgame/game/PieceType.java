@@ -8,6 +8,7 @@ public class PieceType {
 
     public String uuid = "";
     public String name = "New Piece Type";
+    @Override public String toString() { return name; }
 
     // Classification Flags
     public boolean useAsNormalPiece = false;
