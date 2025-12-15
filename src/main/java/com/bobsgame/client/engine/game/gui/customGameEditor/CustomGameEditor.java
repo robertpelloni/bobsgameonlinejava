@@ -14,6 +14,7 @@ import de.matthiasmann.twl.TabbedPane;
 import de.matthiasmann.twl.DialogLayout;
 import de.matthiasmann.twl.ListBox;
 import de.matthiasmann.twl.ToggleButton;
+import de.matthiasmann.twl.ResizableFrame;
 import de.matthiasmann.twl.model.SimpleChangableListModel;
 import de.matthiasmann.twl.model.SimpleBooleanModel;
 
@@ -266,6 +267,12 @@ public class CustomGameEditor extends MenuPanel {
         });
 
         loadButton = new Button("Load");
+        loadButton.addCallback(new Runnable() {
+            public void run() {
+                showLoadDialog();
+            }
+        });
+
         newButton = new Button("New");
         newButton.addCallback(new Runnable() {
             public void run() {
@@ -359,5 +366,52 @@ public class CustomGameEditor extends MenuPanel {
             currentGameType.nextPieceEnabled = nextPieceModel.getValue();
             currentGameType.hardDropPunchThroughToLowestValidGridPosition = hardDropPunchModel.getValue();
         }
+    }
+
+    private void showLoadDialog() {
+        final ResizableFrame window = new ResizableFrame();
+        window.setTitle("Load Game Type");
+
+        DialogLayout layout = new DialogLayout();
+
+        final SimpleChangableListModel<GameType> listModel = new SimpleChangableListModel<GameType>();
+        for(GameType gt : GameFileUtils.getGameTypeList()) {
+            listModel.addElement(gt);
+        }
+
+        final ListBox<GameType> listBox = new ListBox<GameType>(listModel);
+
+        Button okButton = new Button("Load");
+        okButton.addCallback(new Runnable() {
+            public void run() {
+                int sel = listBox.getSelected();
+                if(sel >= 0) {
+                    setGameType(listModel.getEntry(sel));
+                    window.destroy();
+                }
+            }
+        });
+
+        Button cancelButton = new Button("Cancel");
+        cancelButton.addCallback(new Runnable() {
+            public void run() {
+                window.destroy();
+            }
+        });
+
+        layout.setHorizontalGroup(layout.createParallelGroup()
+            .addWidget(listBox)
+            .addGroup(layout.createSequentialGroup().addWidget(okButton).addWidget(cancelButton))
+        );
+        layout.setVerticalGroup(layout.createSequentialGroup()
+            .addWidget(listBox)
+            .addGroup(layout.createParallelGroup().addWidget(okButton).addWidget(cancelButton))
+        );
+
+        window.add(layout);
+        window.setSize(400, 300);
+
+        add(window);
+        window.setPosition((getWidth() - window.getWidth())/2, (getHeight() - window.getHeight())/2);
     }
 }

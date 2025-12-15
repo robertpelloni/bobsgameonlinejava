@@ -69,6 +69,13 @@ dependencies {
     implementation 'com.maxmind.geoip2:geoip2:3.0.2'
     implementation 'net.java.jinput:jinput:2.0.9'
     implementation 'xpp3:xpp3:1.1.4c'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+}
+
+test {
+    useJUnitPlatform()
 }
 
 sourceSets {

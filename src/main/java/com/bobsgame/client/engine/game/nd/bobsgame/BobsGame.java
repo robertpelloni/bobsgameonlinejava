@@ -1005,7 +1005,7 @@ public class BobsGame extends NDGameEngine
 								storePacketsTicksCounter=currentTime;
 
 								NetworkPacket packetToSplit = ME.networkPacket;
-								ME.networkPacket = ME.new NetworkPacket();
+								ME.networkPacket = new GameLogic.NetworkPacket();
 
 
 								int maxFramesInPacket = 20;
@@ -1017,7 +1017,7 @@ public class BobsGame extends NDGameEngine
 									//so we split it into multiple packets.
 									while(packetToSplit.frameStates.size()>0)
 									{
-										NetworkPacket sendPacket = ME.new NetworkPacket();
+										NetworkPacket sendPacket = new GameLogic.NetworkPacket();
 
 
 										int size = packetToSplit.frameStates.size();

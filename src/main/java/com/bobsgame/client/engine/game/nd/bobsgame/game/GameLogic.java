@@ -4126,7 +4126,7 @@ public class GameLogic extends EnginePart
 
 
 	//=========================================================================================================================
-	public class ControlsState
+	public static class ControlsState
 	{//=========================================================================================================================
 		public boolean BUTTON_SPACE_HELD = false;
 		public boolean BUTTON_LCTRL_HELD = false;
@@ -4138,7 +4138,7 @@ public class GameLogic extends EnginePart
 	}
 
 	//=========================================================================================================================
-	public class FrameState
+	public static class FrameState
 	{//=========================================================================================================================
 		public ControlsState controlsState = new ControlsState();
 		public long ticksPassed = 0;
@@ -4146,7 +4146,7 @@ public class GameLogic extends EnginePart
 	}
 
 	// =========================================================================================================================
-	public class NetworkPacket
+	public static class NetworkPacket
 	{// =========================================================================================================================
 		public Vector<FrameState> frameStates = new Vector<FrameState>();
 	}
