@@ -21,12 +21,14 @@ import com.bobsgame.client.engine.text.BobFont.BitmapFont;
 import com.bobsgame.shared.BobColor;
 import com.bobsgame.shared.Utils;
 import com.bobsgame.shared.MapData.RenderOrder;
-
+import com.bobsgame.client.engine.game.nd.bobsgame.stats.BobsGameUserStats;
 
 
 //===============================================================================================
 public class GameLogic extends EnginePart
 {//===============================================================================================
+
+    public BobsGameUserStats currentSessionStats = new BobsGameUserStats();
 
 
 
@@ -449,6 +451,12 @@ public class GameLogic extends EnginePart
 		linesClearedThisGame = 0;
 
 
+        currentSessionStats = new BobsGameUserStats();
+        currentSessionStats.gameTypeName = GameType().name;
+        currentSessionStats.gameTypeUUID = GameType().uuid;
+        currentSessionStats.difficultyName = difficultyCaptionText;
+        currentSessionStats.firstTimePlayed = System.currentTimeMillis();
+
 
 		currentPiece = null;
 		holdPiece = null;
@@ -860,6 +868,8 @@ public class GameLogic extends EnginePart
 
 			}
 		}
+
+        currentSessionStats.totalBlocksCleared += blocksCleared;
 
 		timesToFlashScreenQueue+=linesCleared;
 
@@ -1357,6 +1367,8 @@ public class GameLogic extends EnginePart
 			else
 			{
 				currentCombo++;
+                if(currentCombo > currentSessionStats.biggestCombo) currentSessionStats.biggestCombo = currentCombo;
+                currentSessionStats.totalCombosMade++;
 				currentChain = currentChainBlocks.size();
 				comboChainTotal += currentChain;
 
@@ -2217,6 +2229,7 @@ public class GameLogic extends EnginePart
 
 		piecesMadeThisGame++;
 		piecesMadeTotal++;
+        currentSessionStats.totalPiecesMade++;
 
 		if(garbageWaitPieces>0)
 		{
@@ -3292,6 +3305,9 @@ public class GameLogic extends EnginePart
 		if(startedWinSequence==false)
 		{
 			startedWinSequence=true;
+            currentSessionStats.lastTimePlayed = System.currentTimeMillis();
+            currentSessionStats.totalTimePlayed = currentSessionStats.lastTimePlayed - currentSessionStats.firstTimePlayed;
+            currentSessionStats.singlePlayerGamesCompleted++;
 
 			AudioManager().playSound(GameType().winSound,getVolume(),1.0f,1);
 
@@ -3321,6 +3337,9 @@ public class GameLogic extends EnginePart
 		if(startedLoseSequence==false)
 		{
 			startedLoseSequence=true;
+            currentSessionStats.lastTimePlayed = System.currentTimeMillis();
+            currentSessionStats.totalTimePlayed = currentSessionStats.lastTimePlayed - currentSessionStats.firstTimePlayed;
+            currentSessionStats.singlePlayerGamesLost++;
 
 			AudioManager().playSound(GameType().loseSound,getVolume(),1.0f,1);
 
@@ -3962,6 +3981,8 @@ public class GameLogic extends EnginePart
 		}
 
 
+
+        currentSessionStats.singlePlayerHighestLevelReached = currentLevel;
 
 		if(GameType().scoreType == ScoreType.LINES_CLEARED)
 		{
