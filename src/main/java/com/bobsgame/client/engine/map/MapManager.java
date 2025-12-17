@@ -44,11 +44,9 @@ import java.util.Vector;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.lwjgl.opengl.Display;
-
 import org.slf4j.LoggerFactory;
 
-import slick.Texture;
+import com.bobsgame.client.Texture;
 
 import ch.qos.logback.classic.Logger;
 
@@ -332,8 +330,8 @@ public class MapManager extends EnginePart
 
 					LWJGLUtils.setShaderVar1i(LWJGLUtils.lightShader,"Tex0",0);
 					LWJGLUtils.setShaderVar1i(LWJGLUtils.lightShader,"Tex1",1);
-					LWJGLUtils.setShaderVar1f(LWJGLUtils.lightShader,"width",Display.getWidth());
-					LWJGLUtils.setShaderVar1f(LWJGLUtils.lightShader,"height",Display.getHeight());
+					LWJGLUtils.setShaderVar1f(LWJGLUtils.lightShader,"width",LWJGLUtils.SCREEN_SIZE_X);
+					LWJGLUtils.setShaderVar1f(LWJGLUtils.lightShader,"height",LWJGLUtils.SCREEN_SIZE_Y);
 
 
 
@@ -1169,19 +1167,5 @@ public class MapManager extends EnginePart
 		return null;
 
 	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 }

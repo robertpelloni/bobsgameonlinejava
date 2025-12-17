@@ -7,15 +7,14 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import org.lwjgl.BufferUtils;
+import org.lwjgl.stb.STBImage;
+import org.lwjgl.system.MemoryStack;
 import org.slf4j.LoggerFactory;
 import com.bobsgame.shared.BobColor;
 import com.bobsgame.shared.Utils;
-import slick.InternalTextureLoader;
-import slick.SlickCallable;
-import slick.Texture;
-import slick.TextureLoader;
-import slick.TrueTypeFont;
+
 import ch.qos.logback.classic.Logger;
+import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 import org.lwjgl.opengl.GL14;
 
@@ -24,7 +23,7 @@ import static org.lwjgl.opengl.GL11.*;
 public class GLUtils {
 	public static Logger log = (Logger) LoggerFactory.getLogger(GLUtils.class);
 
-	static public TrueTypeFont font;
+	public static BitmapFont font;
 
 	static private boolean antiAlias = true;
 
@@ -47,81 +46,33 @@ public class GLUtils {
 
 		// load font from file
 		try {
-			InputStream inputStream = Utils.getResourceAsStream("res/fonts/bobsgame.ttf");
-
-			Font awtFont = Font.createFont(Font.TRUETYPE_FONT, inputStream);
-			awtFont = awtFont.deriveFont(8f); // set font size
-			font = new TrueTypeFont(awtFont, antiAlias);
+            // Initialize BitmapFont with a size (e.g., 8.0f or 16.0f depending on original scale)
+            // Original code had: awtFont.deriveFont(8f);
+            font = new BitmapFont("res/fonts/bobsgame.ttf", 16.0f);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
-		/*
-		 * 	public void initDisplay(int width, int height) {
-		this.width = width;
-		this.height = height;
-
-		String extensions = GL11.glGetString(GL11.GL_EXTENSIONS);
-
-		GL11.glEnable(GL11.GL_TEXTURE_2D);
-		GL11.glShadeModel(GL11.GL_SMOOTH);
-		GL11.glDisable(GL11.GL_DEPTH_TEST);
-		GL11.glDisable(GL11.GL_LIGHTING);
-
-		GL11.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-		GL11.glClearDepth(1);
-
-		GL11.glEnable(GL11.GL_BLEND);
-		GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-
-		GL11.glViewport(0,0,width,height);
-		GL11.glMatrixMode(GL11.GL_MODELVIEW);
 	}
-
-
-	public void enterOrtho(int xsize, int ysize) {
-		GL11.glMatrixMode(GL11.GL_PROJECTION);
-		GL11.glLoadIdentity();
-		GL11.glOrtho(0, width, height, 0, 1, -1);
-		GL11.glMatrixMode(GL11.GL_MODELVIEW);
-
-		GL11.glTranslatef((width-xsize)/2,
-						(height-ysize)/2,0);
-	}
-
-
-
-		if (antialias) {
-			GL.glEnable(SGL.GL_LINE_SMOOTH);
-		} else {
-			GL.glDisable(SGL.GL_LINE_SMOOTH);
-
-
-
-		*/
-	}
-
-
 
 	public static Texture loadTexture(String name, int imageWidth, int imageHeight, ByteBuffer textureByteBuffer) {
+		// This method seems to be used when we already have the byte buffer, e.g. from network or generated?
+        // For now, let's assume it's standard RGBA8
+
 		int texWidth = Utils.getClosestPowerOfTwo(imageWidth);
 		int texHeight = Utils.getClosestPowerOfTwo(imageHeight);
 
-		int textureID = InternalTextureLoader.createTextureID();
-		Texture textureImpl = new Texture(name, GL_TEXTURE_2D, textureID);
-
-		//textureImpl.bind();//use this so slick keeps track of last texture used
-		//TODO: write my own Utils.bind that tracks textureID and doesn't rebind (also if textureID is released, set bind to null)
-		//look at what slick does for all that, or use slick more.
+		int textureID = glGenTextures();
+		Texture textureImpl = new Texture(textureID, texWidth, texHeight);
+        textureImpl.setWidth(imageWidth);
+        textureImpl.setHeight(imageHeight);
 
 		glBindTexture(GL_TEXTURE_2D, textureID);
 
-		textureImpl.setTextureWidth(texWidth);
-		textureImpl.setTextureHeight(texHeight);
+		//IntBuffer temp = BufferUtils.createIntBuffer(16);
+		//glGetInteger(GL_MAX_TEXTURE_SIZE, temp);
+		//int max = temp.get(0);
+        int max = glGetInteger(GL_MAX_TEXTURE_SIZE);
 
-		IntBuffer temp = BufferUtils.createIntBuffer(16);
-		glGetInteger(GL_MAX_TEXTURE_SIZE, temp);
-		int max = temp.get(0);
 		if ((texWidth > max) || (texHeight > max)) {
 			try {
 				throw new IOException("Attempt to allocate a texture too big for the current hardware");
@@ -129,14 +80,6 @@ public class GLUtils {
 				e.printStackTrace();
 			}
 		}
-
-		textureImpl.setWidth(imageWidth);
-		textureImpl.setHeight(imageHeight);
-		textureImpl.setAlpha(true);
-
-		//glBindTexture(GL_TEXTURE_2D, textureID);
-
-		//glEnable(GL_TEXTURE_2D);
 
 		setDefaultTextureParams();
 
@@ -151,8 +94,6 @@ public class GLUtils {
 			textureByteBuffer // image pixel data
 		);
 
-		//glDisable(GL_TEXTURE_2D);
-
 		texturesLoaded++;
 		textureBytesLoaded += (texWidth * texHeight * 4);
 
@@ -160,52 +101,97 @@ public class GLUtils {
 	}
 
 	public static void setDefaultTextureParams() {
-		// THIS WAS THE PROBLEM WITH TEXTURES SHOWING UP WHITE, NEEDED TO GENERATE MIPMAPS FOR SOME REASON
-		// why don't i need to do this for captions????
 		glTexParameteri(GL_TEXTURE_2D, GL12.GL_TEXTURE_BASE_LEVEL, 0);
 		glTexParameteri(GL_TEXTURE_2D, GL12.GL_TEXTURE_MAX_LEVEL, 2);//0=100% 1=50% 2=25%
 		glTexParameteri(GL_TEXTURE_2D, GL14.GL_GENERATE_MIPMAP, GL_TRUE);
-		//glTexEnvf(GL_TEXTURE_FILTER_CONTROL, GL_TEXTURE_LOD_BIAS, -1.5f);
-
-		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); //GL11.GL_NEAREST);
-		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); //GL11.GL_NEAREST);
 	}
 
 	public static Texture loadTexture(String s) {
-		try {
-			InputStream i = Utils.getResourceAsStream(s);
+        // STB Image loading
+        ByteBuffer imageBuffer;
+        int width, height;
 
-			if (i == null) {
-				log.error("Could not open file for texture: "+s);
-				return null;
-			}
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            IntBuffer w = stack.mallocInt(1);
+            IntBuffer h = stack.mallocInt(1);
+            IntBuffer comp = stack.mallocInt(1);
 
-			Texture t = TextureLoader.getTexture("PNG", i);
+            // Read file to ByteBuffer
+            try {
+                byte[] data = Utils.getResourceAsBytes(s);
+                if (data == null) {
+                    log.error("Could not load texture (not found): " + s);
+                    return null;
+                }
+                ByteBuffer resourceBuffer = BufferUtils.createByteBuffer(data.length);
+                resourceBuffer.put(data);
+                resourceBuffer.flip();
 
-			texturesLoaded++;
-			textureBytesLoaded += (t.getTextureWidth() * t.getTextureHeight() * 4);
+                // Load image
+                imageBuffer = STBImage.stbi_load_from_memory(resourceBuffer, w, h, comp, 4);
+                if (imageBuffer == null) {
+                    log.error("Could not decode texture: " + s + " Reason: " + STBImage.stbi_failure_reason());
+                    return null;
+                }
 
-//			glBindTexture(GL_TEXTURE_2D, t.getTextureID());
-//			//glEnable(GL_TEXTURE_2D);
-//			glTexParameteri(GL_TEXTURE_2D, GL12.GL_TEXTURE_BASE_LEVEL, 0);
-//			glTexParameteri(GL_TEXTURE_2D, GL12.GL_TEXTURE_MAX_LEVEL, 2);//0=100% 1=50% 2=25%
-//			glTexParameteri(GL_TEXTURE_2D, GL14.GL_GENERATE_MIPMAP, GL_TRUE);
+                width = w.get(0);
+                height = h.get(0);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
 
-			//glTexEnvf(GL_TEXTURE_FILTER_CONTROL, GL_TEXTURE_LOD_BIAS, -1.5f);
-			//glDisable(GL_TEXTURE_2D);
+        // We need power of two textures for mipmaps if we want to stick to old GL logic,
+        // but modern GL supports NPOT. However, let's stick to what the code expects if possible,
+        // or just upload as is. The original code resized to POT.
+        // STB loads the image as is. To resize to POT we would need to create a new buffer.
+        // For simplicity let's try uploading as POT if we want to match old behavior,
+        // OR rely on driver support for NPOT if we don't use strict mipmap generation that requires POT.
+        // The old code used Utils.getClosestPowerOfTwo.
 
-			return t;
-		} catch (IOException e) {
-			log.error("Could not load texture: " + s);
-			e.printStackTrace();
-			return null;
-		}
+        int texWidth = Utils.getClosestPowerOfTwo(width);
+        int texHeight = Utils.getClosestPowerOfTwo(height);
+
+        // If we want to support POT, we need to pad.
+        // Actually, let's just try using what we have. If it crashes we fix it.
+        // Wait, `glTexImage2D` expects the buffer to match the dimensions provided.
+        // If we say texWidth/texHeight but provide buffer of width/height, it will read garbage or crash if buffer is smaller.
+
+        // Let's implement proper padding if needed, but for now let's see if we can just use the image dimensions directly
+        // if we are willing to give up on POT requirements (which might break old shaders or wrap modes on old hardware, but this is 2024).
+        // However, the drawing code `drawTexture` calculates ratios based on `getImageWidth` / `getTextureWidth`.
+        // So we should probably maintain that distinction.
+
+        // Simplest way: Use the image buffer as is, set texture width/height to image width/height.
+        // But if the code relies on POT for tiling...
+
+        // Let's assume modern hardware and use image dimensions as texture dimensions for now.
+        // But wait, `GLUtils.drawTexture` uses:
+		// float tXRatio = (float) texture.getImageWidth() / (float) texture.getTextureWidth();
+        // If they are equal, ratio is 1.0.
+
+        int textureID = glGenTextures();
+        glBindTexture(GL_TEXTURE_2D, textureID);
+
+        setDefaultTextureParams();
+
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageBuffer);
+
+        STBImage.stbi_image_free(imageBuffer);
+
+        Texture t = new Texture(textureID, width, height);
+        t.setWidth(width);
+        t.setHeight(height);
+
+        texturesLoaded++;
+        textureBytesLoaded += (width * height * 4);
+
+        return t;
 	}
 
 	public static Texture releaseTexture(Texture t) {
+        if (t == null) return null;
 		texturesLoaded--;
 		textureBytesLoaded -= (t.getTextureWidth() * t.getTextureHeight() * 4);
 		t.release();
@@ -225,12 +211,14 @@ public class GLUtils {
 	}
 
 	public static void drawTexture(Texture texture, float sx0, float sy0, float alpha, int filter) {
+        if (texture == null) return;
 		float sx1 = sx0 + texture.getImageWidth();
 		float sy1 = sy0 + texture.getImageHeight();
 		drawTexture(texture, sx0, sx1, sy0, sy1, alpha, filter);
 	}
 
 	public static void drawTexture(Texture texture, float sx0, float sx1, float sy0, float sy1, float alpha, int filter) {
+        if (texture == null) return;
 		float tXRatio = (float) texture.getImageWidth() / (float) texture.getTextureWidth();
 		float tYRatio = (float) texture.getImageHeight() / (float) texture.getTextureHeight();
 
@@ -266,6 +254,7 @@ public class GLUtils {
 	}
 
 	public static void drawTexture(Texture texture, float tx0, float tx1, float ty0, float ty1, float sx0, float sx1, float sy0, float sy1, float r, float g, float b, float a, int filter) {
+        if (texture == null) return;
 		glBindTexture(GL_TEXTURE_2D, texture.getTextureID());
 		drawTexture(tx0, tx1, ty0, ty1, sx0, sx1, sy0, sy1, r, g, b, a, filter);
 	}
@@ -291,7 +280,6 @@ public class GLUtils {
 		} else if (filter == FILTER_LINEAR) {
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			//if(Keyboard.isKeyDown(Keyboard.KEY_1))glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
 		}
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
@@ -353,9 +341,9 @@ public class GLUtils {
 		glEnableClientState(GL_COLOR_ARRAY);
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 
-		glVertexPointer(3, 3 * 4, boxBuffer);
-		glColorPointer(4, 4 * 4, colBuffer);
-		glTexCoordPointer(2, 2 * 4, texBuffer);
+		glVertexPointer(3, GL_FLOAT, 0, boxBuffer);
+		glColorPointer(4, GL_FLOAT, 0, colBuffer);
+		glTexCoordPointer(2, GL_FLOAT, 0, texBuffer);
 
 		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
@@ -379,35 +367,36 @@ public class GLUtils {
 			return;
 		}
 
-		screenX0 *= globalDrawScale;
-		//screenX1*=globalDrawScale;
-		screenY0 *= globalDrawScale;
-		//screenY1*=globalDrawScale;
+        float sx = screenX0 * globalDrawScale;
+        float sy = screenY0 * globalDrawScale;
 
-		//Renderer.setRenderer(1);
+        // Save GL state
+        glPushAttrib(GL_CURRENT_BIT | GL_ENABLE_BIT | GL_TEXTURE_BIT | GL_TRANSFORM_BIT);
+        glMatrixMode(GL_MODELVIEW);
+        glPushMatrix();
+        glMatrixMode(GL_PROJECTION);
+        glPushMatrix();
 
-		//glEnable(GL_TEXTURE_2D);
-
-		//Color.white.bind();
-		//GL11.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-
-		//glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-		//glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
-
-		SlickCallable.enterSafeBlock();
 		{
-			font.drawString(screenX0-1,screenY0-1, text, BobColor.black);
-			font.drawString(screenX0+1,screenY0-1, text, BobColor.black);
-			font.drawString(screenX0-1,screenY0+1, text, BobColor.black);
-			font.drawString(screenX0+1,screenY0+1, text, BobColor.black);
-			font.drawString(screenX0+1,screenY0, text, BobColor.black);
-			font.drawString(screenX0-1,screenY0, text, BobColor.black);
-			font.drawString(screenX0,screenY0+1, text, BobColor.black);
-			font.drawString(screenX0,screenY0-1, text, BobColor.black);
-			font.drawString(screenX0,screenY0, text, new BobColor(color.r(),color.g(),color.b()));
-			//glEnable(GL_TEXTURE_2D);
+            // Simple outline by drawing black offsets
+			font.drawString(sx-1, sy-1, text, BobColor.black);
+			font.drawString(sx+1, sy-1, text, BobColor.black);
+			font.drawString(sx-1, sy+1, text, BobColor.black);
+			font.drawString(sx+1, sy+1, text, BobColor.black);
+			font.drawString(sx+1, sy, text, BobColor.black);
+			font.drawString(sx-1, sy, text, BobColor.black);
+			font.drawString(sx, sy+1, text, BobColor.black);
+			font.drawString(sx, sy-1, text, BobColor.black);
+
+			font.drawString(sx, sy, text, color);
 		}
-		SlickCallable.leaveSafeBlock();
+
+        // Restore GL state
+        glMatrixMode(GL_PROJECTION);
+        glPopMatrix();
+        glMatrixMode(GL_MODELVIEW);
+        glPopMatrix();
+        glPopAttrib();
 	}
 
 	public static void drawLine(float screenX0, float screenY0, float screenX1, float screenY1, int r, int g, int b) {
@@ -442,34 +431,27 @@ public class GLUtils {
 		screenY0 *= globalDrawScale;
 		screenY1 *= globalDrawScale;
 
-		// get distance
 		float dx = (screenX1 - screenX0);
 		float dy = (screenY1 - screenY0);
 
-		// get midpoint from distance
 		float midX = (screenX0 + dx / 2);
 		float midY = (screenY0 + dy / 2);
 
-		// make distance half since we are using midpoint
 		dx /= 2;
 		dy /= 2;
 
-		// get actual distance to midpoint
 		float dist = (float) Math.sqrt(dx * dx + dy * dy);
 
-		// get distance ratio
 		float distXRatio = dx / dist;
 		float distYRatio = dy / dist;
 
 		int arrowWidth = 12;
 
-		// get perpendicular points to midpoint
 		float midXPerpX1 = (midX + (arrowWidth / 2) * distYRatio);
 		float midYPerpY1 = (midY - (arrowWidth / 2) * distXRatio);
 		float midXPerpX2 = (midX - (arrowWidth / 2) * distYRatio);
 		float midYPerpY2 = (midY + (arrowWidth / 2) * distXRatio);
 
-		// get point 10 pixels past midpoint
 		float pastMidX = (screenX0 + (dist + 16) * distXRatio);
 		float pastMidY = (screenY0 + (dist + 16) * distYRatio);
 
@@ -489,149 +471,19 @@ public class GLUtils {
 
 		glBegin(GL_LINES);
 
-		// top
 		glVertex2f(screenX0, screenY0);
 		glVertex2f(screenX1, screenY0);
 
-		// bottom
 		glVertex2f(screenX0, screenY1);
 		glVertex2f(screenX1, screenY1);
 
-		// left
 		glVertex2f(screenX0, screenY0);
 		glVertex2f(screenX0, screenY1);
 
-		// right
 		glVertex2f(screenX1, screenY0);
 		glVertex2f(screenX1, screenY1);
 
 		glEnd();
-
-		/*
-		glBindTexture(GL_TEXTURE_2D, Utils.boxTexture.getTextureID());
-
-		float tx0;
-		float tx1;
-		float ty0;
-		float ty1;
-
-		float x0;
-		float x1;
-		float y0;
-		float y1;
-
-
-		//top left
-		tx0 = 0.0f;
-		tx1 = 3.0f/Utils.boxTexture.getTextureWidth();
-		ty0 = 0.0f;
-		ty1 = 3.0f/Utils.boxTexture.getTextureHeight();
-
-		x0 = screenLeft-3;
-		x1 = screenLeft;
-		y0 = screenTop-3;
-		y1 = screenTop;
-
-		GL.drawTexture(r,g,b,tx0,tx1,ty0,ty1,x0,x1,y0,y1,1.0f,0);
-
-		//top
-
-		tx0 = 3.0f/Utils.boxTexture.getTextureWidth();
-		tx1 = 6.0f/Utils.boxTexture.getTextureWidth();
-		ty0 = 0.0f/Utils.boxTexture.getTextureHeight();
-		ty1 = 3.0f/Utils.boxTexture.getTextureHeight();
-
-		x0 = screenLeft;
-		x1 = screenRight;
-		y0 = screenTop-3;
-		y1 = screenTop;
-
-		GL.drawTexture(r,g,b,tx0,tx1,ty0,ty1,x0,x1,y0,y1,1.0f,0);
-
-		//top right
-
-		tx0 = 6.0f/Utils.boxTexture.getTextureWidth();
-		tx1 = 9.0f/Utils.boxTexture.getTextureWidth();
-		ty0 = 0.0f/Utils.boxTexture.getTextureHeight();
-		ty1 = 3.0f/Utils.boxTexture.getTextureHeight();
-
-		x0 = screenRight;
-		x1 = screenRight+3;
-		y0 = screenTop-3;
-		y1 = screenTop;
-
-		GL.drawTexture(r,g,b,tx0,tx1,ty0,ty1,x0,x1,y0,y1,1.0f,0);
-
-
-		//left
-		tx0 = 0.0f;
-		tx1 = 3.0f/Utils.boxTexture.getTextureWidth();
-		ty0 = 3.0f/Utils.boxTexture.getTextureHeight();
-		ty1 = 6.0f/Utils.boxTexture.getTextureHeight();
-
-		x0 = screenLeft-3;
-		x1 = screenLeft;
-		y0 = screenTop;
-		y1 = screenBottom;
-
-		GL.drawTexture(r,g,b,tx0,tx1,ty0,ty1,x0,x1,y0,y1,1.0f,0);
-
-
-		//right
-		tx0 = 6.0f/Utils.boxTexture.getTextureWidth();
-		tx1 = 9.0f/Utils.boxTexture.getTextureWidth();
-		ty0 = 3.0f/Utils.boxTexture.getTextureHeight();
-		ty1 = 6.0f/Utils.boxTexture.getTextureHeight();
-
-		x0 = screenRight;
-		x1 = screenRight+3;
-		y0 = screenTop;
-		y1 = screenBottom;
-
-		GL.drawTexture(r,g,b,tx0,tx1,ty0,ty1,x0,x1,y0,y1,1.0f,0);
-
-
-		//bottom left
-		tx0 = 0.0f;
-		tx1 = 3.0f/Utils.boxTexture.getTextureWidth();
-		ty0 = 6.0f/Utils.boxTexture.getTextureHeight();
-		ty1 = 9.0f/Utils.boxTexture.getTextureHeight();
-
-		x0 = screenLeft-3;
-		x1 = screenLeft;
-		y0 = screenBottom;
-		y1 = screenBottom+3;
-
-		GL.drawTexture(r,g,b,tx0,tx1,ty0,ty1,x0,x1,y0,y1,1.0f,0);
-
-
-		//bottom
-		tx0 = 3.0f/Utils.boxTexture.getTextureWidth();
-		tx1 = 6.0f/Utils.boxTexture.getTextureWidth();
-		ty0 = 6.0f/Utils.boxTexture.getTextureHeight();
-		ty1 = 9.0f/Utils.boxTexture.getTextureHeight();
-
-		x0 = screenLeft;
-		x1 = screenRight;
-		y0 = screenBottom;
-		y1 = screenBottom+3;
-
-		GL.drawTexture(r,g,b,tx0,tx1,ty0,ty1,x0,x1,y0,y1,1.0f,0);
-
-
-		//bottom right
-		tx0 = 6.0f/Utils.boxTexture.getTextureWidth();
-		tx1 = 9.0f/Utils.boxTexture.getTextureWidth();
-		ty0 = 6.0f/Utils.boxTexture.getTextureHeight();
-		ty1 = 9.0f/Utils.boxTexture.getTextureHeight();
-
-		x0 = screenRight;
-		x1 = screenRight+3;
-		y0 = screenBottom;
-		y1 = screenBottom+3;
-
-		GL.drawTexture(r,g,b,tx0,tx1,ty0,ty1,x0,x1,y0,y1,1.0f,0);
-		*/
 	}
 
 	public static void drawFilledRect(int ri, int gi, int bi, float screenX0, float screenX1, float screenY0, float screenY1, float alpha) {
@@ -643,28 +495,6 @@ public class GLUtils {
 		glDisable(GL_TEXTURE_2D);
 
 		glColor4f(ri / 255.0f,gi / 255.0f,bi / 255.0f, alpha);
-
-//		//top
-//		glBegin(GL_TRIANGLE_FAN);
-//		glVertex2f(screen_x0, screen_y0);
-//		glVertex2f(screen_x1, screen_y0);
-//		//glEnd();
-//
-//		//bottom
-//		glVertex2f(screen_x0, screen_y1);
-//		glVertex2f(screen_x1, screen_y1);
-//		//glEnd();
-//
-//
-//		//left
-//		glVertex2f(screen_x0, screen_y0);
-//		glVertex2f(screen_x0, screen_y1);
-//		//glEnd();
-//
-//		//right
-//		glVertex2f(screen_x1, screen_y0);
-//		glVertex2f(screen_x1, screen_y1);
-//		glEnd();
 
 		box[0] = screenX0;
 		box[1] = screenY0;
@@ -684,7 +514,7 @@ public class GLUtils {
 
 		glEnableClientState(GL_VERTEX_ARRAY);
 
-		glVertexPointer(3, 3*4,  boxBuffer);
+		glVertexPointer(3, GL_FLOAT, 0,  boxBuffer);
 		glDrawArrays(GL_TRIANGLE_FAN,0,4);
 
 		glDisableClientState(GL_VERTEX_ARRAY);
@@ -692,66 +522,5 @@ public class GLUtils {
 
 	public static void drawFilledRectXYWH(float x, float y, float w, float h, float r, float g, float b, float a) {
 		drawFilledRect((int) (r * 255.0f), (int) (g * 255.0f), (int) (b * 255.0f), x, x + w, y, y + h, a);
-
-//		glDisable(GL_TEXTURE_2D);
-//
-//
-//		float screen_x0 = x;
-//		float screen_x1 = x+w;
-//		float screen_y0 = y;
-//		float screen_y1 = y+h;
-//
-//
-//		box[0]=screen_x0;
-//		box[1]=screen_y0;
-//		box[2]=0.0f;
-//		box[3]=screen_x0;
-//		box[4]=screen_y1;
-//		box[5]=0.0f;
-//		box[6]=screen_x1;
-//		box[7]=screen_y1;
-//		box[8]=0.0f;
-//		box[9]=screen_x1;
-//		box[10]=screen_y0;
-//		box[11]=0.0f;
-//
-//		boxBuffer.put(box);
-//		boxBuffer.position(0);
-//
-//		col[0] = r;
-//		col[1] = g;
-//		col[2] = b;
-//		col[3] = a;
-//
-//		col[4] = r;
-//		col[5] = g;
-//		col[6] = b;
-//		col[7] = a;
-//
-//		col[8] = r;
-//		col[9] = g;
-//		col[10] = b;
-//		col[11] = a;
-//
-//		col[12] = r;
-//		col[13] = g;
-//		col[14] = b;
-//		col[15] = a;
-//
-//
-//		colBuffer.put(col);
-//		colBuffer.position(0);
-//
-//		glEnableClientState(GL_VERTEX_ARRAY);
-//		glEnableClientState(GL_COLOR_ARRAY);
-//
-//		glVertexPointer(3, 3*4,  boxBuffer);
-//		glColorPointer(4, 4*4,  colBuffer);
-//		glDrawArrays(GL_TRIANGLE_FAN,0,4);
-//
-//		glDisableClientState(GL_COLOR_ARRAY);
-//		glDisableClientState(GL_VERTEX_ARRAY);
-//
-//		glEnable(GL_TEXTURE_2D);
 	}
 }

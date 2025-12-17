@@ -258,8 +258,8 @@ public class StadiumScreen extends EnginePart
 //
 //				glUniform1i(glGetUniformLocation(LWJGLUtils.lightShader, new StringBuffer("Tex0")), 0);
 //				glUniform1i(glGetUniformLocation(LWJGLUtils.lightShader, new StringBuffer("Tex1")), 1);
-//				glUniform1f(glGetUniformLocation(LWJGLUtils.lightShader, new StringBuffer("width")), Display.getWidth());
-//				glUniform1f(glGetUniformLocation(LWJGLUtils.lightShader, new StringBuffer("height")), Display.getHeight());
+//				glUniform1f(glGetUniformLocation(LWJGLUtils.lightShader, new StringBuffer("width")), LWJGLUtils.SCREEN_SIZE_X);
+//				glUniform1f(glGetUniformLocation(LWJGLUtils.lightShader, new StringBuffer("height")), LWJGLUtils.SCREEN_SIZE_Y);
 //
 //
 //				float lightOffset = 48*Cameraman().zoom;

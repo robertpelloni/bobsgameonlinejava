@@ -13,3 +13,4 @@ dependency-reduced-pom.xml
 
 *.class
 *.bak
+build/

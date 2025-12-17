@@ -822,7 +822,6 @@ public class Map implements ImageObserver, GameObject
 
 			layerImagesAllocated = false;
 
-			System.runFinalization();
 			//try{wait(1000);}catch(InterruptedException ie){}
 			System.gc();
 		}
@@ -861,7 +860,6 @@ public class Map implements ImageObserver, GameObject
 		{
 			layerImage[l].flush();
 			layerImage[l] = null;
-			System.runFinalization();
 			System.gc();
 		}
 
@@ -3055,7 +3053,6 @@ public class Map implements ImageObserver, GameObject
 
 		for(int i=0;i<1;i++)
 		{
-			System.runFinalization();
 			System.gc();
 		}
 	}

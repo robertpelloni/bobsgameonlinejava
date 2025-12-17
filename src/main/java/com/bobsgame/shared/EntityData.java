@@ -98,7 +98,7 @@ public class EntityData extends AssetData
 	private boolean animateThroughCurrentAnimation = false;//TODO: implement
 	private boolean loopAnimation = true;//TODO: implement
 
-	private float voicePitch=0; //TODO: implement
+	private float voicePitch=0;
 
 	private boolean animationDisabled=false; //TODO see where this is used.
 

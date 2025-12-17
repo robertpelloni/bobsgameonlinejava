@@ -3,7 +3,7 @@ package com.bobsgame.client.engine;
 
 import java.util.ArrayDeque;
 
-import org.lwjgl.opengl.Display;
+import com.bobsgame.client.LWJGLUtils;
 import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.classic.Logger;
@@ -311,7 +311,7 @@ public class Engine extends State
 
 		mapSizeText.text = "Map: " +CurrentMap().name() + " | Size : " + CurrentMap().widthPixelsHQ() + " x " + CurrentMap().heightPixelsHQ() + " PixelsHQ | " + CurrentMap().widthTiles1X() + " x " + CurrentMap().heightTiles1X() + " Tiles 1X ";
 
-		resolutionText.text = "Window res: "+Display.getWidth()+" x "+Display.getHeight()+" ("+(int)Display.getWidth()/2/cameraman.getZoom()+" x "+(int)Display.getHeight()/2/cameraman.getZoom()+")";
+		resolutionText.text = "Window res: "+LWJGLUtils.SCREEN_SIZE_X+" x "+LWJGLUtils.SCREEN_SIZE_Y+" ("+(int)LWJGLUtils.SCREEN_SIZE_X/2/cameraman.getZoom()+" x "+(int)LWJGLUtils.SCREEN_SIZE_Y/2/cameraman.getZoom()+")";
 
 		textText.text = "Text: "+textManager.currentText;
 		textOptionText.text = "Text option: "+textManager.optionBuffer;
@@ -517,12 +517,12 @@ public class Engine extends State
 
 	public float getWidth()
 	{
-		return Display.getWidth();
+		return LWJGLUtils.SCREEN_SIZE_X; //LWJGLUtils.SCREEN_SIZE_X;
 	}
 
 	public float getHeight()
 	{
-		return Display.getHeight();
+		return LWJGLUtils.SCREEN_SIZE_Y; //LWJGLUtils.SCREEN_SIZE_Y;
 	}
 
 	public float getWidthRelativeToZoom()
