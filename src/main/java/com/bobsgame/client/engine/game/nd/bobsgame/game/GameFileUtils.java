@@ -8,12 +8,14 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import com.bobsgame.client.engine.game.nd.bobsgame.stats.BobsGameUserStats;
 
 public class GameFileUtils {
 
     public static final String GAMES_DIR = "games";
     public static final String TYPES_DIR = GAMES_DIR + File.separator + "types";
     public static final String SEQUENCES_DIR = GAMES_DIR + File.separator + "sequences";
+    public static final String STATS_FILE = GAMES_DIR + File.separator + "stats.json";
 
     private static Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
@@ -81,5 +83,28 @@ public class GameFileUtils {
             }
         }
         return list;
+    }
+
+    public static void saveUserStats(BobsGameUserStats stats) {
+        initDirs();
+        try (FileWriter writer = new FileWriter(STATS_FILE)) {
+            gson.toJson(stats, writer);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static BobsGameUserStats loadUserStats() {
+        initDirs();
+        File f = new File(STATS_FILE);
+        if(f.exists()) {
+             try {
+                String content = new String(Files.readAllBytes(f.toPath()));
+                return gson.fromJson(content, BobsGameUserStats.class);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return new BobsGameUserStats();
     }
 }
