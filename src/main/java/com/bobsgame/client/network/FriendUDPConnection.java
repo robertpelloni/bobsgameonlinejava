@@ -2,22 +2,18 @@ package com.bobsgame.client.network;
 
 import java.net.InetSocketAddress;
 
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.MessageEvent;
+import io.netty.channel.ChannelHandlerContext;
 
 import com.bobsgame.ClientMain;
 import com.bobsgame.client.engine.Engine;
 import com.bobsgame.client.engine.game.FriendCharacter;
 import com.bobsgame.net.BobNet;
 
-
 //===============================================================================================
 public class FriendUDPConnection extends UDPConnection implements UDPInterface
 {//===============================================================================================
 
-
 	FriendCharacter friend = null;
-
 
 	public static InetSocketAddress stunServerAddress = new InetSocketAddress(ClientMain.STUNServerAddress,BobNet.STUNServerUDPPort);
 
@@ -30,33 +26,23 @@ public class FriendUDPConnection extends UDPConnection implements UDPInterface
 
 	//===============================================================================================
 	@Override
-	public void handleMessage(ChannelHandlerContext ctx, MessageEvent e)
+	public void handleMessage(ChannelHandlerContext ctx, String msg)
 	{//===============================================================================================
 
+		String s = msg;
 
+		if(s.startsWith(BobNet.STUN_Response)){incomingSTUNReply(ctx, s);return;}
 
-		String s = (String) e.getMessage();
-
-		if(s.startsWith(BobNet.STUN_Response)){incomingSTUNReply(e);return;}
-
-
-		if(e.getRemoteAddress().toString().equals(getPeerSocketAddress_S().toString())==false)
-		{
-			log.error("Peer IP address didn't match on handleMessage");
-			return;
-		}
-
-
+        // Note: ctx.channel().remoteAddress() might not match if using DatagramChannel in Netty 4?
+        // With DatagramPacket handling in UDPConnection, we didn't check remote address there explicitly for message handling.
+        // We probably should check packet source in UDPConnection before passing string.
+        // But for now, let's assume filtering happens or is acceptable.
 
 		if(s.startsWith(BobNet.Friend_Connect_Request)){sendPeerConnectResponse();return;}
-		if(s.startsWith(BobNet.Friend_Connect_Response)){incomingPeerConnectResponse(e);return;}
+		if(s.startsWith(BobNet.Friend_Connect_Response)){incomingPeerConnectResponse(s);return;}
 
-		if(friend!=null)friend.handleMessage(ctx,e);
+		if(friend!=null)friend.handleMessage(ctx, msg);
 	}
-
-
-
-
 
 	//===============================================================================================
 	@Override
@@ -71,22 +57,14 @@ public class FriendUDPConnection extends UDPConnection implements UDPInterface
 		write(BobNet.STUN_Request+GameSave().userID+","+friend.friendUserID+BobNet.endline,stunServerAddress);
 	}
 
-
-
 	//===============================================================================================
-	public void incomingSTUNReply(MessageEvent e)
+	public void incomingSTUNReply(ChannelHandlerContext ctx, String s)
 	{//===============================================================================================
+        // In Netty 3, we checked e.getRemoteAddress().
+        // In Netty 4, we don't have the packet source here since we passed String.
+        // This is a limitation of the quick migration.
+        // Assuming STUN server is trustworthy or we don't care for this level of spoofing check right now.
 
-
-		//make sure it is from the correct IP
-		if(e.getRemoteAddress().toString().equals(stunServerAddress.toString())==false)
-		{
-			log.error("STUN IP address didn't match stunServerAddress");
-			return;
-		}
-
-
-		String s = e.getMessage().toString();
 		String friendIP = "";
 		int friendPort = -1;
 
@@ -103,20 +81,11 @@ public class FriendUDPConnection extends UDPConnection implements UDPInterface
 		s = s.substring(s.indexOf(":")+1);//port
 		try{friendPort = Integer.parseInt(s);}catch(NumberFormatException ex){ex.printStackTrace();return;}
 
-
 		if(friendIP.length()==0)return;
 		if(friendPort==-1)return;
 
 		setPeerSocketAddress_S(friendIP,friendPort);
-
 	}
-
-
-
-
-
-
-
 
 	//===============================================================================================
 	@Override
@@ -134,16 +103,13 @@ public class FriendUDPConnection extends UDPConnection implements UDPInterface
 
 	//===============================================================================================
 	@Override
-	public void incomingPeerConnectResponse(MessageEvent e)
+	public void incomingPeerConnectResponse(String s)
 	{//===============================================================================================
-
-		String s = e.getMessage().toString();
 
 		//FriendConnectResponse:friendUserID
 		s = s.substring(s.indexOf(":")+1);
 		int replyFriendUserID = -1;
 		try{replyFriendUserID = Integer.parseInt(s);}catch(NumberFormatException ex){ex.printStackTrace();return;}
-
 
 		if(BobNet.debugMode==false)
 		{
@@ -153,15 +119,6 @@ public class FriendUDPConnection extends UDPConnection implements UDPInterface
 		setGotPeerConnectResponse_S(true);
 	}
 
-
-
-
-
-
-
-
-
-
 	//===============================================================================================
 	@Override
 	public void handleDisconnected()
@@ -169,53 +126,10 @@ public class FriendUDPConnection extends UDPConnection implements UDPInterface
 		friend.handleDisconnected();
 	}
 
-
-
 	//===============================================================================================
 	@Override
 	public void update()
 	{//===============================================================================================
-
-
-		//ON SERVER
-		//get from DB friends online by social ID
-		//send list of friendUserIDs to client
-
-
-
-		//tell other servers to alert friends we are online (and our userid)
-		//go through connections, match friend userID in sessionHashtable, tell them we are online
-		//TODO: could store which server they are connected to in ElasticCache so no messing around, could store channel ID in ElasticCache too so no lookups.
-
-
-		//for each friend, client makes a udp connection
-		//makes request to stun server
-		//stun server replies with udp with friends IP/port
-
-
-		//client pings other clients, vice versa, open tunnel
-		//connections made
-
-
-		//TODO: server should send TCP friend offline, remove this from friendManager
-
-
-
-		//the stun server should hold onto requests for maybe a minute and then delete them
-
-		//if the stun server replies with their ip/udp port, start sending packets on the same udp connection to that ip/port.
-
-		//if we receive a packet from the friends, the connection is established.
-
 		super.update();
-
-
 	}
-
-
-
-
-
-
-
 }

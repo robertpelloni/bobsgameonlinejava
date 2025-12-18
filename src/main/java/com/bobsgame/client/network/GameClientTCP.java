@@ -1,34 +1,29 @@
 package com.bobsgame.client.network;
 
-import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.ChannelPipeline;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.DelimiterBasedFrameDecoder;
+import io.netty.handler.codec.Delimiters;
+import io.netty.handler.codec.string.StringDecoder;
+import io.netty.handler.codec.string.StringEncoder;
+import io.netty.handler.timeout.ReadTimeoutException;
 
-import org.jboss.netty.bootstrap.ClientBootstrap;
-import org.jboss.netty.channel.AdaptiveReceiveBufferSizePredictorFactory;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelEvent;
-import org.jboss.netty.channel.ChannelFuture;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ChannelPipeline;
-import org.jboss.netty.channel.ChannelPipelineFactory;
-import org.jboss.netty.channel.ChannelStateEvent;
-import org.jboss.netty.channel.Channels;
-import org.jboss.netty.channel.ExceptionEvent;
-import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
-import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
-import org.jboss.netty.handler.codec.frame.DelimiterBasedFrameDecoder;
-import org.jboss.netty.handler.codec.frame.Delimiters;
-import org.jboss.netty.handler.codec.string.StringDecoder;
-import org.jboss.netty.handler.codec.string.StringEncoder;
-import org.jboss.netty.handler.timeout.ReadTimeoutException;
 import org.slf4j.LoggerFactory;
-
-
 import ch.qos.logback.classic.Logger;
 
 import com.bobsgame.ClientMain;
@@ -63,199 +58,121 @@ import com.bobsgame.shared.SpriteData;
 public class GameClientTCP extends EnginePart
 {//=========================================================================================================================
 
-
-
-
-	private static ClientBootstrap clientBootstrap;
+	private static Bootstrap clientBootstrap;
 	private static ChannelFuture channelFuture;
-
-
-	//Timer timer;
+    private static EventLoopGroup workerGroup;
 
 	public static Logger log = (Logger)LoggerFactory.getLogger(GameClientTCP.class);
-
 
 	//=========================================================================================================================
 	public GameClientTCP(ClientGameEngine g)
 	{//=========================================================================================================================
-
 		super(g);
-
 	}
-
 
 	//===============================================================================================
 	public void initBootstrap()
 	{//===============================================================================================
 
-
-		//Initialize the timer that schedules subsequent reconnection attempts.
-		//timer = new HashedWheelTimer();
+        workerGroup = new NioEventLoopGroup();
 
 		//Configure the client.
-		clientBootstrap = new ClientBootstrap(new NioClientSocketChannelFactory(Executors.newCachedThreadPool(), Executors.newCachedThreadPool()));
+		clientBootstrap = new Bootstrap();
+        clientBootstrap.group(workerGroup);
+        clientBootstrap.channel(NioSocketChannel.class);
 
+        clientBootstrap.option(ChannelOption.SO_KEEPALIVE, true);
+        clientBootstrap.option(ChannelOption.TCP_NODELAY, true);
+        clientBootstrap.option(ChannelOption.SO_SNDBUF, 65536);
+        clientBootstrap.option(ChannelOption.SO_RCVBUF, 65536);
 
-		//Configure the pipeline factory.
-		clientBootstrap.setPipelineFactory
-		(
-			new ChannelPipelineFactory()
-			{
-				//===============================================================================================
-				public ChannelPipeline getPipeline() throws Exception
-				{//===============================================================================================
-					//Create a default pipeline implementation.
-					ChannelPipeline pipeline = Channels.pipeline();
+        clientBootstrap.handler(new ChannelInitializer<SocketChannel>() {
+            @Override
+            public void initChannel(SocketChannel ch) throws Exception {
+                ChannelPipeline pipeline = ch.pipeline();
 
+                pipeline.addLast("framer", new DelimiterBasedFrameDecoder(65536, Delimiters.lineDelimiter()));
+                pipeline.addLast("decoder", new StringDecoder());
+                pipeline.addLast("encoder", new StringEncoder());
 
-					//Add the text line codec combination first,
-					pipeline.addLast("framer", new DelimiterBasedFrameDecoder(65536, Delimiters.lineDelimiter()));
-					pipeline.addLast("decoder", new StringDecoder());
-					pipeline.addLast("encoder", new StringEncoder());
-
-
-
-					//and then business logic.
-					pipeline.addLast("handler", new BobsGameClientHandler());
-
-					return pipeline;
-				}
-			}
-		);
-
-
-		clientBootstrap.setOption("sendBufferSize", 65536);
-		clientBootstrap.setOption("receiveBufferSize", 65536);
-		clientBootstrap.setOption("receiveBufferSizePredictorFactory", new AdaptiveReceiveBufferSizePredictorFactory());
-
-		clientBootstrap.setOption("tcpNoDelay", true);
-		clientBootstrap.setOption("keepAlive", true);
-
-		//clientBootstrap.setOption("remoteAddress", new InetSocketAddress(ClientMain.serverAddress, BobNet.serverTCPPort));
-
-
-
+                pipeline.addLast("handler", new BobsGameClientHandler());
+            }
+        });
 	}
 
-
-
-
 	//===============================================================================================
-	public class BobsGameClientHandler extends SimpleChannelUpstreamHandler
+	public class BobsGameClientHandler extends ChannelInboundHandlerAdapter
 	{//===============================================================================================
-
-
-
 
 		//===============================================================================================
 		public BobsGameClientHandler()
 		{//===============================================================================================
 			super();
-
 		}
 
 		//===============================================================================================
 		@Override
-		public void handleUpstream(ChannelHandlerContext ctx, ChannelEvent e) throws Exception
+		public void channelInactive(ChannelHandlerContext ctx) throws Exception
 		{//===============================================================================================
-			if(e instanceof ChannelStateEvent)
-			{
-				log.debug("handleUpstream: "+e.toString());
-			}
-			super.handleUpstream(ctx, e);
-		}
-
-		//===============================================================================================
-		@Override
-		public void channelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent e)
-		{//===============================================================================================
-
-			log.warn("channelDisconnected from Server: ChannelID: "+e.getChannel().getId());
-
+			log.warn("channelInactive from Server: ChannelID: "+ctx.channel().id());
 			Console.add("Disconnected from Server.", BobColor.red, 5000);
 
 			setConnectedToServer_S(false);
 			setNotAuthorizedOnServer();
 			setServerIPAddress_S(null);
-		}
 
+            super.channelInactive(ctx);
+		}
 
 		//===============================================================================================
 		@Override
-		public void channelClosed(ChannelHandlerContext ctx, ChannelStateEvent e)
+		public void channelActive(ChannelHandlerContext ctx) throws Exception
 		{//===============================================================================================
-
-			final int RECONNECT_DELAY = 2;//seconds
-
-			log.warn("channelClosed to Server: ChannelID: "+e.getChannel().getId());
-
-			setConnectedToServer_S(false);
-			setNotAuthorizedOnServer();
-			setServerIPAddress_S(null);
-
-		}
-
-
-		//===============================================================================================
-		@Override
-		public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e)
-		{//===============================================================================================
-
-			log.info("channelConnected to Server: ChannelID: "+e.getChannel().getId());
+			log.info("channelActive to Server: ChannelID: "+ctx.channel().id());
 			Console.add("Connected to Server!", BobColor.green, 5000);
-
+            super.channelActive(ctx);
 		}
-
 
 		//===============================================================================================
 		@Override
-		public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e)
+		public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
 		{//===============================================================================================
-			Throwable cause = e.getCause();
-			if(cause instanceof ConnectException)
+			if(cause instanceof java.net.ConnectException)
 			{
-				log.error("Exception caught connecting to Server - ConnectException: "+e.getCause().getMessage());
+				log.error("Exception caught connecting to Server - ConnectException: "+cause.getMessage());
 			}
 			else
 			if(cause instanceof ReadTimeoutException)
 			{
-				log.error("Exception caught connecting to Server - ReadTimeoutException: "+e.getCause().getMessage());
+				log.error("Exception caught connecting to Server - ReadTimeoutException: "+cause.getMessage());
 			}
 			else
 			{
-				log.error("Unexpected Exception caught connecting to Server: "+e.getCause().getMessage());
+				log.error("Unexpected Exception caught connecting to Server: "+cause.getMessage());
 				cause.printStackTrace();
 			}
 
-			ctx.getChannel().close();
-			e.getChannel().close();
+			ctx.close();
 		}
-
 
 		//===============================================================================================
 		@Override
-		public void messageReceived(ChannelHandlerContext ctx, MessageEvent e)
+		public void channelRead(ChannelHandlerContext ctx, Object msg)
 		{//===============================================================================================
-			//Print out the line received from the server.
-
 			try{Thread.currentThread().setName("ClientTCP_BobsGameClientHandler");}catch(SecurityException ex){ex.printStackTrace();}
 
-
-			String s = (String) e.getMessage();
+			String s = (String) msg;
 
 			if(BobNet.debugMode)
 			{
-				log.warn("FROM SERVER: cID:"+e.getChannel().getId()+" | "+s);
+				log.warn("FROM SERVER: cID:"+ctx.channel().id()+" | "+s);
 			}
-
 
 			if(s.startsWith("ping"))
 			{
-				//log.debug("SERVER: ping");
-				write(e.getChannel(),"pong"+BobNet.endline);
+				write(ctx.channel(),"pong"+BobNet.endline);
 				return;
 			}
-
 
 			if(s.startsWith(BobNet.Server_IP_Address_Response)){incomingServerIPAddressResponse(s);return;}
 
@@ -269,7 +186,6 @@ public class GameClientTCP extends EnginePart
 			if(s.startsWith(BobNet.Password_Recovery_Response)){incomingPasswordRecoveryResponse(s);return;}
 			if(s.startsWith(BobNet.Create_Account_Response)){incomingCreateAccountResponse(s);return;}
 
-
 			if(s.startsWith(BobNet.Sprite_Response)){incomingSpriteData(s);return;}
 			if(s.startsWith(BobNet.Map_Response)){incomingMapData(s);return;}
 
@@ -277,7 +193,6 @@ public class GameClientTCP extends EnginePart
 			if(s.startsWith(BobNet.Encrypted_GameSave_Update_Response)){incomingGameSaveUpdateResponse(s);return;}
 
 			if(s.startsWith(BobNet.Load_Event_Response)){incomingLoadEventResponse(s);return;}
-
 
 			if(s.startsWith(BobNet.Dialogue_Response)){incomingDialogue(s);return;}
 			if(s.startsWith(BobNet.Flag_Response)){incomingFlag(s);return;}
@@ -287,21 +202,11 @@ public class GameClientTCP extends EnginePart
 			if(s.startsWith(BobNet.Music_Response)){incomingMusic(s);return;}
 			if(s.startsWith(BobNet.Sound_Response)){incomingSound(s);return;}
 
-
-
 			if(s.startsWith(BobNet.Update_Facebook_Account_In_DB_Response)){incomingUpdateFacebookAccountInDBResponse(s);return;}
 			if(s.startsWith(BobNet.Online_Friends_List_Response)){incomingOnlineFriendsListResponse(s);return;}
 			if(s.startsWith(BobNet.Friend_Is_Online_Notification)){incomingFriendOnlineNotification(s);return;}
-
 		}
-
 	}
-
-
-
-
-
-
 
 	//===============================================================================================
 	public ChannelFuture write(Channel c, String s)
@@ -313,123 +218,48 @@ public class GameClientTCP extends EnginePart
 			s = s +BobNet.endline;
 		}
 
-
 		if(BobNet.debugMode)
 		{
-			log.debug("SEND SERVER: cID:"+c.getId()+" | "+s.substring(0,s.length()-2));
+			log.debug("SEND SERVER: cID:"+c.id()+" | "+s.substring(0,s.length()-2));
 		}
 
-
-		ChannelFuture cf = c.write(s);
+		ChannelFuture cf = c.writeAndFlush(s);
 
 		return cf;
 	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 	//=========================================================================================================================
 	public void cleanup()
 	{//=========================================================================================================================
 
-
 		serverCommandExecutorService.shutdownNow();
 
-
-		// Close the connection. Make sure the close operation ends because
-		// all I/O operations are asynchronous in Netty.
+		// Close the connection.
 		if(getChannel_S()!=null)
 		{
-
 			Channel c = getChannel_S();
-
-			if(c.isConnected()||c.isOpen())
+			if(c.isActive()||c.isOpen())
 			{
 				try
 				{
-					c.close().await();
+					c.close().sync();
 				}
 				catch(InterruptedException e)
 				{
 					e.printStackTrace();
 				}
 			}
-
 		}
 
-
-		if(clientBootstrap!=null)clientBootstrap.shutdown();
-
-		//timer.stop();
-
-
-
+        if (workerGroup != null) {
+            workerGroup.shutdownGracefully();
+        }
 	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 	private void setNotAuthorizedOnServer()
 	{
 		setLoginResponse_S(false,false);//may have to reinitialize if we connect to a different server
 		setReconnectResponse_S(false,false);
-
 	}
 
 	public boolean getAuthorizedOnServer()
@@ -437,9 +267,6 @@ public class GameClientTCP extends EnginePart
 		if(getWasLoginResponseValid_S()==true || getWasReconnectResponseValid_S()==true)return true;
 		return false;
 	}
-
-
-
 
 	private Channel _channel;
 	synchronized private void setChannel_S(Channel c)
@@ -455,7 +282,6 @@ public class GameClientTCP extends EnginePart
 		return write(getChannel_S(),s);
 	}
 
-
 	private boolean _connectedToServer = false;//synchronized
 	synchronized private void setConnectedToServer_S(boolean b)
 	{
@@ -465,9 +291,6 @@ public class GameClientTCP extends EnginePart
 	{
 		return _connectedToServer;
 	}
-
-
-
 
 	private InetSocketAddress _serverAddress = null;
 	private synchronized InetSocketAddress getServerIPAddress_S()
@@ -480,18 +303,9 @@ public class GameClientTCP extends EnginePart
 		else _serverAddress = new InetSocketAddress(ipAddressString, BobNet.serverTCPPort);
 	}
 
-
-
-
-
-
-	//TODO: maybe should have BobNet.getServerAddress or something that returns release or debug depending on flags. could also detect local?
-
 	private InetSocketAddress loadBalancerAddress = new InetSocketAddress(ClientMain.serverAddress, BobNet.serverTCPPort);
 
 	ExecutorService serverCommandExecutorService = Executors.newFixedThreadPool(1);
-
-
 
 	//=========================================================================================================================
 	private void ensureConnectedToServerThreadBlock()
@@ -499,7 +313,6 @@ public class GameClientTCP extends EnginePart
 
 		while(getConnectedToServer_S()==false && ClientMain.clientMain.exit==false)
 		{
-
 			log.debug("ensureConnectedToServerThreadBlock() Not connected to server. Trying...");
 
 			//if we dont have a server ip address, connect to the load balancer
@@ -507,11 +320,10 @@ public class GameClientTCP extends EnginePart
 			{
 				log.debug("ensureConnectedToServerThreadBlock() Don't have server IP. Connecting through LB...");
 
-
 				try
 				{
 					Channel c = getChannel_S();
-					if(c!=null)c.close().await();
+					if(c!=null)c.close().sync();
 				}
 				catch(InterruptedException e1)
 				{
@@ -519,12 +331,10 @@ public class GameClientTCP extends EnginePart
 					return;
 				}
 
-				if(clientBootstrap!=null)clientBootstrap.shutdown();
-
+                if(workerGroup != null) workerGroup.shutdownGracefully(); // Reset
 				initBootstrap();
 
 				channelFuture = clientBootstrap.connect(loadBalancerAddress);
-
 
 				//wait for load balancer to respond (we are connected to a server)
 				boolean connected=false;
@@ -532,14 +342,13 @@ public class GameClientTCP extends EnginePart
 				{
 					try
 					{
-						channelFuture.await();
+						channelFuture.sync();
 						connected=true;
 					}
 					catch(InterruptedException e){log.error("InterruptedException while connecting to Load Balancer. "+e.getMessage());return;}
 				}
 
-				setChannel_S(channelFuture.getChannel());
-
+				setChannel_S(channelFuture.channel());
 
 				//when connected to load balancer, send getServerIPCommand to get the servers real IP behind the load balancer
 				ChannelFuture c = writeToChannel_S(BobNet.Server_IP_Address_Request+BobNet.endline);
@@ -549,7 +358,7 @@ public class GameClientTCP extends EnginePart
 				{
 					try
 					{
-						c.await();
+						c.sync();
 						connected=true;
 					}
 					catch(InterruptedException e){log.error("InterruptedException while sending GetIP to Server behind LB. "+e.getMessage());return;}
@@ -576,17 +385,14 @@ public class GameClientTCP extends EnginePart
 				//otherwise we try again by connecting to the LB again and get a new server.
 			}
 
-
-
 			//disconnecting from the LB will set the address to null again, so we store it.
 			InetSocketAddress serverIP = getServerIPAddress_S();
-
 
 			//close the connection to the load balancer
 			try
 			{
 				Channel c = getChannel_S();
-				if(c!=null)c.close().await();
+				if(c!=null)c.close().sync();
 			}
 			catch(InterruptedException e1)
 			{
@@ -594,8 +400,7 @@ public class GameClientTCP extends EnginePart
 				return;
 			}
 
-			if(clientBootstrap!=null)clientBootstrap.shutdown();
-
+            if(workerGroup != null) workerGroup.shutdownGracefully(); // Reset
 			initBootstrap();
 
 			//connect to the server
@@ -607,17 +412,14 @@ public class GameClientTCP extends EnginePart
 			{
 				try
 				{
-					channelFuture.await();
+					channelFuture.sync();
 					connected=true;
 				}
 				catch(InterruptedException e){log.error("InterruptedException while connecting to Server. "+e.getMessage());return;}
 			}
-			setChannel_S(channelFuture.getChannel());
-
-
+			setChannel_S(channelFuture.channel());
 
 			setConnectedToServer_S(true);
-
 		}
 	}
 
@@ -627,22 +429,9 @@ public class GameClientTCP extends EnginePart
 
 		while(getAuthorizedOnServer()==false && ClientMain.clientMain.exit==false)
 		{
-
 			if(getUserID_S()!=-1)//we have a userID set, we must have dropped the connection. reconnect.
 			{
-
-				//send reconnect request
-
-				//wait for server to authorize our credentials
-
-				//set got reconnect response
-
-				//set session authorized
-
-				//write immediately in this thread, don't create another thread, because the queue is already blocking on this one!
 				writeToChannel_S(BobNet.Reconnect_Request+"`"+getUserID_S()+"`,`"+getSessionToken_S()+"`"+BobNet.endline);
-
-
 			}
 			else
 			{
@@ -661,51 +450,20 @@ public class GameClientTCP extends EnginePart
 			}
 
 			log.warn("Thread is waiting to authorize on Server.");
-
 		}
-
 	}
-
 
 	//=========================================================================================================================
 	private void incomingServerIPAddressResponse(String s)
 	{//=========================================================================================================================
-
 		//ServerIP:ip
 		s = s.substring(s.indexOf(":")+1);//ip
 		setServerIPAddress_S(s);
 	}
 
-
-	//when this goes bad, cant reconnect, get a new one from the load balancer.
-
-	//when i connect to a server, it checks its hashtable and determines whether i am registered there right now.
-
-	//if not, it grabs my last encryption key from the database and proceeds as usual.
-
-	//as a client, if i have a sessionToken set, i am good to go.
-	//otherwise, do login to get a sessionToken.
-
-	//just send the sessionToken to the new server i connect to.
-	//if i need an initialGameState, get it.
-
-	//if i already have a gameState, just proceed normally, auth with the sessionToken to register with the server
-
-
-
-
-	//yeah, should pause the game on every channel.write, put transparency over screen and say waiting to reconnect to server
-	//this should be very infrequent and it will allow for reconnecting to a different server.
-
-	//nD should be on a different thread, so minigames can keep going
-
-
-
-
 	//=========================================================================================================================
 	public void connectToServer()
 	{//=========================================================================================================================
-
 		serverCommandExecutorService.execute
 		(
 			new Runnable()
@@ -713,53 +471,37 @@ public class GameClientTCP extends EnginePart
 				public void run()
 				{
 					try{Thread.currentThread().setName("ClientTCP_connectToServer");}catch(SecurityException e){e.printStackTrace();}
-					//log.debug("connectToServer() Start");
 					ensureConnectedToServerThreadBlock();
-					//log.debug("connectToServer() Success");
 				}
 			}
 		);
-
 	}
-
-
 
 	//=========================================================================================================================
 	public void connectAndWriteToChannelBeforeAuthorization(final String s)
 	{//=========================================================================================================================
-
 		serverCommandExecutorService.execute
 		(
 			new Runnable()
 			{
 				public void run()
 				{
-
 					try{Thread.currentThread().setName("ClientTCP_connectAndWriteToChannelBeforeAuthorization");}catch(SecurityException e){e.printStackTrace();}
-					//log.debug("connectAndWriteToChannelBeforeAuthorization() Start");
 					ensureConnectedToServerThreadBlock();
-					//log.debug("connectAndWriteToChannelBeforeAuthorization() Success");
 					writeToChannel_S(s);
-
 				}
 			}
 		);
-
 	}
-
 
 	//=========================================================================================================================
 	public void connectAndAuthorizeAndWriteToChannel(final String s)
 	{//=========================================================================================================================
-
-
 		if(ClientMain.previewClientInEditor || ClientMain.introMode)
 		{
 			log.debug("Blocked writing to network: "+s);
 			return;
 		}
-
-		//new Exception().printStackTrace();
 
 		serverCommandExecutorService.execute
 		(
@@ -768,29 +510,13 @@ public class GameClientTCP extends EnginePart
 				public void run()
 				{
 					try{Thread.currentThread().setName("ClientTCP_connectAndAuthorizeAndWriteToChannel");}catch(SecurityException e){e.printStackTrace();}
-					//log.debug("connectAndAuthorizeAndWriteToChannel() Start : "+s);
 					ensureConnectedToServerThreadBlock();
 					ensureAuthorizedOnServerThreadBlock();
-					//log.debug("connectAndAuthorizeAndWriteToChannel() Success : "+s);
-
 					writeToChannel_S(s);
-
 				}
 			}
 		);
-
 	}
-
-
-
-
-
-
-
-
-
-
-
 
 	//=========================================================================================================================
 	//LOGIN
@@ -812,7 +538,6 @@ public class GameClientTCP extends EnginePart
 	{//=========================================================================================================================
 		gotLoginResponse_S = gotReponse;
 		loginWasValid_S = wasValid;
-
 	}
 
 	//=========================================================================================================================
@@ -838,7 +563,6 @@ public class GameClientTCP extends EnginePart
 	{//=========================================================================================================================
 		gotReconnectResponse_S = gotReponse;
 		reconnectWasValid_S = wasValid;
-
 	}
 	//=========================================================================================================================
 	synchronized public void setGotReconnectResponse_S(boolean b)
@@ -985,48 +709,20 @@ public class GameClientTCP extends EnginePart
 	//=========================================================================================================================
 	private void incomingSessionWasLoggedOnSomewhereElse(String s)
 	{//=========================================================================================================================
-
-		//TellClientTheirSessionWasLoggedOnSomewhereElse
-
-		//setUserID_S(-1);
-		//setSessionToken_S("");
-
 		ClientMain.clientMain.stateManager.setState(ClientMain.clientMain.loggedOutState);
-
 	}
 
 	//=========================================================================================================================
 	private void incomingServersAreShuttingDown(String s)
 	{//=========================================================================================================================
-
 		ClientMain.clientMain.serversAreShuttingDown=true;
-
 	}
 
 	//=========================================================================================================================
 	private void incomingServersHaveShutDown(String s)
 	{//=========================================================================================================================
-
 		ClientMain.clientMain.stateManager.setState(ClientMain.clientMain.serversHaveShutDownState);
-
 	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 	private boolean gotFacebookLoginResponse_S = false;//synchronized
 	private boolean facebookLoginWasValid_S = false;//synchronized
@@ -1036,7 +732,6 @@ public class GameClientTCP extends EnginePart
 	{//=========================================================================================================================
 		gotFacebookLoginResponse_S = gotReponse;
 		facebookLoginWasValid_S = wasValid;
-
 	}
 
 	//=========================================================================================================================
@@ -1105,14 +800,6 @@ public class GameClientTCP extends EnginePart
 		}
 	}
 
-
-
-
-
-
-
-
-
 	//=========================================================================================================================
 	//CREATE ACCOUNT
 	//=========================================================================================================================
@@ -1131,7 +818,6 @@ public class GameClientTCP extends EnginePart
 	//=========================================================================================================================
 	public void sendCreateAccountRequest(String email, String password)
 	{//=========================================================================================================================
-
 		connectAndWriteToChannelBeforeAuthorization(BobNet.Create_Account_Request+"`"+email+"`,`"+password+"`"+BobNet.endline);
 	}
 
@@ -1139,29 +825,8 @@ public class GameClientTCP extends EnginePart
 	//=========================================================================================================================
 	private void incomingCreateAccountResponse(String s)
 	{//=========================================================================================================================
-
-		//s = s.substring(s.indexOf(":")+1);
-
-		//it doesn't matter what the response was, we should not provide any information otherwise they can determine whether the email is signed up.
-		//so we just say "ok we tried to make an account, check your email"
-
 		setGotCreateAccountResponse_S(true);
-
 	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 	//=========================================================================================================================
 	//PASSWORD RECOVERY
@@ -1182,7 +847,6 @@ public class GameClientTCP extends EnginePart
 	//=========================================================================================================================
 	public void sendPasswordRecoveryRequest(String email)
 	{//=========================================================================================================================
-
 		connectAndWriteToChannelBeforeAuthorization(BobNet.Password_Recovery_Request+"`"+email+"`"+BobNet.endline);
 	}
 
@@ -1190,40 +854,8 @@ public class GameClientTCP extends EnginePart
 	//=========================================================================================================================
 	private void incomingPasswordRecoveryResponse(String s)
 	{//=========================================================================================================================
-
-
-		//s = s.substring(s.indexOf(":")+1);
-
 		setGotPasswordRecoveryResponse_S(true);
-
 	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 	//=========================================================================================================================
 	//GAME SAVE UPDATES
@@ -1260,8 +892,6 @@ public class GameClientTCP extends EnginePart
 		//parse off flagsSet,dialoguesDone,skillValues
 
 		//parse gamesave
-
-
 
 		//InitialGameSave:userID:`1`,thing:`thing`,,etc.
 		String gameSaveString = s.substring(s.indexOf(":")+1);
@@ -1386,15 +1016,9 @@ public class GameClientTCP extends EnginePart
 		}
 	}
 
-
-
-
-
 	//=========================================================================================================================
 	private void incomingGameSaveUpdateResponse(String s)
 	{//=========================================================================================================================
-
-
 
 		//EncryptedGameSave:id,blob
 		s = s.substring(s.indexOf(":")+1);//id,blob
@@ -1413,18 +1037,9 @@ public class GameClientTCP extends EnginePart
 
 	}
 
-
-
-
-
-
-
 	//=========================================================================================================================
 	//FACEBOOK TRASH
 	//=========================================================================================================================
-
-
-
 
 	boolean _gotFacebookAccountUpdateResponse = false;//synchronized
 	boolean _facebookAccountUpdateResponseWasValid = false;//synchronized
@@ -1471,44 +1086,18 @@ public class GameClientTCP extends EnginePart
 		{
 			setFacebookAccountUpdateResponseState_S(true, false);
 
-
-//			BobNet.UpdateFacebookAccountInDBResponse+"Success:`"+
-//			facebookID+"`,`"+
-//			facebookAccessToken+"`,`"+
-//			facebookEmail+"`,`"+
-//			facebookBirthday+"`,`"+
-//			facebookFirstName+"`,`"+
-//			facebookLastName+"`,`"+
-//			facebookGender+"`,`"+
-//			facebookLocale+"`,`"+
-//			facebookTimeZone+"`,`"+
-//			facebookUsername+"`,`"+
-//			facebookWebsite+"`"+
-
 			s = s.substring(s.indexOf("`")+1);
 			GameSave().facebookID = s.substring(0,s.indexOf("`"));
 			s = s.substring(s.indexOf("`")+3);
 			GameSave().facebookAccessToken = s.substring(0,s.indexOf("`"));
 			s = s.substring(s.indexOf("`")+3);
 			GameSave().facebookEmail = s.substring(0,s.indexOf("`"));
-			//s = s.substring(s.indexOf("`")+3);
-			//GameSave().facebookBirthday = s.substring(0,s.indexOf("`"));
 			s = s.substring(s.indexOf("`")+3);
 			GameSave().facebookFirstName = s.substring(0,s.indexOf("`"));
 			s = s.substring(s.indexOf("`")+3);
 			GameSave().facebookLastName = s.substring(0,s.indexOf("`"));
 			s = s.substring(s.indexOf("`")+3);
 			GameSave().facebookGender = s.substring(0,s.indexOf("`"));
-			//s = s.substring(s.indexOf("`")+3);
-			//GameSave().facebookLocale = s.substring(0,s.indexOf("`"));
-			//s = s.substring(s.indexOf("`")+3);
-			//try{GameSave().facebookTimeZone = Float.parseFloat(s.substring(0,s.indexOf("`")));}catch(NumberFormatException ex){ex.printStackTrace();return;}
-			//s = s.substring(s.indexOf("`")+3);
-			//GameSave().facebookUsername = s.substring(0,s.indexOf("`"));
-			//s = s.substring(s.indexOf("`")+3);
-			//GameSave().facebookWebsite = s.substring(0,s.indexOf("`"));
-
-
 		}
 		else
 		{
@@ -1516,10 +1105,6 @@ public class GameClientTCP extends EnginePart
 		}
 
 	}
-
-
-
-
 
 	//=========================================================================================================================
 	public void sendOnlineFriendListRequest()
@@ -1551,14 +1136,11 @@ public class GameClientTCP extends EnginePart
 		}
 	}
 
-
-
 	//=========================================================================================================================
 	private void incomingFriendOnlineNotification(String s)
 	{//=========================================================================================================================
 
 		//FriendOnlineNotification:type:id
-
 
 		//make a new friendConnection and add it to the friend manager
 		//check existing friends to see if userID already exists
@@ -1573,13 +1155,6 @@ public class GameClientTCP extends EnginePart
 
 		FriendManager().addNewOnlineFriendIfNotExist(friendUserID,type);
 	}
-
-
-
-
-
-
-
 
 	//====================================================
 	//SPRITE
@@ -1675,8 +1250,6 @@ public class GameClientTCP extends EnginePart
 			}
 		}
 	}
-
-
 
 	//====================================================
 	public void sendServerObjectRequest(ServerObject serverObject)
@@ -1969,16 +1542,4 @@ public class GameClientTCP extends EnginePart
 		}
 
 	}
-
-
-
-
-
-
-
-
-
-
-
-
 }

@@ -1,26 +1,18 @@
 package com.bobsgame.client.engine.game.nd.bobsgame;
 
-
-
 import java.util.ArrayList;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 
-
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.*;
-//import static org.lwjgl.opengl.GL30.*;
-//import static org.lwjgl.opengl.GL31.*;
-//import static org.lwjgl.opengl.GL32.*;
-//import static org.lwjgl.opengl.GL33.*;
-//import static org.lwjgl.opengl.GL40.*;
 
-import org.jboss.netty.channel.ChannelFuture;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.MessageEvent;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.MessageEvent;
 import org.slf4j.LoggerFactory;
 
-import slick.Texture;
+import com.bobsgame.client.Texture;
 
 import ch.qos.logback.classic.Logger;
 
@@ -42,36 +34,26 @@ import com.bobsgame.shared.Utils;
 import com.bobsgame.shared.MapData.RenderOrder;
 import com.google.gson.Gson;
 
-
 //=========================================================================================================================
 public class BobsGame extends NDGameEngine
 {//=========================================================================================================================
 
-
 	public static Logger log = (Logger) LoggerFactory.getLogger(BobsGame.class);
-
-
-
-
 
 	//public ConcurrentHashMap<Long,Game> games = new ConcurrentHashMap<Long,Game>();
 
 	public GameLogic ME = null;
 	GameLogic THEM = null;
 
-
 	public long randomSeed = -1;
 
 	Settings originalSettings = null;
 
-
 	long timeRenderBegan = System.currentTimeMillis();
-
 
 	boolean showingStartMenu = false;
 
 	long lastTimeTriedToCloseGame = 0;
-
 
 	boolean debug = BobNet.debugMode;
 
@@ -81,11 +63,7 @@ public class BobsGame extends NDGameEngine
 	public BobsGame(ND nD)
 	{//=========================================================================================================================
 
-
 		super(nD);
-
-
-
 
 		newGame();
 
@@ -95,18 +73,13 @@ public class BobsGame extends NDGameEngine
 //		player2.controlledByNetwork = true;
 //		games.add(player2);
 
-
 		name = "bob's game";
 
-
-
 	}
-
 
 	//=========================================================================================================================
 	public void setupLoadScreens()
 	{//=========================================================================================================================
-
 
 		showingTitleScreen = true;
 
@@ -126,7 +99,6 @@ public class BobsGame extends NDGameEngine
 		cursorTexture = GLUtils.loadTexture("res/textbox/textCursor.png");
 
 	}
-
 
 	//=========================================================================================================================
 	public void newGame()
@@ -148,7 +120,6 @@ public class BobsGame extends NDGameEngine
 
 	}
 
-
 	//=========================================================================================================================
 	public void resetGame()
 	{//=========================================================================================================================
@@ -156,21 +127,15 @@ public class BobsGame extends NDGameEngine
 		if(ME!=null)ME.deleteAllCaptions();
 		if(THEM!=null)THEM.deleteAllCaptions();
 
-
-
 		//TODO: unload sprites?
 		//TODO: stop music
-
-
 
 		BobsGame bobsgame = new BobsGame(nD);
 		//GameDataLoader gameDataLoader = new GameDataLoader(bobsgame);
 		bobsgame.init();
 
-
 		//for simulator connection
 		if(friend==null&&connection!=null)bobsgame.setConnection(connection);
-
 
 		nD.setGame(bobsgame);
 		this.nD = null;
@@ -189,14 +154,9 @@ public class BobsGame extends NDGameEngine
 
 	}
 
-
-
-
-
 	//=========================================================================================================================
 	public void tryToCloseGame()
 	{//=========================================================================================================================
-
 
 		if(isNetworkGame())
 		{
@@ -209,9 +169,6 @@ public class BobsGame extends NDGameEngine
 				//TODO: add "lose" to records
 
 				sendForfeit();
-
-
-
 
 				nD.setActivated(false);
 
@@ -229,18 +186,13 @@ public class BobsGame extends NDGameEngine
 
 			}
 
-
-
 		}
 		else
 		{
 			nD.setActivated(false);
 		}
 
-
 	}
-
-
 
 	//=========================================================================================================================
 	public boolean isNetworkGame()
@@ -248,7 +200,6 @@ public class BobsGame extends NDGameEngine
 		if(THEM==null)return false;
 		return true;
 	}
-
 
 	private static String netCommand_SEED = "SEED:";
 	private static String netCommand_SEEDOK = "SEEDOK:";
@@ -260,15 +211,13 @@ public class BobsGame extends NDGameEngine
 	private static String netCommand_FRAMEOK = "FRAMEOK:";
 	private static String netCommand_FORFEIT = "FORFEIT:";
 
-
 	//=========================================================================================================================
-	public void handleMessage(ChannelHandlerContext ctx,MessageEvent e)
+	public void handleMessage(ChannelHandlerContext ctx, String msg)
 	{//=========================================================================================================================
 
-		String s = (String) e.getMessage();
+		String s = msg;
 
 		//log.debug(s);
-
 
 		if(s.indexOf(":")==-1)return;
 		String command = s.substring(0,s.indexOf(":")+1);
@@ -290,11 +239,9 @@ public class BobsGame extends NDGameEngine
 
 		setLastTimeGotIncomingTraffic_S();
 
-		super.handleMessage(ctx,e);
+		super.handleMessage(ctx, msg);
 
 	}
-
-
 
 	//=========================================================================================================================
 	protected String getFrameStatesAsBase64GZippedGSON(NetworkPacket packet)
@@ -308,7 +255,6 @@ public class BobsGame extends NDGameEngine
 
 		return base64;
 	}
-
 
 	//=========================================================================================================================
 	protected NetworkPacket getFrameStatesFromBase64GZippedGSON(String b64GZipJSON)
@@ -325,7 +271,6 @@ public class BobsGame extends NDGameEngine
 
 	}
 
-
 	//=========================================================================================================================
 	private void incoming_FramePacket(String s)
 	{//=========================================================================================================================
@@ -335,7 +280,6 @@ public class BobsGame extends NDGameEngine
 		long randomSeed = -1;
 		try{randomSeed = Long.parseLong(s.substring(0,s.indexOf(":")));}catch(NumberFormatException e){log.error("Failed to parse randomSeed in incoming frame packet");return;}
 		s = s.substring(s.indexOf(":")+1);
-
 
 		//get ID, md5
 		if(s.indexOf(":")==-1)return;
@@ -349,10 +293,8 @@ public class BobsGame extends NDGameEngine
 		String compMD5 = Utils.getStringMD5(s);
 		if(md5.equals(compMD5)==false){log.error("Frame Packet MD5 did not match!");return;}
 
-
 		//Game them = games.get(randomSeed);
 		//if(them==null){log.error("Could not find game with seed:" + randomSeed);return;}
-
 
 		//store id, md5 in "got packets" log so we don't add the same frame packet twice, in case our "OK" doesn't make it back and they keep sending it
 		if(gotPacketsLog.contains(idMD5)==true)
@@ -385,7 +327,6 @@ public class BobsGame extends NDGameEngine
 		}
 	}
 
-
 	//=========================================================================================================================
 	private void incoming_gotFrameOK(String s)
 	{//=========================================================================================================================
@@ -415,8 +356,6 @@ public class BobsGame extends NDGameEngine
 
 	}
 
-
-
 	ConcurrentHashMap<Long,Long> gotSeedTime = new ConcurrentHashMap<Long,Long>();
 
 	//=========================================================================================================================
@@ -429,9 +368,7 @@ public class BobsGame extends NDGameEngine
 		try{theirRandomSeed = Long.parseLong(s.substring(0,s.indexOf(":")));}catch(NumberFormatException e){log.error("Failed to parse randomSeed in incoming frame packet");return;}
 		s = s.substring(s.indexOf(":")+1);
 
-
 		if(debug)log.error("incoming_Seed: Their Seed: "+theirRandomSeed);
-
 
 		long currentTime = System.currentTimeMillis();
 		Long time = gotSeedTime.get(theirRandomSeed);
@@ -441,9 +378,7 @@ public class BobsGame extends NDGameEngine
 		if(time!=null)gotSeedTime.remove(theirRandomSeed);
 		gotSeedTime.put(theirRandomSeed,currentTime);
 
-
 		if(debug)log.debug("gotSeedTime:" +theirRandomSeed+","+currentTime);
-
 
 		//Game g = games.get(theirRandomSeed);
 		if(theirSeed()==-1)
@@ -465,8 +400,6 @@ public class BobsGame extends NDGameEngine
 	//=========================================================================================================================
 	private void incoming_Settings(String s)
 	{//=========================================================================================================================
-
-
 
 		//randomSeed:MD5:base64
 		if(s.indexOf(":")==-1)return;
@@ -510,8 +443,6 @@ public class BobsGame extends NDGameEngine
 		//log.debug("write: netCommand_SETTINGSOK " +theirRandomSeed);
 	}
 
-
-
 	//=========================================================================================================================
 	private void incoming_ReplyToMySeed(String s)
 	{//=========================================================================================================================
@@ -521,7 +452,6 @@ public class BobsGame extends NDGameEngine
 		long myRandomSeed = -1;
 		try{myRandomSeed = Long.parseLong(s.substring(0,s.indexOf(":")));}catch(NumberFormatException e){log.error("Failed to parse randomSeed in incoming seedok");return;}
 		//s = s.substring(s.indexOf(":")+1);
-
 
 		if(debug)log.error("incoming_ReplyToMySeed: My Seed: " +myRandomSeed);
 		//Game them = games.get(randomSeed);
@@ -541,8 +471,6 @@ public class BobsGame extends NDGameEngine
 		try{myRandomSeed = Long.parseLong(s.substring(0,s.indexOf(":")));}catch(NumberFormatException e){log.error("Failed to parse randomSeed in incoming settingsok");return;}
 		//s = s.substring(s.indexOf(":")+1);
 
-
-
 		if(debug)log.error("incoming_ReplyToMySettings: My Seed: " +myRandomSeed);
 
 		//Game them = games.get(myRandomSeed);
@@ -551,7 +479,6 @@ public class BobsGame extends NDGameEngine
 		gotReplyToMySettings(true);
 		//log.debug("gotReplyToMySettings:" +myRandomSeed);
 	}
-
 
 	//=========================================================================================================================
 	private void incoming_Start(String s)
@@ -615,8 +542,6 @@ public class BobsGame extends NDGameEngine
 		connection.write(netCommand_FORFEIT+randomSeed+":"+"-1"+BobNet.endline);
 	}
 
-
-
 	long sendSeedTicksCounter = 0;
 	long sendSettingsTicksCounter = 0;
 	long sendStartTicksCounter = 0;
@@ -662,10 +587,8 @@ public class BobsGame extends NDGameEngine
 		{
 			sendSettingsTicksCounter=currentTime;
 
-
 			String b64zip = originalSettings.toBase64GZippedGSON();
 			String md5 = Utils.getStringMD5(b64zip);
-
 
 			String send = ""+netCommand_SETTINGS+randomSeed+":"+md5+":"+b64zip+BobNet.endline;
 			if(debug)log.debug("send_Settings: My Seed: "+randomSeed);
@@ -677,23 +600,17 @@ public class BobsGame extends NDGameEngine
 		}
 	}
 
-
-
-
-
 	private long winOrLoseTime = 0;
 
 	private long checkLastTrafficTime = 0;
 	private long _lastIncomingTrafficTime = 0;
 	private boolean _theyForfeit = false;
 
-
 	private boolean _gotReplyToMySeed = false;
 	private boolean _gotReplyToMySettings = false;
 	private boolean _gotTheirSettings = false;
 	private boolean _gotReplyToMyStart = false;
 	private boolean _gotTheirStart = false;
-
 
 	private long _theirSeed = -1;
 	private Settings _theirSettings = null;
@@ -705,11 +622,9 @@ public class BobsGame extends NDGameEngine
 	public Vector<String> outboundPacketQueueVector = new Vector<String>();
 	public ConcurrentHashMap<String,String> outboundPacketQueueHashMap = new ConcurrentHashMap<String,String>();
 
-
 	public Vector<String> gotPacketsLog = new Vector<String>();
 	public long lastIncomingFramePacketID = 0;
 	public ConcurrentHashMap<Long,Vector<FrameState>> incomingFramePackets = new ConcurrentHashMap<Long,Vector<FrameState>>();
-
 
 	public synchronized boolean gotReplyToMySeed(){return _gotReplyToMySeed;}
 	public synchronized boolean gotReplyToMySettings(){return _gotReplyToMySettings;}
@@ -721,7 +636,6 @@ public class BobsGame extends NDGameEngine
 
 	public synchronized Settings theirSettings(){return _theirSettings;}
 
-
 	public synchronized void gotReplyToMySeed(boolean gotReplyToMySeed){this._gotReplyToMySeed = gotReplyToMySeed;}
 	public synchronized void gotReplyToMySettings(boolean gotReplyToMySettings){this._gotReplyToMySettings = gotReplyToMySettings;}
 	//public synchronized void gotTheirSettings(boolean gotTheirSettings){this.gotTheirSettings = gotTheirSettings;}
@@ -730,7 +644,6 @@ public class BobsGame extends NDGameEngine
 
 	public synchronized void theirSeed(long theirSeed){this._theirSeed = theirSeed;}
 	public synchronized void getTheirSettings(Settings theirSettings){this._theirSettings = theirSettings;}
-
 
 	public synchronized long getLastTimeGotIncomingTraffic_S(){return _lastIncomingTrafficTime;}
 	public synchronized void setLastTimeGotIncomingTraffic_S(){this._lastIncomingTrafficTime = System.currentTimeMillis();}
@@ -753,7 +666,6 @@ public class BobsGame extends NDGameEngine
 
 		titleScreenTexture = GLUtils.loadTexture("res/guiBackground/bobsGameLogoAnim/" +num+".png");
 
-
 	}
 
 	ArrayList<Caption> startMenuCaptions = null;
@@ -761,7 +673,6 @@ public class BobsGame extends NDGameEngine
 	//=========================================================================================================================
 	private void updateStartMenu()
 	{//=========================================================================================================================
-
 
 		if(startMenuCaptions==null)
 		{
@@ -783,14 +694,11 @@ public class BobsGame extends NDGameEngine
 
 		}
 
-
 		if(ControlsManager().BUTTON_UP_PRESSED)
 		{
 			startMenuCursorPosition--;
 			if(startMenuCursorPosition<0)startMenuCursorPosition=startMenuCaptions.size()-1;
 		}
-
-
 
 		if(ControlsManager().BUTTON_DOWN_PRESSED)
 		{
@@ -798,18 +706,15 @@ public class BobsGame extends NDGameEngine
 			if(startMenuCursorPosition>startMenuCaptions.size()-1)startMenuCursorPosition=0;
 		}
 
-
 		if(ControlsManager().BUTTON_ACTION_PRESSED)
 		{
 
 			showingStartMenu=false;
 
-
 			if(startMenuCursorPosition==0)
 			{
 				//nothing
 			}
-
 
 			if(startMenuCursorPosition==1)
 			{
@@ -817,12 +722,10 @@ public class BobsGame extends NDGameEngine
 				newGame();
 			}
 
-
 			if(startMenuCursorPosition==2)
 			{
 				nD.setActivated(false);
 			}
-
 
 			if(startMenuCaptions!=null)
 			{
@@ -836,24 +739,17 @@ public class BobsGame extends NDGameEngine
 
 		}
 
-
-
 	}
 
 	//=========================================================================================================================
 	public void update()
 	{//=========================================================================================================================
 
-
-
-
 		super.update();
 
 		if(doneInitializingSprites==false)initSprites(SpriteManager());
 
-
 		if(updateLoadScreens()==true)return;
-
 
 		if(showingStartMenu==true)
 		{
@@ -869,13 +765,10 @@ public class BobsGame extends NDGameEngine
 			}
 		}
 
-
 		int side = GameLogic.MIDDLE;
 		if(isNetworkGame() || connection!=null)side = GameLogic.LEFT;
 
 		ME.updateNormalGame(side);
-
-
 
 		//shaderTicks += super.ticksPassed();
 		if(ControlsManager().BUTTON_TAB_PRESSED)//shaderTicks>3000)
@@ -886,9 +779,6 @@ public class BobsGame extends NDGameEngine
 
 			//CaptionManager().newManagedCaption(0,0,2000,""+shaderCount,BobFont.font_normal_16_outlined_smooth,BobColor.white,BobColor.black,2.0f);
 		}
-
-
-
 
 		//TODO: make connections ArrayList or somehow allow multiple UDP connections attached to one game.
 		//TODO: announce "playing game" to friends, when they join, connect friendUDPconnection to connection pool, each one given a game object
@@ -902,23 +792,17 @@ public class BobsGame extends NDGameEngine
 				if(networkGameStarted_NonThreaded==false)
 				{
 
-
 					//let's start by establishing who will send the settings first
 
 					//then we'll send the settings reply once we get the server settings
 
 					//that way they aren't randomly pinging each other and we can hopefully avoid the desync issue
 
-
 					if(currentTime-nonThreadedTicksCounter>200)
 					{
 						nonThreadedTicksCounter=currentTime;
 
-
-
 						if(gotReplyToMySeed()==false){send_Seed();return;}
-
-
 
 						if(THEM==null)
 						{
@@ -939,13 +823,10 @@ public class BobsGame extends NDGameEngine
 							}
 						}
 
-
 						//send my settings if my randomseed is greater than theirs
 						if(gotReplyToMySettings()==false && THEM.randomSeed<ME.randomSeed){send_Settings();return;}
 
-
 						if(gotReplyToMySettings()==false){send_Settings();return;}
-
 
 //						if(setSettings==false)
 //						{
@@ -961,34 +842,23 @@ public class BobsGame extends NDGameEngine
 //							}
 //						}
 
-
 						//send my start if my randomseed is greater than theirs
 						if(gotReplyToMyStart()==false && THEM.randomSeed<ME.randomSeed){send_Start();return;}
-
 
 						//wait for start
 						if(gotTheirStart()==false){return;}
 
-
 						if(gotReplyToMyStart()==false){send_Start();return;}
-
-
 
 						//if synced settings and started game
 						if(THEM.waitingForPlayer==true){THEM.waitingForPlayer=false;}
 
-
 						networkGameStarted_NonThreaded = true;
 					}
-
 
 				}
 				else
 				{
-
-
-
-
 
 					//DONE: queue up packets, with id, md5
 					if(ME.sendNetworkFrames)
@@ -998,7 +868,6 @@ public class BobsGame extends NDGameEngine
 						//queueSendPackets();
 
 						//send_QueuedPacket();
-
 
 						//=========================================================================================================================
 						//protected void storeNetworkPackets()
@@ -1010,7 +879,6 @@ public class BobsGame extends NDGameEngine
 								NetworkPacket packetToSplit = ME.networkPacket;
 								ME.networkPacket = ME.new NetworkPacket();
 
-
 								int maxFramesInPacket = 20;
 
 								if(packetToSplit.frameStates.size()>maxFramesInPacket)
@@ -1021,7 +889,6 @@ public class BobsGame extends NDGameEngine
 									while(packetToSplit.frameStates.size()>0)
 									{
 										NetworkPacket sendPacket = ME.new NetworkPacket();
-
 
 										int size = packetToSplit.frameStates.size();
 										for(int i=0;i<maxFramesInPacket&&i<size;i++)
@@ -1041,16 +908,12 @@ public class BobsGame extends NDGameEngine
 							}
 						}
 
-
-
-
 						//=========================================================================================================================
 						//protected void queueSendPackets()
 						{//=========================================================================================================================
 							if(currentTime-queuePacketsTicksCounter>100)
 							{
 								queuePacketsTicksCounter=currentTime;
-
 
 								int size = allNetworkPacketsUpUntilNow.size();
 
@@ -1069,7 +932,6 @@ public class BobsGame extends NDGameEngine
 									outboundPacketQueueVector.add(idAndMD5String);//just so we have an ordered list we can get(0) from
 									outboundPacketQueueHashMap.put(idAndMD5String,b64zip);
 								}
-
 
 								lastSentPacket=size;
 
@@ -1094,9 +956,6 @@ public class BobsGame extends NDGameEngine
 								}
 							}
 						}
-
-
-
 
 						//=========================================================================================================================
 						//private void updateNetworkGame()
@@ -1137,9 +996,6 @@ public class BobsGame extends NDGameEngine
 						}
 					}
 
-
-
-
 					if(currentTime - checkLastTrafficTime > 500)
 					{
 						checkLastTrafficTime = currentTime;
@@ -1151,14 +1007,12 @@ public class BobsGame extends NDGameEngine
 							setTheyForfeit(true);
 						}
 
-
 						if(getTheyForfeit()==true)
 						{
 							THEM.lose = true;
 							ME.win = true;
 						}
 					}
-
 
 					if(ME.lose || ME.win)
 					{
@@ -1174,8 +1028,6 @@ public class BobsGame extends NDGameEngine
 					{
 						winOrLoseTime = currentTime;
 					}
-
-
 
 				}
 			}
@@ -1195,9 +1047,6 @@ public class BobsGame extends NDGameEngine
 			}
 		}
 	}
-
-
-
 
 	//=========================================================================================================================
 	public static void changeBG()
@@ -1221,12 +1070,9 @@ public class BobsGame extends NDGameEngine
 
 	boolean fboTextureToggle = false;
 
-
 	//=========================================================================================================================
 	public void render()
 	{//=========================================================================================================================
-
-
 
 		if(super.renderLoadScreens()==true)return;
 
@@ -1240,15 +1086,11 @@ public class BobsGame extends NDGameEngine
 		if(LWJGLUtils.useShader)
 		{
 
-
-
-
 			glMatrixMode( GL_PROJECTION );
 			glLoadIdentity();
 			glMatrixMode( GL_MODELVIEW );
 			glLoadIdentity();
 			glEnable( GL_DEPTH_TEST );
-
 
 			fboTextureToggle = !fboTextureToggle;
 
@@ -1262,35 +1104,20 @@ public class BobsGame extends NDGameEngine
 			float tempDrawScale = GLUtils.globalDrawScale;
 			GLUtils.globalDrawScale = 1.0f;
 
-
-
-
-
-
-
-
-
 			glActiveTexture(GL_TEXTURE1);
 			glEnable(GL_TEXTURE_2D);
 
 			if(fboTextureToggle)glBindTexture(GL_TEXTURE_2D, LWJGLUtils.nDBGFBO_Texture_1);
 			else glBindTexture(GL_TEXTURE_2D, LWJGLUtils.nDBGFBO_Texture_0);
 
-
-
-
-
 			glActiveTexture(GL_TEXTURE0);
 			glEnable(GL_TEXTURE_2D);
 			if(titleScreenTexture!=null)glBindTexture(GL_TEXTURE_2D, titleScreenTexture.getTextureID());
 
-
 			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 			glClear(GL_COLOR_BUFFER_BIT);
 
-
 			float time = ((System.currentTimeMillis() - timeRenderBegan) / 2000.0f);
-
 
 			int shaderInt = LWJGLUtils.bgShaders.get(shaderCount).intValue();
 
@@ -1307,8 +1134,6 @@ public class BobsGame extends NDGameEngine
 
 			LWJGLUtils.useShader(0);
 
-
-
 			glDisable(GL_DEPTH_TEST);
 
 			//disable texture2D on texture unit 1
@@ -1318,7 +1143,6 @@ public class BobsGame extends NDGameEngine
 			//switch back to texture unit 0
 			glActiveTexture(GL_TEXTURE0);
 			glDisable(GL_TEXTURE_2D);
-
 
 			LWJGLUtils.bindFBO(LWJGLUtils.nDFBO);
 			LWJGLUtils.drawIntoFBOAttachment(0); //draw to nD FBO screen texture
@@ -1332,30 +1156,16 @@ public class BobsGame extends NDGameEngine
 
 		}
 
-
-
 		ND.setNDViewport();
-
 
 		ME.renderBackground();
 		if(networkGameStarted_NonThreaded==true)THEM.renderBackground();
-
-
-
-
-
-
-
-
-
-
 
 		//render the playing field blocks to a FBO
 
 		//draw the FBO to the screen with blur shader and 50% alpha
 
 		//draw the FBO to the screen
-
 
 		if(LWJGLUtils.useShader)
 		{
@@ -1364,11 +1174,8 @@ public class BobsGame extends NDGameEngine
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		}
 
-
 		ME.renderBlocks();
 		if(networkGameStarted_NonThreaded==true)THEM.renderBlocks();
-
-
 
 		if(LWJGLUtils.useShader)
 		{
@@ -1376,22 +1183,17 @@ public class BobsGame extends NDGameEngine
 			LWJGLUtils.bindFBO(LWJGLUtils.nDBloomFBO);
 			ND.setNDBloomViewport();
 
-
 			glDisable(GL_BLEND);
 			glDisable(GL_DEPTH_TEST);
 			glDepthMask(false);
-
 
 			LWJGLUtils.drawIntoFBOAttachment(1);
 			glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
 			LWJGLUtils.drawIntoFBOAttachment(0); //draw to bloom FBO texture 0
 			glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
 
 			LWJGLUtils.useShader(LWJGLUtils.maskShader);
 
@@ -1407,10 +1209,6 @@ public class BobsGame extends NDGameEngine
 
 			//GLUtils.drawTexture(LWJGLUtils.nDFBO_AuxiliaryTexture, 0, 1, 0, 1, -1, 1, -1, 1, 1, GLUtils.FILTER_FBO_NEAREST_NO_MIPMAPPING);
 
-
-
-
-
 			int blurPasses = ME.Settings().bloomTimes;
 
 			for (int i = 0; i < blurPasses; i++)
@@ -1425,7 +1223,6 @@ public class BobsGame extends NDGameEngine
 					LWJGLUtils.useShader(LWJGLUtils.gaussianShader);
 					{
 
-
 						LWJGLUtils.setShaderVar2f(LWJGLUtils.gaussianShader, "size", w, h);
 						LWJGLUtils.setShaderVar2f(LWJGLUtils.gaussianShader, "dir", 1f, 0f);
 						GLUtils.drawTexture(LWJGLUtils.nDBloomFBO_Texture_0,  0, 1, 0, 1, -1, 1, -1, 1, 1.0f, GLUtils.FILTER_FBO_LINEAR_NO_MIPMAPPING);
@@ -1433,8 +1230,6 @@ public class BobsGame extends NDGameEngine
 					}
 					LWJGLUtils.useShader(0);
 				}
-
-
 
 				// vertical
 				LWJGLUtils.drawIntoFBOAttachment(0);
@@ -1451,8 +1246,6 @@ public class BobsGame extends NDGameEngine
 
 			}
 
-
-
 			LWJGLUtils.bindFBO(LWJGLUtils.nDFBO);
 			LWJGLUtils.drawIntoFBOAttachment(0); //draw to nD FBO screen texture
 			ND.setNDViewport();
@@ -1463,17 +1256,13 @@ public class BobsGame extends NDGameEngine
 				LWJGLUtils.setBlendMode(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 			}
 
-
 			//pingPongTex1.bind(1);
 			glActiveTexture(GL_TEXTURE1);
 			glBindTexture(GL_TEXTURE_2D, LWJGLUtils.nDBloomFBO_Texture_0);
 
-
 			//original.bind(0);
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, LWJGLUtils.nDFBO_MaskTexture);
-
-
 
 			LWJGLUtils.useShader(LWJGLUtils.bloomShader);
 			{
@@ -1485,7 +1274,6 @@ public class BobsGame extends NDGameEngine
 			}
 			LWJGLUtils.useShader(0);
 
-
 			//disable texture2D on texture unit 1
 			glActiveTexture(GL_TEXTURE1);
 			glDisable(GL_TEXTURE_2D);
@@ -1496,24 +1284,16 @@ public class BobsGame extends NDGameEngine
 
 			glEnable(GL_TEXTURE_2D);
 
-
 			LWJGLUtils.setBlendMode(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 		}
 
-
-
 		ME.renderForeground();
 		if(networkGameStarted_NonThreaded==true)THEM.renderForeground();
-
-
-
 
 		super.render();
 
 	}
-
-
 
 	//=========================================================================================================================
 	private void renderStartMenu()
@@ -1540,13 +1320,11 @@ public class BobsGame extends NDGameEngine
 			float sy0 = startMenuCaptions.get(startMenuCursorPosition).screenY+2;
 			float sy1 = sy0+16;
 
-
 			GLUtils.drawTexture(t, tx0,tx1,ty0,ty1, sx0,sx1,sy0,sy1, 1.0f, GLUtils.FILTER_NEAREST);
 
 		}
 
 	}
-
 
 	//long cellTicks = 0;
 
@@ -1596,16 +1374,11 @@ public class BobsGame extends NDGameEngine
 //
 //	}
 
-
-
-
-
 	//---------------------------------------------------
 	// block graphics
 	//----------------------------------------------------
 
 	public static Sprite bobsGameLogoSmall;
-
 
 	public static Sprite circle;
 	public static String circleName = "Circle";
@@ -1700,8 +1473,6 @@ public class BobsGame extends NDGameEngine
 	public static Sprite weight;
 	public static String weightName = "Weight";
 
-
-
 	//=========================================================================================================================
 	public static void initSprites(SpriteManager spriteManager)
 	{//=========================================================================================================================
@@ -1788,6 +1559,5 @@ public class BobsGame extends NDGameEngine
 
 		return null;
 	}
-
 
 }

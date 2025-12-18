@@ -1,9 +1,7 @@
 package com.bobsgame.client.engine.game;
 
-import static org.jboss.netty.channel.Channels.pipeline;
-
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.MessageEvent;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.MessageEvent;
 import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.classic.Logger;
@@ -20,20 +18,13 @@ import com.bobsgame.net.GameSave;
 import com.bobsgame.shared.BobColor;
 import com.bobsgame.shared.EntityData;
 
-
-
 //===============================================================================================
 public class FriendCharacter extends Character
 {//===============================================================================================
 
 	public static Logger log = (Logger) LoggerFactory.getLogger(FriendCharacter.class);
 
-
-
-
 	public int friendUserID = -1;
-
-
 
 	public static final int FACEBOOK_TYPE = 0;
 	public static final int GOOGLE_TYPE = 1;
@@ -45,14 +36,9 @@ public class FriendCharacter extends Character
 	//2 twitter
 	//3 zip
 
-
-
-
-
 	public FriendUDPConnection connection = null;
 
 	FriendManager friendManager;
-
 
 	public String mapName = "";
 
@@ -62,9 +48,7 @@ public class FriendCharacter extends Character
 	public static int status_DO_NOT_DISTURB = 3;
 	private int _status = status_AVAILABLE;
 
-
 	NDGameEngine game = null;
-
 
 	float targetX = 0;
 	float targetY = 0;
@@ -88,13 +72,11 @@ public class FriendCharacter extends Character
 	public FriendCharacter(ClientGameEngine g, int friendUserID, int friendType, Map m)
 	{//===============================================================================================
 
-
 		this(g,m);//does NOT add to entityList
 		friendManager = g.friendManager;
 
 		this.friendUserID = friendUserID;
 		this.friendType = friendType;
-
 
 		connection = new FriendUDPConnection(g, friendManager.getNextUDPPort(),this);
 
@@ -104,7 +86,6 @@ public class FriendCharacter extends Character
 	/** FOR DEBUG */
 	public FriendCharacter(ClientGameEngine g, int friendUserID, int friendType, int myUDPPort, int theirUDPPort, Map m)
 	{//===============================================================================================
-
 
 		//FOR DEBUG
 		//FOR DEBUG
@@ -121,7 +102,6 @@ public class FriendCharacter extends Character
 
 	}
 
-
 	//===============================================================================================
 	public void setGameToForwardPacketsTo(NDGameEngine game)
 	{//===============================================================================================
@@ -130,22 +110,18 @@ public class FriendCharacter extends Character
 	}
 
 	//===============================================================================================
-	public void handleMessage(ChannelHandlerContext ctx, MessageEvent e)
+	public void handleMessage(ChannelHandlerContext ctx, String msg)
 	{//===============================================================================================
 
-		String s = (String) e.getMessage();
+		String s = msg;
 
-		if(s.startsWith(BobNet.Friend_LocationStatus_Update)){incomingFriendLocationStatusUpdate(e);return;}
-		if(s.startsWith(BobNet.Friend_Data_Request)){incomingFriendDataRequest(e);return;}
-		if(s.startsWith(BobNet.Friend_Data_Response)){incomingFriendDataResponse(e);return;}
-		if(s.startsWith(BobNet.Game_Challenge_Request)){incomingGameChallengeRequest(e);return;}
+		if(s.startsWith(BobNet.Friend_LocationStatus_Update)){incomingFriendLocationStatusUpdate(s);return;}
+		if(s.startsWith(BobNet.Friend_Data_Request)){incomingFriendDataRequest(s);return;}
+		if(s.startsWith(BobNet.Friend_Data_Response)){incomingFriendDataResponse(s);return;}
+		if(s.startsWith(BobNet.Game_Challenge_Request)){incomingGameChallengeRequest(s);return;}
 
-		if(game!=null)game.handleMessage(ctx, e);
+		if(game!=null)game.handleMessage(ctx, msg);
 	}
-
-
-
-
 
 	long lastSentFriendDataRequestTime = System.currentTimeMillis();
 	long lastSentLocationTime = System.currentTimeMillis();
@@ -156,21 +132,15 @@ public class FriendCharacter extends Character
 	public void update()
 	{//===============================================================================================
 
-
 		super.update();//Character.update() -> Entity.update()
-
-
 
 		connection.update();
 
 		long currentTime = System.currentTimeMillis();
 
-
 		//see if we have a udp connection to them established
 		if(connection.established())
 		{
-
-
 
 			if(gotFriendData_NonThreaded==false)
 			{
@@ -190,7 +160,6 @@ public class FriendCharacter extends Character
 				}
 			}
 
-
 			//generate avatar from charAppearance
 			if(uniqueTexture==null)
 			{
@@ -200,7 +169,6 @@ public class FriendCharacter extends Character
 					String characterName = getFriendData_S().characterName;
 					String characterAppearance = getFriendData_S().characterAppearance;
 					int accountRank = getFriendData_S().accountRank;
-
 
 					setAppearanceFromCharacterAppearanceString(characterAppearance);
 
@@ -213,7 +181,6 @@ public class FriendCharacter extends Character
 					);
 				}
 			}
-
 
 			//send room,x,y
 			//xy data, messages, minigame reqs, etc.
@@ -237,17 +204,13 @@ public class FriendCharacter extends Character
 
 		doCharacterAnimation();
 
-
 	}
-
-
 
 	//===============================================================================================
 	public boolean connected()
 	{//===============================================================================================
 		return connection.established();
 	}
-
 
 	//===============================================================================================
 	public void handleDisconnected()
@@ -258,9 +221,6 @@ public class FriendCharacter extends Character
 		//TODO: need to remove from FriendManager
 
 	}
-
-
-
 
 	//TODO: no idea if synchronized functions that access non-synchronized variables works the way I want.
 	//===============================================================================================
@@ -281,15 +241,11 @@ public class FriendCharacter extends Character
 		this.setY(y);
 	}
 
-
-
 	//===============================================================================================
 	public synchronized void setStatus_S(int i)
 	{//===============================================================================================
 		_status = i;
 	}
-
-
 
 	//===============================================================================================
 	public synchronized int getStatus_S()
@@ -299,8 +255,6 @@ public class FriendCharacter extends Character
 
 	}
 
-
-
 	//===============================================================================================
 	public void cleanup()
 	{//===============================================================================================
@@ -308,10 +262,6 @@ public class FriendCharacter extends Character
 		connection.cleanup();
 
 	}
-
-
-
-
 
 	private FriendData _friendData = null;
 	private boolean _gotFriendData = false;
@@ -337,33 +287,27 @@ public class FriendCharacter extends Character
 		return _friendData;
 	}
 
-
-
-
 	//===============================================================================================
-	public void incomingFriendDataRequest(MessageEvent e)
+	public void incomingFriendDataRequest(String s)
 	{//===============================================================================================
 
 		//allowed info depends on type of friend, zip code friends should not get full name, etc.
 		// send name,charAppearance, etc
-
 
 		if(ClientGameEngine().getGameSaveInitialized_S()==false)return;
 
 		FriendData myFriendData = new FriendData();
 		myFriendData.initWithGameSave(GameSave());
 
-		String s = myFriendData.encode(friendType);
+		String data = myFriendData.encode(friendType);
 
-		connection.write(BobNet.Friend_Data_Response+s+BobNet.endline);
+		connection.write(BobNet.Friend_Data_Response+data+BobNet.endline);
 	}
 
-
 	//===============================================================================================
-	public void incomingFriendDataResponse(MessageEvent e)
+	public void incomingFriendDataResponse(String s)
 	{//===============================================================================================
 
-		String s = e.getMessage().toString();
 		s = s.substring(s.indexOf(":")+1);
 
 		FriendData f = new FriendData();
@@ -372,7 +316,6 @@ public class FriendCharacter extends Character
 		setFriendData_S(f);
 		setGotFriendData_S(true);
 	}
-
 
 	//===============================================================================================
 	private void sendFriendLocationStatusUpdate()
@@ -393,11 +336,10 @@ public class FriendCharacter extends Character
 	}
 
 	//===============================================================================================
-	public void incomingFriendLocationStatusUpdate(MessageEvent e)
+	public void incomingFriendLocationStatusUpdate(String s)
 	{//===============================================================================================
 
 		//FriendLocationUpdate:mapName,x,y,status
-		String s = e.getMessage().toString();
 		s = s.substring(s.indexOf(":")+1);
 
 		String mapName = s.substring(0,s.indexOf(","));
@@ -414,7 +356,6 @@ public class FriendCharacter extends Character
 		int status = -1;
 		try{status = Integer.parseInt(s);}catch(NumberFormatException ex){return;}
 
-
 		targetX = mapX;
 		targetY = mapY;
 
@@ -422,9 +363,6 @@ public class FriendCharacter extends Character
 		setStatus_S(status);
 
 	}
-
-
-
 
 	private int outgoingGameChallengeResponse = NDGameEngine.gameChallengeResponse_NONE;
 	private long timeOutgoingGameChallengeResponseSet = 0;
@@ -447,10 +385,8 @@ public class FriendCharacter extends Character
 	public synchronized int getOutgoingGameChallengeResponse()
 	{//===============================================================================================
 
-
 		//store last challenge time for this user
 		//if challenge less than 10 seconds ago, just send last decision.
-
 
 		long currentTime = System.currentTimeMillis();
 		if(currentTime - timeOutgoingGameChallengeResponseSet > 10000)
@@ -461,7 +397,6 @@ public class FriendCharacter extends Character
 		return outgoingGameChallengeResponse;
 
 	}
-
 
 	//===============================================================================================
 	public void sendGameChallengeResponse(boolean b)
@@ -478,18 +413,12 @@ public class FriendCharacter extends Character
 
 	}
 
-
-
 	//===============================================================================================
-	public void incomingGameChallengeRequest(MessageEvent e)
+	public void incomingGameChallengeRequest(String s)
 	{//===============================================================================================
 
-
-
-		String s = e.getMessage().toString();
 		s = s.substring(s.indexOf(":")+1);
 		String gameName = s;
-
 
 		//if player is already in game, they should not show up in the minigame challenge list, should broadcast current status constantly.
 		//however, if they got populated before the broadcast was received, automatically deny the request
@@ -508,7 +437,6 @@ public class FriendCharacter extends Character
 
 			//&&this.gameChallengeNotification.isActivated()==true)return; //this doesn't work because we destroy the GUI on unload.
 
-
 			//open dialog window with friendname, game name
 			this.gameChallengeNotification = GUIManager().makeGameChallengeNotification(this,gameName);
 		}
@@ -523,8 +451,6 @@ public class FriendCharacter extends Character
 		}
 
 	}
-
-
 
 	//===============================================================================================
 	static public class FriendData
@@ -555,8 +481,6 @@ public class FriendCharacter extends Character
 		public int miniGamesTimesLost = 0;
 		public int miniGamesTimesTied = 0;
 
-
-
 		public String facebookID = "";
 		public String facebookEmail = "";
 		//public String facebookBirthday = "";
@@ -568,10 +492,6 @@ public class FriendCharacter extends Character
 		//public String facebookUsername = "";
 		//public String facebookWebsite = "";
 		//public String googlePlusID = "";
-
-
-
-
 
 		//===============================================================================================
 		public void initWithGameSave(GameSave g)
@@ -612,7 +532,6 @@ public class FriendCharacter extends Character
 			//googlePlusID              =g.googlePlusID              ;
 
 		}
-
 
 		//===============================================================================================
 		public String encode(int friendType)
@@ -662,15 +581,12 @@ public class FriendCharacter extends Character
 			return s;
 		}
 
-
-
 		//===============================================================================================
 		public void decode(String s)
 		{//===============================================================================================
 
 			try{friendType = Integer.parseInt(s.substring(0,s.indexOf(",")));}catch(NumberFormatException ex){ex.printStackTrace();return;}
 			s = s.substring(s.indexOf(",")+1);
-
 
 			//",characterName:"+
 			{
@@ -776,7 +692,6 @@ public class FriendCharacter extends Character
 				s = s.substring(s.indexOf('`')+1);
 			}
 
-
 			//",miniGamesTimesPlayed:"+
 			{
 				s = s.substring(s.indexOf('`')+1);
@@ -833,10 +748,7 @@ public class FriendCharacter extends Character
 				s = s.substring(s.indexOf('`')+1);
 			}
 
-
 			if(friendType==ZIP_TYPE)return;
-
-
 
 			//",facebookID:"+
 			{
@@ -925,49 +837,6 @@ public class FriendCharacter extends Character
 //				if(t.length()>0)googlePlusID = t;
 //				s = s.substring(s.indexOf('`')+1);
 //			}
-
-
 		}
-
-
-
 	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

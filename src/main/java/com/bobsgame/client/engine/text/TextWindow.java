@@ -21,7 +21,7 @@ import java.nio.ByteOrder;
 //import org.lwjgl.input.Keyboard;
         import org.slf4j.LoggerFactory;
 
-import slick.Texture;
+import com.bobsgame.client.Texture;
 
 import ch.qos.logback.classic.Logger;
 
@@ -611,7 +611,8 @@ public class TextWindow extends EnginePart
 			}
 
 			// else, follow npc and use gfx for sprite window :)
-			spriteWindowEntity=entity;// TODO: each npc should have a voice pitch!!!
+			spriteWindowEntity=entity;
+            if(entity!=null) voicePitch=entity.voicePitch();
 			spriteWindowTexture=texture;
 
 

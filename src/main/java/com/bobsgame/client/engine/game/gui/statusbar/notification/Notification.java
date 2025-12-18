@@ -1,8 +1,8 @@
 package com.bobsgame.client.engine.game.gui.statusbar.notification;
 
-import org.lwjgl.opengl.Display;
+import com.bobsgame.client.LWJGLUtils;
 
-import slick.Texture;
+import com.bobsgame.client.Texture;
 
 import com.bobsgame.client.GLUtils;
 import com.bobsgame.client.engine.game.ClientGameEngine;
@@ -74,7 +74,7 @@ public class Notification extends StatusBarButton
 
 		if(caption==null)
 		{
-			caption=new Caption(g,0,5,-1,string,BobFont.font_normal_11_shadow1,BobColor.PURPLE,BobColor.WHITE,BobColor.CLEAR,RenderOrder.OVER_GUI,1.0f,Display.getWidth());
+			caption=new Caption(g,0,5,-1,string,BobFont.font_normal_11_shadow1,BobColor.PURPLE,BobColor.WHITE,BobColor.CLEAR,RenderOrder.OVER_GUI,1.0f,LWJGLUtils.SCREEN_SIZE_X);
 			caption.setAlphaImmediately(1.0f);
 		}
 
@@ -98,7 +98,7 @@ public class Notification extends StatusBarButton
 
 		if(caption==null)
 		{
-			caption=new Caption(Engine(),0,5,-1,string,BobFont.font_normal_11_shadow1,BobColor.PURPLE,BobColor.WHITE,BobColor.CLEAR,RenderOrder.OVER_GUI,1.0f,Display.getWidth());
+			caption=new Caption(Engine(),0,5,-1,string,BobFont.font_normal_11_shadow1,BobColor.PURPLE,BobColor.WHITE,BobColor.CLEAR,RenderOrder.OVER_GUI,1.0f,LWJGLUtils.SCREEN_SIZE_X);
 			caption.setAlphaImmediately(1.0f);
 		}
 
@@ -142,7 +142,7 @@ public class Notification extends StatusBarButton
 
 
 
-		float maxWidth = (Display.getWidth()-caption.screenX)-(Display.getWidth()-(StatusBar().moneyCaption.dividerX));
+		float maxWidth = (LWJGLUtils.SCREEN_SIZE_X-caption.screenX)-(LWJGLUtils.SCREEN_SIZE_X-(StatusBar().moneyCaption.dividerX));
 
 		if(scrolling==false&&maxWidth<caption.texture.getImageWidth())
 		{
@@ -195,7 +195,7 @@ public class Notification extends StatusBarButton
 
 
 			float screenX = StatusBar().stuffButton.dividerX+3;
-			float maxWidth = (Display.getWidth()-screenX)-(Display.getWidth()-(StatusBar().moneyCaption.dividerX));
+			float maxWidth = (LWJGLUtils.SCREEN_SIZE_X-screenX)-(LWJGLUtils.SCREEN_SIZE_X-(StatusBar().moneyCaption.dividerX));
 
 
 			if(hasProgressBar==true)
@@ -338,10 +338,4 @@ public class Notification extends StatusBarButton
 
 		return null;
 	}
-
-
-
-
-
-
 }

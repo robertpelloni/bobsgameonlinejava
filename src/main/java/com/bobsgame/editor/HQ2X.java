@@ -2892,7 +2892,6 @@ public class HQ2X {
             
             inArr=null;
             
-			System.runFinalization();
 			System.gc();
             
             BufferedImage out = new BufferedImage(w*2, h*2, BufferedImage.TYPE_INT_ARGB);

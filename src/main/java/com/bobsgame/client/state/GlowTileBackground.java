@@ -1,10 +1,10 @@
 package com.bobsgame.client.state;
+import com.bobsgame.client.LWJGLUtils;
 
 import java.util.ArrayList;
 
-import org.lwjgl.opengl.Display;
 
-import slick.Texture;
+import com.bobsgame.client.Texture;
 
 import com.bobsgame.client.GLUtils;
 import com.bobsgame.client.engine.Engine;
@@ -73,8 +73,8 @@ public class GlowTileBackground extends MenuPanel
 
 		numActiveTiles=4;
 		scale = 2.0f;
-		ticksPerFrame = 30;
-		scrollSpeedTicksMultiplier = (1.0f/50.0f);
+		ticksPerFrame = 60; // Slower animation
+		scrollSpeedTicksMultiplier = (1.0f/100.0f); // Slower scroll
 
 		tileFrames = 115;
 
@@ -91,10 +91,12 @@ public class GlowTileBackground extends MenuPanel
 
 		for(int i=0;i<numActiveTiles;i++)
 		{
-			glowTiles.add(new GlowTile());
+            GlowTile tile = new GlowTile();
+            tile.started = true;
+            // Space them out initially to avoid delay
+            tile.frame = (tileFrames / numActiveTiles) * i;
+			glowTiles.add(tile);
 		}
-
-		glowTiles.get(0).started=true;
 
 	}
 
@@ -133,8 +135,8 @@ public class GlowTileBackground extends MenuPanel
 		float tileHeight = glowTileFramesTexture[0].getImageHeight()*scale;
 
 
-		int screenWidth = Display.getWidth();
-		int screenHeight = Display.getHeight();
+		int screenWidth = LWJGLUtils.SCREEN_SIZE_X;
+		int screenHeight = LWJGLUtils.SCREEN_SIZE_Y;
 
 		if(g!=null)
 		{
@@ -245,9 +247,8 @@ public class GlowTileBackground extends MenuPanel
 		}
 
 
-		//TODO: tiles near bottom of screen are clipped wrong
-		//TODO: animation is too fast
-		//TODO: fix weird delay on start
+		// Fixed: animation is too fast
+		// Fixed: weird delay on start
 
 
 
@@ -272,8 +273,8 @@ public class GlowTileBackground extends MenuPanel
 			int w = texture.getImageWidth();
 			int h = texture.getImageHeight();
 
-			float screenWidth = Display.getWidth();
-			float screenHeight = Display.getHeight();
+			float screenWidth = LWJGLUtils.SCREEN_SIZE_X;
+			float screenHeight = LWJGLUtils.SCREEN_SIZE_Y;
 
 			if(g!=null)
 			{

@@ -2,10 +2,10 @@ package com.bobsgame.client.engine.game.nd;
 
 import java.util.ArrayList;
 
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.MessageEvent;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.MessageEvent;
 
-import slick.Texture;
+import com.bobsgame.client.Texture;
 
 import com.bobsgame.client.GLUtils;
 import com.bobsgame.client.engine.game.FriendCharacter;
@@ -16,19 +16,15 @@ import com.bobsgame.client.network.UDPConnection;
 import com.bobsgame.net.BobNet;
 import com.bobsgame.shared.BobColor;
 
-
 //=========================================================================================================================
 public class NDGameEngine extends MiniGameEngine
 {//=========================================================================================================================
 
-
 	protected ND nD;
-
 
 	public UDPConnection connection = null;
 
 	//public boolean multiplayer = false;
-
 
 	public int numTileScreenTextureFrames = 0;
 	//public Texture[] titleScreenTextures;
@@ -53,8 +49,6 @@ public class NDGameEngine extends MiniGameEngine
 	protected boolean showingWaitingForFriendScreen = false;
 	ArrayList<Caption> waitingForFriendCaptions = null;
 
-
-
 	public String name = "";
 
 	//=========================================================================================================================
@@ -68,8 +62,6 @@ public class NDGameEngine extends MiniGameEngine
 
 		new GameDataLoader(this);
 	}
-
-
 
 	//=========================================================================================================================
 	public void setupLoadScreens()
@@ -90,7 +82,6 @@ public class NDGameEngine extends MiniGameEngine
 		return name;
 	}
 
-
 	//=========================================================================================================================
 	public void setConnection(UDPConnection connection)
 	{//=========================================================================================================================
@@ -99,8 +90,6 @@ public class NDGameEngine extends MiniGameEngine
 		//this.multiplayer = true;
 
 	}
-
-
 
 	//=========================================================================================================================
 	public float getWidth()
@@ -113,7 +102,6 @@ public class NDGameEngine extends MiniGameEngine
 		return ND.SCREEN_SIZE_Y;
 	}
 
-
 	//=========================================================================================================================
 	public void tryToCloseGame()
 	{//=========================================================================================================================
@@ -124,26 +112,20 @@ public class NDGameEngine extends MiniGameEngine
 	}
 
 	//=========================================================================================================================
-	public void handleMessage(ChannelHandlerContext ctx,MessageEvent e)
+	public void handleMessage(ChannelHandlerContext ctx, String msg)
 	{//=========================================================================================================================
 
-		String s = (String) e.getMessage();
+		String s = msg;
 
 		//log.debug(s);
-
 
 		if(s.indexOf(":")==-1)return;
 		String command = s.substring(0,s.indexOf(":")+1);
 		s = s.substring(s.indexOf(":")+1);
 
-
-
 		if(command.equals(BobNet.Game_Challenge_Response)){incoming_GameChallengeResponse(s);return;}
 
-
 	}
-
-
 
 	//=========================================================================================================================
 	private void incoming_GameChallengeResponse(String s)
@@ -153,13 +135,7 @@ public class NDGameEngine extends MiniGameEngine
 		if(s.startsWith("Decline"))setIncomingGameChallengeResponse(gameChallengeResponse_DECLINE);
 		if(s.startsWith("Accept"))setIncomingGameChallengeResponse(gameChallengeResponse_ACCEPT);
 
-
 	}
-
-
-
-
-
 
 	boolean throttle30fps = false;
 	long ticksPassed = 0;
@@ -177,16 +153,12 @@ public class NDGameEngine extends MiniGameEngine
 	public void update()
 	{//=========================================================================================================================
 
-
 		frameThrottleTicks += super.engineTicksPassed();
 		if(throttle30fps&&frameThrottleTicks<33)return;
 		ticksPassed = frameThrottleTicks;
 		frameThrottleTicks = 0;
 
-
 		super.update();
-
-
 
 		titleScreenFrameTicks+= super.engineTicksPassed();
 		if(titleScreenFrameTicks>30)
@@ -198,8 +170,6 @@ public class NDGameEngine extends MiniGameEngine
 			updateTitleScreenLogoTexture();
 		}
 
-
-
 		cursorInOutToggleTicks+= super.engineTicksPassed();
 		if(cursorInOutToggleTicks>300)
 		{
@@ -207,15 +177,11 @@ public class NDGameEngine extends MiniGameEngine
 			cursorInOutToggle = !cursorInOutToggle;
 		}
 
-
-
 	}
-
 
 	//=========================================================================================================================
 	public boolean updateLoadScreens()
 	{//=========================================================================================================================
-
 
 		//skip the title screen if we were initialized with a connection, either we are in the simulator or got a friend request
 
@@ -228,7 +194,6 @@ public class NDGameEngine extends MiniGameEngine
 				return true;
 			}
 
-
 			if(showingMultiplayerScreen)
 			{
 				updateMultiplayerScreen();
@@ -237,9 +202,7 @@ public class NDGameEngine extends MiniGameEngine
 
 		}
 
-
 		//unloadTitleScreenTextures();
-
 
 		if(showingWaitingForFriendScreen)
 		{
@@ -256,18 +219,13 @@ public class NDGameEngine extends MiniGameEngine
 		//override
 	}
 
-
 	//=========================================================================================================================
 	private void updateTitleScreen()
 	{//=========================================================================================================================
 
 		//if(titleScreenTextures==null)setupLoadScreens();
 
-
-
 		if(singlePlayerCaption==null)singlePlayerCaption = CaptionManager().newManagedCaption(Caption.CENTERED_X,(int)(getHeight()/3*2),-1,"Single Player",BobFont.font_normal_16_outlined_smooth,BobColor.white,BobColor.clear,1.0f);
-
-
 
 		if(onlineFriends==null)
 		{
@@ -305,7 +263,6 @@ public class NDGameEngine extends MiniGameEngine
 			}
 		}
 
-
 		if(ControlsManager().BUTTON_ACTION_PRESSED)
 		{
 			showingTitleScreen=false;
@@ -316,7 +273,6 @@ public class NDGameEngine extends MiniGameEngine
 		}
 
 	}
-
 
 //	//=========================================================================================================================
 //	private void unloadTitleScreenTextures()
@@ -331,12 +287,9 @@ public class NDGameEngine extends MiniGameEngine
 //		}
 //	}
 
-
-
 	//=========================================================================================================================
 	private void updateMultiplayerScreen()
 	{//=========================================================================================================================
-
 
 		if(onlineFriendCaptions==null)
 		{
@@ -351,13 +304,11 @@ public class NDGameEngine extends MiniGameEngine
 				onlineFriendCaptions.add(c);
 			}
 
-
 			int y = (onlineFriendCaptions.size()+1) * 20;
 			Caption c = CaptionManager().newManagedCaption(Caption.CENTERED_X,y,-1,"Cancel",BobFont.font_normal_16_outlined_smooth,BobColor.white,BobColor.clear,1.0f);
 			onlineFriendCaptions.add(c);
 
 		}
-
 
 		if(ControlsManager().BUTTON_UP_PRESSED)
 		{
@@ -365,18 +316,14 @@ public class NDGameEngine extends MiniGameEngine
 			if(multiplayerScreenCursorPosition<0)multiplayerScreenCursorPosition=onlineFriendCaptions.size()-1;
 		}
 
-
-
 		if(ControlsManager().BUTTON_DOWN_PRESSED)
 		{
 			multiplayerScreenCursorPosition++;
 			if(multiplayerScreenCursorPosition>onlineFriendCaptions.size()-1)multiplayerScreenCursorPosition=0;
 		}
 
-
 		if(ControlsManager().BUTTON_ACTION_PRESSED)
 		{
-
 
 			showingMultiplayerScreen=false;
 
@@ -410,12 +357,9 @@ public class NDGameEngine extends MiniGameEngine
 
 	}
 
-
-
 	static public int gameChallengeResponse_NONE = 0;
 	static public int gameChallengeResponse_ACCEPT = 1;
 	static public int gameChallengeResponse_DECLINE = 2;
-
 
 	private int _incomingGameChallengeResponse = gameChallengeResponse_NONE;
 	public synchronized int getIncomingGameChallengeResponse(){return _incomingGameChallengeResponse;}
@@ -430,7 +374,6 @@ public class NDGameEngine extends MiniGameEngine
 	private void updateWaitingForFriendScreen()
 	{//=========================================================================================================================
 
-
 		//we send the friendUDPConnection a "play game request"
 		//it pops up a dialog
 		//if they accept it, it opens their nD.
@@ -438,12 +381,10 @@ public class NDGameEngine extends MiniGameEngine
 
 		long currentTime = System.currentTimeMillis();
 
-
 		if(gameChallengeRequestSentTime==-1)
 		{
 			gameChallengeRequestSentTime = currentTime;
 		}
-
 
 		if(connection!=null)
 		{
@@ -462,7 +403,6 @@ public class NDGameEngine extends MiniGameEngine
 			}
 		}
 
-
 		if(waitingForFriendCaptions==null)
 		{
 			waitingForFriendCaptions = new ArrayList<Caption>();
@@ -471,14 +411,11 @@ public class NDGameEngine extends MiniGameEngine
 			Caption c = CaptionManager().newManagedCaption(Caption.CENTERED_X,y,-1,"Sending game request...",BobFont.font_normal_16_outlined_smooth,BobColor.white,BobColor.clear,1.0f);
 			waitingForFriendCaptions.add(c);
 
-
 			y = (waitingForFriendCaptions.size()+1) * 20;
 			c = CaptionManager().newManagedCaption(Caption.CENTERED_X,y,-1,"Cancel",BobFont.font_normal_16_outlined_smooth,BobColor.white,BobColor.clear,1.0f);
 			waitingForFriendCaptions.add(c);
 
 		}
-
-
 
 		if(ControlsManager().BUTTON_ACTION_PRESSED || currentTime-gameChallengeRequestSentTime>15000)
 		{
@@ -487,7 +424,6 @@ public class NDGameEngine extends MiniGameEngine
 
 			if(!ControlsManager().BUTTON_ACTION_PRESSED)
 			CaptionManager().newManagedCaption(Caption.CENTERED_SCREEN,0,3000,"Timed out.",BobFont.font_normal_16_outlined_smooth,BobColor.white,BobColor.clear,1.0f);
-
 
 			if(waitingForFriendCaptions!=null)
 			{
@@ -505,8 +441,6 @@ public class NDGameEngine extends MiniGameEngine
 			showingWaitingForFriendScreen = false;
 		}
 
-
-
 		if(currentTime-nonThreaded_CheckForGameChallengeResponseCounter>300)
 		{
 			nonThreaded_CheckForGameChallengeResponseCounter=currentTime;
@@ -516,8 +450,6 @@ public class NDGameEngine extends MiniGameEngine
 			//if it is declined, go back to title screen
 			//make temp caption for 5 seconds in middle of screen
 			int response = getIncomingGameChallengeResponse();
-
-
 
 			if(response!=gameChallengeResponse_NONE)
 			{
@@ -529,7 +461,6 @@ public class NDGameEngine extends MiniGameEngine
 					CaptionManager().newManagedCaption(Caption.CENTERED_SCREEN,0,5000,"Challenge Accepted!",BobFont.font_normal_16_outlined_smooth,BobColor.GREEN,BobColor.clear,1.0f);
 				}
 
-
 				if(response==gameChallengeResponse_DECLINE)
 				{
 					showingTitleScreen = true;
@@ -540,7 +471,6 @@ public class NDGameEngine extends MiniGameEngine
 					this.setConnection(null);
 					this.friend = null;
 				}
-
 
 				gameChallengeRequestSentTime = -1;
 
@@ -559,8 +489,6 @@ public class NDGameEngine extends MiniGameEngine
 			}
 		}
 	}
-
-
 
 	//=========================================================================================================================
 	private void renderTitleScreen()
@@ -594,8 +522,6 @@ public class NDGameEngine extends MiniGameEngine
 
 		super.render();//captions
 
-
-
 		t = cursorTexture;
 
 		if(t!=null && singlePlayerCaption!=null)
@@ -614,14 +540,11 @@ public class NDGameEngine extends MiniGameEngine
 			if(singlePlayerMultiPlayerSwitchToggle)sy0+=30;
 			float sy1 = sy0+16;
 
-
 			GLUtils.drawTexture(t, tx0,tx1,ty0,ty1, sx0,sx1,sy0,sy1, 1.0f, GLUtils.FILTER_NEAREST);
 
 		}
 
-
 	}
-
 
 	//=========================================================================================================================
 	private void renderMultiplayerScreen()
@@ -640,14 +563,12 @@ public class NDGameEngine extends MiniGameEngine
 			float ty0 = 0;
 			float ty1 = 1;
 
-
 			float sx0 = onlineFriendCaptions.get(multiplayerScreenCursorPosition).screenX-16;
 			if(cursorInOutToggle)sx0+=2;
 			float sx1 = sx0+16;
 
 			float sy0 = onlineFriendCaptions.get(multiplayerScreenCursorPosition).screenY+2;
 			float sy1 = sy0+16;
-
 
 			GLUtils.drawTexture(t, tx0,tx1,ty0,ty1, sx0,sx1,sy0,sy1, 1.0f, GLUtils.FILTER_NEAREST);
 
@@ -672,7 +593,6 @@ public class NDGameEngine extends MiniGameEngine
 			float ty0 = 0;
 			float ty1 = 1;
 
-
 			float sx0 = waitingForFriendCaptions.get(1).screenX-16;
 			if(cursorInOutToggle)sx0+=2;
 			float sx1 = sx0+16;
@@ -680,13 +600,11 @@ public class NDGameEngine extends MiniGameEngine
 			float sy0 = waitingForFriendCaptions.get(1).screenY+2;
 			float sy1 = sy0+16;
 
-
 			GLUtils.drawTexture(t, tx0,tx1,ty0,ty1, sx0,sx1,sy0,sy1, 1.0f, GLUtils.FILTER_NEAREST);
 
 		}
 
 	}
-
 
 	//=========================================================================================================================
 	public boolean renderLoadScreens()
@@ -715,7 +633,5 @@ public class NDGameEngine extends MiniGameEngine
 
 		return false;
 	}
-
-
 
 }

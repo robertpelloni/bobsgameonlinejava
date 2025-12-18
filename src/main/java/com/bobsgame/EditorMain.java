@@ -3405,7 +3405,7 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 	public void exit()
 	{//===============================================================================================
 
-		if(soundWasInitialized==true)AL.destroy();
+		if(soundWasInitialized==true)AudioUtils.destroy();
 		System.out.println("Closing...");
 		System.exit(0);
 
@@ -3416,7 +3416,7 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 	public void windowClosing(WindowEvent we)
 	{//===============================================================================================
 
-		if(soundWasInitialized==true)AL.destroy();
+		if(soundWasInitialized==true)AudioUtils.destroy();
 		String dirpath = getFileDialogDirectoryPath();
 		if(dirpath==null)dirpath = EditorMain.exportDirectory;
 		project.save(dirpath + "exitautosave.h", "exitautosave.h");

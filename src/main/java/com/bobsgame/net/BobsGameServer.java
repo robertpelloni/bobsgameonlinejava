@@ -1,8 +1,6 @@
 package com.bobsgame.net;
 
-
-
-import org.jboss.netty.channel.Channel;
+import io.netty.channel.Channel;
 
 public class BobsGameServer
 {
@@ -11,8 +9,6 @@ public class BobsGameServer
 	public int serverID = -1;
 
 	public String ipAddressString = "";
-
-
 
 	public static int lastServerID = 0;
 
@@ -27,6 +23,5 @@ public class BobsGameServer
 		this.ipAddressString = ipAddressString;
 
 	}
-
 
 }

@@ -1,7 +1,7 @@
 package com.bobsgame.client.engine.game.nd.ping;
 
 
-import slick.Texture;
+import com.bobsgame.client.Texture;
 
 import com.bobsgame.client.GLUtils;
 import com.bobsgame.client.engine.Engine;

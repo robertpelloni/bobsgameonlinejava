@@ -1,6 +1,6 @@
 package com.bobsgame.client.engine.game;
+import com.bobsgame.client.LWJGLUtils;
 
-import org.lwjgl.opengl.Display;
 
 import com.bobsgame.client.engine.Engine;
 import com.bobsgame.client.engine.EnginePart;
@@ -83,12 +83,12 @@ public class EasingTest extends EnginePart
 	static float ticksCount = 0;
 	static float duration = 2000;
 	static float beginningValue = 100;
-	static float changeInValue = Display.getWidth()-200;
+	static float changeInValue = LWJGLUtils.SCREEN_SIZE_X-200;
 
 	public void update()
 	{
 
-		changeInValue = Display.getWidth()-200;
+		changeInValue = LWJGLUtils.SCREEN_SIZE_X-200;
 
 		ticksCount+=Engine().engineTicksPassed();
 		if(ticksCount>duration)
@@ -98,7 +98,7 @@ public class EasingTest extends EnginePart
 			if(changeInValue>0)
 			{
 				changeInValue*=-1;
-				beginningValue=Display.getWidth()-100;
+				beginningValue=LWJGLUtils.SCREEN_SIZE_X-100;
 			}
 			else
 			{

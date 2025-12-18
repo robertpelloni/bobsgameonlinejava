@@ -10,8 +10,7 @@ import java.io.InputStream;
 
 import org.slf4j.LoggerFactory;
 
-import slick.Texture;
-import slick.TrueTypeFont;
+import com.bobsgame.client.Texture;
 
 import ch.qos.logback.classic.Logger;
 
@@ -35,7 +34,7 @@ public class TextManager extends EnginePart
 
 	public static Logger log=(Logger)LoggerFactory.getLogger(TextManager.class);
 
-	public static TrueTypeFont ttfFont;
+	public static com.bobsgame.client.BitmapFont ttfFont;
 
 
 	static public String debugtext1;
@@ -229,11 +228,7 @@ public class TextManager extends EnginePart
 		// load font from file
 		try
 		{
-			InputStream inputStream=Utils.getResourceAsStream("res/fonts/bobsgame.ttf");
-
-			java.awt.Font awtFont=java.awt.Font.createFont(java.awt.Font.TRUETYPE_FONT,inputStream);
-			awtFont=awtFont.deriveFont(8f); // set font size
-			ttfFont=new TrueTypeFont(awtFont,antiAlias);
+			ttfFont = new com.bobsgame.client.BitmapFont("res/fonts/bobsgame.ttf", 8f);
 		}
 		catch(Exception e)
 		{
