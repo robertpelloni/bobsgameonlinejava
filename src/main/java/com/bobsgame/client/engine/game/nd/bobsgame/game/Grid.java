@@ -36,18 +36,25 @@ public class Grid
 	public HashMap<Integer,Block> blocks = new HashMap<Integer,Block>();
 
 
-	int shakeTicksSpeed = 60;
-	int shakeMaxX = 3;
-	float shakePlayingFieldX=0;
-	float shakePlayingFieldY=0;
-	long shakePlayingFieldTicks = 0;
-	private boolean shakePlayingFieldLeftRightToggle=false;
+	float wigglePlayingFieldX=0;
+	float wigglePlayingFieldY=0;
+	long wigglePlayingFieldTicks = 0;
+	int wigglePlayingFieldTicksSpeed = 60;
+	int wigglePlayingFieldMaxX = 3;
+	boolean wigglePlayingFieldLeftRightToggle = false;
 
-
-	int effectShakeDurationTicks = 0;
-	int effectShakeTicksCounter = 0;
-	int effectShakeMaxX = 0;
-	int effectShakeMaxY = 0;
+	long shakePlayingFieldScreenTicksCounter = 0;
+	long shakePlayingFieldStartTime = 0;
+	long shakePlayingFieldTicksDuration = 0;
+	int shakePlayingFieldMaxX = 0;
+	int shakePlayingFieldMaxY = 0;
+	int shakePlayingFieldTicksPerShake = 0;
+	long shakePlayingFieldTicksPerShakeXCounter = 0;
+	long shakePlayingFieldTicksPerShakeYCounter = 0;
+	boolean shakePlayingFieldLeftRightToggle = false;
+	boolean shakePlayingFieldUpDownToggle = false;
+	float shakeOffsetX = 0;
+	float shakeOffsetY = 0;
 
 
 	public int scrollPlayingFieldY = 0;//for panel
@@ -112,22 +119,22 @@ public class Grid
 	//=========================================================================================================================
 	public float x()
 	{//=========================================================================================================================
-		return screenX+shakePlayingFieldX;
+		return screenX + wigglePlayingFieldX + shakeOffsetX;
 	}
 	//=========================================================================================================================
 	public float y()
 	{//=========================================================================================================================
-		return screenY+shakePlayingFieldY;
+		return screenY + wigglePlayingFieldY + shakeOffsetY;
 	}
 	//=========================================================================================================================
 	public float bgX()
 	{//=========================================================================================================================
-		return x()+backgroundScrollX;
+		return screenX + wigglePlayingFieldX + shakeOffsetX + backgroundScrollX;
 	}
 	//=========================================================================================================================
 	public float bgY()
 	{//=========================================================================================================================
-		return y()+backgroundScrollY;
+		return screenY + wigglePlayingFieldY + shakeOffsetY + backgroundScrollY;
 	}
 
 
@@ -156,42 +163,85 @@ public class Grid
 			p.update();
 		}
 
-
-		if(effectShakeDurationTicks>0)
-		{
-			effectShakeTicksCounter+=Game().ticks();
-
-			shakePlayingFieldX = (float)Easing.easeInOutSinusoidal(effectShakeTicksCounter,-effectShakeMaxX/2.0f,effectShakeMaxX/2.0f,50);
-			shakePlayingFieldY = (float)Easing.easeInOutSinusoidal(effectShakeTicksCounter,effectShakeMaxY/2.0f,-effectShakeMaxY/2.0f,100);
-
-			if(effectShakeTicksCounter>effectShakeDurationTicks)
-			{
-				effectShakeTicksCounter=0;
-				effectShakeDurationTicks=0;
-				shakePlayingFieldX=0;
-				shakePlayingFieldY=0;
-				effectShakeMaxX = 0;
-				effectShakeMaxY = 0;
-			}
-		}
-
-
-
-//		for(int y=0;y<h();y++)
-//		{
-//			for(int x=0;x<w();x++)
-//			{
-//				Block b = get(x,y);
-//				if(b!=null)b.update(Engine().ticksPassed());
-//			}
-//		}
-
-
-
-
+		updateShake();
+        //wigglePlayingField(); // Intentionally not called here, called manually by GameLogic like in C++ (if C++ does that) or Java old code
 	}
 
+    public void setShakePlayingField(int ticksDuration, int maxX, int maxY, int ticksPerShake) {
+        if(shakePlayingFieldScreenTicksCounter == 0) {
+            shakePlayingFieldStartTime = System.nanoTime();
+        }
+        shakePlayingFieldScreenTicksCounter += ticksDuration;
+        shakePlayingFieldTicksDuration = shakePlayingFieldScreenTicksCounter;
+        shakePlayingFieldMaxX = maxX;
+        shakePlayingFieldMaxY = maxY;
+        shakePlayingFieldTicksPerShake = ticksPerShake;
+    }
 
+    public void updateShake() {
+        if(shakePlayingFieldScreenTicksCounter > 0) {
+            shakePlayingFieldScreenTicksCounter -= Game().ticks();
+            if(shakePlayingFieldScreenTicksCounter < 0) shakePlayingFieldScreenTicksCounter = 0;
+
+            long startTime = shakePlayingFieldStartTime;
+            long currentTime = System.nanoTime();
+            // 1 tick = 16.666 ms = 16666666.6667 ns
+            long nsPassed = currentTime - startTime;
+            double ticksPassedDouble = (double)nsPassed / 16666666.6667;
+            int ticksPassed = (int)ticksPassedDouble;
+
+            double xOverShakeTime = Easing.easeInOutCircular(shakePlayingFieldTicksDuration/2 + ticksPassed, 0, shakePlayingFieldMaxX, shakePlayingFieldTicksDuration*2);
+            double yOverShakeTime = Easing.easeInOutCircular(shakePlayingFieldTicksDuration/2 + ticksPassed, 0, shakePlayingFieldMaxY, shakePlayingFieldTicksDuration*2);
+
+            shakePlayingFieldTicksPerShakeXCounter += Game().ticks();
+            if(shakePlayingFieldTicksPerShakeXCounter > shakePlayingFieldTicksPerShake) {
+                shakePlayingFieldTicksPerShakeXCounter = 0;
+                shakePlayingFieldLeftRightToggle = !shakePlayingFieldLeftRightToggle;
+            }
+
+            shakePlayingFieldTicksPerShakeYCounter += Game().ticks();
+            if(shakePlayingFieldTicksPerShakeYCounter > shakePlayingFieldTicksPerShake * 2) {
+                shakePlayingFieldTicksPerShakeYCounter = 0;
+                shakePlayingFieldUpDownToggle = !shakePlayingFieldUpDownToggle;
+            }
+
+            double xThisTime = Easing.easeInOutCircular(shakePlayingFieldTicksPerShakeXCounter, 0, xOverShakeTime, shakePlayingFieldTicksPerShake);
+            double yThisTime = Easing.easeInOutCircular(shakePlayingFieldTicksPerShakeYCounter, 0, yOverShakeTime, shakePlayingFieldTicksPerShake*2);
+
+            if(shakePlayingFieldLeftRightToggle) shakeOffsetX = (float)xThisTime;
+            else shakeOffsetX = (float)-xThisTime;
+
+            if(shakePlayingFieldUpDownToggle) shakeOffsetY = (float)yThisTime;
+            else shakeOffsetY = (float)-yThisTime;
+
+            if(shakeOffsetX > shakePlayingFieldMaxX || shakeOffsetX < -shakePlayingFieldMaxX) shakeOffsetX = 0;
+            if(shakeOffsetY > shakePlayingFieldMaxY || shakeOffsetY < -shakePlayingFieldMaxY) shakeOffsetY = 0;
+
+        } else {
+            shakeOffsetX = 0;
+            shakeOffsetY = 0;
+        }
+    }
+
+    public void wigglePlayingField() {
+         wigglePlayingFieldTicks += Game().ticks();
+         if(wigglePlayingFieldTicks > wigglePlayingFieldTicksSpeed) {
+             wigglePlayingFieldTicks = 0;
+             if(!wigglePlayingFieldLeftRightToggle) {
+                 wigglePlayingFieldX++;
+                 if(wigglePlayingFieldX > wigglePlayingFieldMaxX) {
+                     wigglePlayingFieldLeftRightToggle = true;
+                     wigglePlayingFieldX--;
+                 }
+             } else {
+                 wigglePlayingFieldX--;
+                 if(wigglePlayingFieldX < -wigglePlayingFieldMaxX) {
+                     wigglePlayingFieldLeftRightToggle = false;
+                     wigglePlayingFieldX++;
+                 }
+             }
+         }
+    }
 
 
 	//=========================================================================================================================
@@ -993,50 +1043,28 @@ public class Grid
 	//=========================================================================================================================
 	public void shakeSmall()
 	{//=========================================================================================================================
-		if(effectShakeDurationTicks==0)effectShakeDurationTicks = 300;
-		if(effectShakeMaxX==0)effectShakeMaxX = (int)(3*(game.Engine().getWidth()/320));
-		if(effectShakeMaxY==0)effectShakeMaxY = (int)(3*(game.Engine().getWidth()/320));
+		setShakePlayingField(120, 2, 2, 40);
+	}
+
+	//=========================================================================================================================
+	public void shakeMedium()
+	{//=========================================================================================================================
+		setShakePlayingField(300, 4, 2, 60);
 	}
 
 	//=========================================================================================================================
 	public void shakeHard()
 	{//=========================================================================================================================
-		effectShakeDurationTicks = 600;
-		effectShakeMaxX = (int)(20*(game.Engine().getWidth()/320));
-		effectShakeMaxY = (int)(20*(game.Engine().getWidth()/320));
+		setShakePlayingField(600, 10, 10, 60);
 	}
 
 
 	//=========================================================================================================================
 	public void shakeForeground()
 	{//=========================================================================================================================
+        wigglePlayingField();
+    }
 
-		shakePlayingFieldTicks+=Game().ticks();
-
-		if(shakePlayingFieldTicks>shakeTicksSpeed)
-		{
-			shakePlayingFieldTicks=0;
-
-			if(shakePlayingFieldLeftRightToggle==false)
-			{
-				shakePlayingFieldX++;
-				if(shakePlayingFieldX>shakeMaxX)
-				{
-					shakePlayingFieldLeftRightToggle=true;
-					shakePlayingFieldX--;
-				}
-			}
-			else
-			{
-				shakePlayingFieldX--;
-				if(shakePlayingFieldX<-shakeMaxX)
-				{
-					shakePlayingFieldLeftRightToggle=false;
-					shakePlayingFieldX++;
-				}
-			}
-		}
-	}
 
 
 

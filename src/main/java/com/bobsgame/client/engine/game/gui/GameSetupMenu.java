@@ -5,6 +5,7 @@ import com.bobsgame.client.engine.game.nd.bobsgame.game.GameSequence;
 import com.bobsgame.client.engine.game.nd.bobsgame.game.GameType;
 import com.bobsgame.client.engine.game.nd.bobsgame.game.DifficultyType;
 import com.bobsgame.client.engine.game.nd.bobsgame.BobsGame;
+import com.bobsgame.net.BobNet;
 import de.matthiasmann.twl.Button;
 import de.matthiasmann.twl.Label;
 import de.matthiasmann.twl.ComboBox;
@@ -24,6 +25,10 @@ public class GameSetupMenu extends MenuPanel {
     private SimpleChangableListModel<DifficultyType> difficultyModel;
 
     private Button roomOptionsButton;
+
+    private Button voteUpButton;
+    private Button voteDownButton;
+
     private Button startButton;
     private Button backButton;
 
@@ -47,6 +52,20 @@ public class GameSetupMenu extends MenuPanel {
             }
         });
 
+        voteUpButton = new Button("Vote Up");
+        voteUpButton.addCallback(new Runnable() {
+            public void run() {
+                vote(true);
+            }
+        });
+
+        voteDownButton = new Button("Vote Down");
+        voteDownButton.addCallback(new Runnable() {
+            public void run() {
+                vote(false);
+            }
+        });
+
         startButton = new Button("Start Game");
         startButton.addCallback(new Runnable() {
             public void run() {
@@ -67,6 +86,7 @@ public class GameSetupMenu extends MenuPanel {
                 .addGroup(insideScrollPaneLayout.createSequentialGroup().addWidget(gameLabel).addWidget(gameValueLabel))
                 .addGroup(insideScrollPaneLayout.createSequentialGroup().addWidget(difficultyLabel).addWidget(difficultyComboBox))
                 .addWidget(roomOptionsButton)
+                .addGroup(insideScrollPaneLayout.createSequentialGroup().addWidget(voteUpButton).addWidget(voteDownButton))
                 .addWidget(startButton)
                 .addWidget(backButton)
         );
@@ -77,6 +97,7 @@ public class GameSetupMenu extends MenuPanel {
                 .addGroup(insideScrollPaneLayout.createParallelGroup().addWidget(gameLabel).addWidget(gameValueLabel))
                 .addGroup(insideScrollPaneLayout.createParallelGroup().addWidget(difficultyLabel).addWidget(difficultyComboBox))
                 .addWidget(roomOptionsButton)
+                .addGroup(insideScrollPaneLayout.createParallelGroup().addWidget(voteUpButton).addWidget(voteDownButton))
                 .addWidget(startButton)
                 .addWidget(backButton)
         );
@@ -114,7 +135,64 @@ public class GameSetupMenu extends MenuPanel {
             } else if (difficultyModel.getNumEntries() > 0) {
                 difficultyComboBox.setSelected(0);
             }
+
+            // Update Vote Buttons
+            String vote = room.gameSequence.yourVote;
+            if(room.gameSequence.gameTypes.size() == 1) {
+                vote = room.gameSequence.gameTypes.get(0).yourVote;
+            }
+
+            if("up".equals(vote)) {
+                voteUpButton.setText("Voted Up!");
+                voteDownButton.setText("Vote Down");
+            } else if("down".equals(vote)) {
+                voteUpButton.setText("Vote Up");
+                voteDownButton.setText("Voted Down!");
+            } else {
+                voteUpButton.setText("Vote Up");
+                voteDownButton.setText("Vote Down");
+            }
+
+            boolean canVote = !room.gameSequence.downloaded; // If not downloaded (i.e. built-in), maybe disable?
+            // C++: if (g->downloaded == false) continue; (filters OUT non-downloaded for voting list)
+            // So we should only vote on downloaded games.
+            // But built-in games might be "downloaded=false".
+            // Let's enable voting always for now, server handles it.
+
         }
+    }
+
+    private void vote(boolean up) {
+        if(GUIManager() == null || GUIManager().ND() == null || !(GUIManager().ND().getGame() instanceof BobsGame)) return;
+        BobsGame bg = (BobsGame)GUIManager().ND().getGame();
+
+        if(room == null || room.gameSequence == null) return;
+
+        String uuid = "";
+        String type = "GameSequence";
+        if(room.gameSequence.gameTypes.size() == 1) {
+            uuid = room.gameSequence.gameTypes.get(0).uuid;
+            type = "GameType";
+        } else {
+            uuid = room.gameSequence.uuid;
+        }
+
+        String vote = up ? "up" : "down";
+
+        // BobNet.Bobs_Game_GameTypesAndSequences_Vote_Request + type + ":" + uuid + ":" + vote + ":" + BobNet.endline
+        String packet = BobNet.Bobs_Game_GameTypesAndSequences_Vote_Request + type + ":" + uuid + ":" + vote + ":" + BobNet.endline;
+
+        if(Network() != null) {
+            Network().connectAndAuthorizeAndWriteToChannel(packet);
+        }
+
+        // Optimistic update
+        if(room.gameSequence.gameTypes.size() == 1) {
+             room.gameSequence.gameTypes.get(0).yourVote = vote;
+        } else {
+             room.gameSequence.yourVote = vote;
+        }
+        refresh();
     }
 
     private void startGame() {
