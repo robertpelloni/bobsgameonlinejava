@@ -169,6 +169,7 @@ public class GameLogic extends EnginePart
 
 	public Grid grid = new Grid(this);
 
+    public float gameSpeed = 0.0f;
 
 	public int blockWidth = 1;
 	public int blockHeight = 1;
@@ -449,6 +450,7 @@ public class GameLogic extends EnginePart
         if(currentRoom.lockDelayMinimum > -1 && lockDelayTicksCounter < currentRoom.lockDelayMinimum) lockDelayTicksCounter = currentRoom.lockDelayMinimum;
 
 		currentLineDropSpeedTicks = GameType().initialLineDropSpeedTicks;
+        gameSpeed = currentRoom.gameSpeedStart;
 		stopStackRiseTicksCounter = 1000;
 
 		piecesMadeThisGame = 0;
@@ -3982,9 +3984,6 @@ public class GameLogic extends EnginePart
 	{//=========================================================================================================================
 
 
-        //TODO: implement variable gameSpeed
-        float gameSpeed = 0.0f; //should be member variable initialized to currentRoom.gameSpeedStart
-
 		if(piecesMadeThisGame>lastPiecesMadeThisGame)
 		{
 			lastPiecesMadeThisGame = piecesMadeThisGame;
@@ -3993,8 +3992,12 @@ public class GameLogic extends EnginePart
             if(gameSpeed > currentRoom.gameSpeedMaximum) gameSpeed = currentRoom.gameSpeedMaximum;
             if(gameSpeed < 0.0f) gameSpeed = 0.0f;
 
-			if(currentLineDropSpeedTicks>GameType().minimumLineDropSpeedTicks)currentLineDropSpeedTicks*=0.98f; //TODO: use gameSpeed logic from C++
-			if(currentLineDropSpeedTicks<GameType().minimumLineDropSpeedTicks)currentLineDropSpeedTicks=GameType().minimumLineDropSpeedTicks;
+            int dropSpeedDiff = GameType().initialLineDropSpeedTicks - GameType().minimumLineDropSpeedTicks;
+            if (currentRoom.dropDelayMinimum > -1) {
+                dropSpeedDiff = GameType().initialLineDropSpeedTicks - Math.min(GameType().minimumLineDropSpeedTicks, currentRoom.dropDelayMinimum);
+            }
+
+            currentLineDropSpeedTicks = (int)(GameType().initialLineDropSpeedTicks - (dropSpeedDiff * gameSpeed));
 		}
 
 
