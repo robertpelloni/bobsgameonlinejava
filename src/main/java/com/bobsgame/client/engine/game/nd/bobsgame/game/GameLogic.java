@@ -10,23 +10,27 @@ import com.bobsgame.client.engine.Engine;
 import com.bobsgame.client.engine.EnginePart;
 import com.bobsgame.client.engine.game.MiniGameEngine;
 import com.bobsgame.client.engine.game.nd.bobsgame.BobsGame;
-import com.bobsgame.client.engine.game.nd.bobsgame.game.Settings.Difficulty;
-import com.bobsgame.client.engine.game.nd.bobsgame.game.Settings.DropLockType;
-import com.bobsgame.client.engine.game.nd.bobsgame.game.Settings.GarbageSpawnRule;
-import com.bobsgame.client.engine.game.nd.bobsgame.game.Settings.ScoreType;
-import com.bobsgame.client.engine.game.nd.bobsgame.game.Settings.VSGarbageRule;
+import com.bobsgame.client.engine.game.nd.bobsgame.game.GameType.Difficulty;
+import com.bobsgame.client.engine.game.nd.bobsgame.game.GameType.DropLockType;
+import com.bobsgame.client.engine.game.nd.bobsgame.game.GameType.GarbageSpawnRule;
+import com.bobsgame.client.engine.game.nd.bobsgame.game.GameType.ScoreType;
+import com.bobsgame.client.engine.game.nd.bobsgame.game.GameType.VSGarbageRule;
 import com.bobsgame.client.engine.text.BobFont;
 import com.bobsgame.client.engine.text.Caption;
 import com.bobsgame.client.engine.text.BobFont.BitmapFont;
 import com.bobsgame.shared.BobColor;
 import com.bobsgame.shared.Utils;
 import com.bobsgame.shared.MapData.RenderOrder;
-
+import com.bobsgame.client.engine.game.nd.bobsgame.stats.BobsGameUserStats;
 
 
 //===============================================================================================
 public class GameLogic extends EnginePart
 {//===============================================================================================
+
+    public BobsGameUserStats currentSessionStats = new BobsGameUserStats();
+
+    public Room currentRoom = new Room();
 
 
 
@@ -37,8 +41,9 @@ public class GameLogic extends EnginePart
 	int side = 0;
 
 
+    GameSequence currentGameSequence = new GameSequence();
 
-	ArrayList<Integer> gameTypeRandomBag = new ArrayList<Integer>();
+	ArrayList<GameType> gameTypeRandomBag = new ArrayList<GameType>();
 
 
 	//===============================================================================================
@@ -61,7 +66,7 @@ public class GameLogic extends EnginePart
 		randomGenerator = new Random(randomSeed);
 
 
-		setSettings(new Settings());
+		setGameType(new GameType());
 
 
 		blockWidth = (int)(8 * (getWidth()/320));
@@ -69,13 +74,16 @@ public class GameLogic extends EnginePart
 
 
 
+        initBuiltInGameTypes();
+
+        currentRoom.gameSequence = currentGameSequence;
 
 		fillGameTypeRandomBag();
 
-		int gameType = TETRID;
+		//int gameType = TETRID;
 
-		gameTypeRandomBag.remove(Integer.valueOf(gameType));
-		setGameType(gameType);//getGameTypeFromRandomBag();
+		//gameTypeRandomBag.remove(Integer.valueOf(gameType));
+		setGameType(getGameTypeFromRandomBag());//getGameTypeFromRandomBag();
 
 
 		//DONE: init randomseed
@@ -103,31 +111,61 @@ public class GameLogic extends EnginePart
 	//=========================================================================================================================
 	public void fillGameTypeRandomBag()
 	{//=========================================================================================================================
-		ArrayList<Integer> tempBag = new ArrayList<Integer>();
-		for(int i=0;i<gameCount;i++)
-		{
-			tempBag.add(Integer.valueOf(i));
-		}
+        if (currentGameSequence.randomizeSequence) {
+		    ArrayList<GameType> tempBag = new ArrayList<GameType>();
+		    for(int i=0;i<currentGameSequence.gameTypes.size();i++)
+		    {
+			    tempBag.add(currentGameSequence.gameTypes.get(i));
+		    }
 
-		while(tempBag.size()>0)
-		{
-			int i = getRandomIntLessThan(tempBag.size());
-			gameTypeRandomBag.add(tempBag.get(i));
-			tempBag.remove(i);
-		}
+		    while(tempBag.size()>0)
+		    {
+			    int i = getRandomIntLessThan(tempBag.size());
+			    gameTypeRandomBag.add(tempBag.get(i));
+			    tempBag.remove(i);
+		    }
+        } else {
+            for(int i=0;i<currentGameSequence.gameTypes.size();i++)
+		    {
+			    gameTypeRandomBag.add(currentGameSequence.gameTypes.get(i));
+		    }
+        }
 	}
 
 	//=========================================================================================================================
-	public int getGameTypeFromRandomBag()
+	public GameType getGameTypeFromRandomBag()
 	{//=========================================================================================================================
 		if(gameTypeRandomBag.size()==0)fillGameTypeRandomBag();
 
-		return gameTypeRandomBag.remove(0).intValue();
+		return gameTypeRandomBag.remove(0);
 	}
 
+    public static ArrayList<GameType> getBuiltInGameTypes() {
+        ArrayList<GameType> types = new ArrayList<GameType>();
+        GameType t;
+
+        t = new GameType(); t.tetrid(); t.name="Tetrid"; types.add(t);
+        t = new GameType(); t.tetsosumi(); t.name="Tetsosumi"; types.add(t);
+        t = new GameType(); t.boblob(); t.name="Boblob"; types.add(t);
+        t = new GameType(); t.jewels(); t.name="Jewels"; types.add(t);
+        t = new GameType(); t.pop(); t.name="Pop"; types.add(t);
+        t = new GameType(); t.gemfight(); t.name="GemFight"; types.add(t);
+        t = new GameType(); t.gemfight_columns(); t.name="GemFightColumns"; types.add(t);
+        t = new GameType(); t.popswap(); t.name="PopSwap"; types.add(t);
+        t = new GameType(); t.gemfight_swap(); t.name="GemFightSwap"; types.add(t);
+        t = new GameType(); t.panelswap(); t.name="PanelSwap"; types.add(t);
+        t = new GameType(); t.mrbob(); t.name="MrBob"; types.add(t);
+
+        return types;
+    }
+
+    public void initBuiltInGameTypes() {
+        currentGameSequence.gameTypes.addAll(getBuiltInGameTypes());
+    }
 
 
-	private Settings settings = null;
+
+	private GameType settings = null;
 
 	public Grid grid = new Grid(this);
 
@@ -258,7 +296,6 @@ public class GameLogic extends EnginePart
 	public boolean forceGravity = false;
 	public String previousGameString = "";
 	public String currentGameString = "";
-	int currentGameType = 0;
 
 	boolean mute = false;
 
@@ -293,17 +330,8 @@ public class GameLogic extends EnginePart
 
 
 
-	int gameCount = 0;
 
-	int TETRID = gameCount++;
-	int TETSOSUMI = gameCount++;//tetris dontsuetris tetsosumi
-	int BOBLOB = gameCount++;//bobubobu? bubobubo? bubobob? bobu's bean avalanche (was BLOB)
-	int JEWELS = gameCount++;//gems jewels genegems pillars columbines (was JEWEL)
-	int GEMFIGHT_COLUMNS_TYPE_Y = gameCount++;
-	int POP = gameCount++;//dancinglady, "puzzle sphere war" is apparently translation
 	/** <img src="C:/Users/Administrator/workspace/_screenshots/puzzlefighter.png" />*/
-	int GEMFIGHT = gameCount++;
-	int MRBOB = gameCount++;//dr patent? dr patentio? quack? rockdoc? Mario's Addiction? MDMA? Drugz4Kidz? EnslavedJapaneseEngineersOnSpeed
 
 
 
@@ -323,9 +351,6 @@ public class GameLogic extends EnginePart
 
 	//swap games --------------------
 	/** <img src="C:/Users/Administrator/workspace/_screenshots/damaswap.png" />*/
-	int POPSWAP_TOKKAE = gameCount++;
-	int PANELSWAP = gameCount++;//panel de planet puzzle attack league //TODO: check gamecube version
-	int GEMFIGHT_SWAP_TYPE_Z = gameCount++;
 
 
 //	int YOSHISCOOKIE = gameType++;//TODO
@@ -381,55 +406,21 @@ public class GameLogic extends EnginePart
 
 
 	//=========================================================================================================================
-	public void setGameType(int gameType)
+    public void setGameSequence(GameSequence seq) {
+		this.currentGameSequence = seq;
+		fillGameTypeRandomBag();
+		setGameType(getGameTypeFromRandomBag());
+	}
+
+	public void setGameType(GameType gameType)
 	{//=========================================================================================================================
 
 		previousGameString = currentGameString;
-		currentGameType = gameType;
+		this.settings = gameType;
 
-		if(gameType==TETSOSUMI){Settings().tetsosumi(this);currentGameString=("Tetsosumi");}
-		else if(gameType==TETRID){Settings().tetrid(this);currentGameString=("Tetrid");}
-		else if(gameType==MRBOB){Settings().mrbob(this);currentGameString=("MrBob");}
-		else if(gameType==BOBLOB){Settings().boblob(this);currentGameString=("Boblob");}
-		else if(gameType==JEWELS){Settings().jewels(this);currentGameString=("Jewels");}
-		else if(gameType==POP){Settings().pop(this);currentGameString=("Pop");}
-		else if(gameType==GEMFIGHT){Settings().gemfight(this);currentGameString=("GemFight");}
-		else if(gameType==GEMFIGHT_COLUMNS_TYPE_Y){Settings().gemfight_columns(this);currentGameString=("GemFightColumns");}
-		else if(gameType==POPSWAP_TOKKAE){Settings().popswap(this);currentGameString=("PopSwap");}
-		else if(gameType==GEMFIGHT_SWAP_TYPE_Z){Settings().gemfight_swap(this);currentGameString=("GemFightSwap");}
-		else if(gameType==PANELSWAP){Settings().panelswap(this);currentGameString=("PanelSwap");}
-		else {Settings().tetrid(this);currentGameString=("Tetrid");}
+        currentGameString = gameType.name;
 
-
-
-//		if(gameType==YOSHISCOOKIE);
-//		if(gameType==METEOS);
-//		if(gameType==LUMINES);
-//		if(gameType==GUNPEY);
-//		if(gameType==KIRBYSTARSTACK);
-//		if(gameType==DRILLER);
-
-//		if(gameType==KLAX);
-//		if(gameType==WARIOSWOODS);
-//		if(gameType==YOSHI_HATRIS);
-//		if(gameType==ZOOP);
-
-//		if(gameType==MAGICALDROP);
-//		if(gameType==PUZZLEBUBBLE_BUSTAMOVE);
-//		if(gameType==PANG_BUSTERBROS);
-
-//		if(gameType==POLARIUM);
-//		if(gameType==PIPEDREAM);
-
-//		if(gameType==FLIPULL);
-//		if(gameType==PUZZNIC);
-//		if(gameType==PACATTACK);
-
-//		if(gameType==DENKIBLOX);
-//		if(gameType==SOKOBAN);
-
-
-
+        initGame();
 	}
 
 
@@ -438,7 +429,7 @@ public class GameLogic extends EnginePart
 	{//=========================================================================================================================
 
 		//set all variables to initial state, in case when switching games
-		//settings = new Settings();
+		//settings = new GameType();
 
 
 		init=true;
@@ -454,8 +445,10 @@ public class GameLogic extends EnginePart
 		//TODO: maximum spawn/line clear delay
 
 
-		lockDelayTicksCounter = Settings().maxLockDelayTicks;
-		currentLineDropSpeedTicks = Settings().initialLineDropSpeedTicks;
+		lockDelayTicksCounter = GameType().maxLockDelayTicks;
+        if(currentRoom.lockDelayMinimum > -1 && lockDelayTicksCounter < currentRoom.lockDelayMinimum) lockDelayTicksCounter = currentRoom.lockDelayMinimum;
+
+		currentLineDropSpeedTicks = GameType().initialLineDropSpeedTicks;
 		stopStackRiseTicksCounter = 1000;
 
 		piecesMadeThisGame = 0;
@@ -463,6 +456,12 @@ public class GameLogic extends EnginePart
 		blocksClearedThisGame = 0;
 		linesClearedThisGame = 0;
 
+
+        currentSessionStats = new BobsGameUserStats();
+        currentSessionStats.gameTypeName = GameType().name;
+        currentSessionStats.gameTypeUUID = GameType().uuid;
+        currentSessionStats.difficultyName = difficultyCaptionText;
+        currentSessionStats.firstTimePlayed = System.currentTimeMillis();
 
 
 		currentPiece = null;
@@ -472,29 +471,29 @@ public class GameLogic extends EnginePart
 		nextPieceSpecialBuffer = null;
 
 
-		if(Settings().chainRule_CheckEntireLine&&Settings().chainRule_AmountPerChain==0)Settings().chainRule_AmountPerChain = gridW();
+		if(GameType().chainRule_CheckEntireLine&&GameType().chainRule_AmountPerChain==0)GameType().chainRule_AmountPerChain = gridW();
 
 
-		if(Settings().randomlyFillGrid)
+		if(GameType().randomlyFillGrid)
 		{
-			grid.randomlyFillEntireGridWithPlayingFieldPieces(Settings().randomlyFillGridAmount,Settings().randomlyFillGridStartY);
+			grid.randomlyFillEntireGridWithPlayingFieldPieces(GameType().randomlyFillGridAmount,GameType().randomlyFillGridStartY);
 		}
 
-		if(Settings().randomlyFillStack)
+		if(GameType().randomlyFillStack)
 		{
-			grid.buildRandomStackWithPlayingFieldPieces(Settings().randomlyFillStackAmount,Settings().randomlyFillStackStartY);
+			grid.buildRandomStackWithPlayingFieldPieces(GameType().randomlyFillStackAmount,GameType().randomlyFillStackStartY);
 		}
 
-		if(Settings().makeNewPiece)
+		if(GameType().makeNewPiece)
 		{
 			newRandomPiece();
 		}
 
 
-		if(Settings().makeCursorPiece)
+		if(GameType().makeCursorPiece)
 		{
 
-			if(Settings().cursorPieceSize==1)
+			if(GameType().cursorPieceSize==1)
 			{
 				PieceType cursorPiece = new PieceType(1,Piece.get1PieceCursorRotationSet());
 				BlockType cursorBlock = new BlockType();
@@ -504,7 +503,7 @@ public class GameLogic extends EnginePart
 			}
 
 
-			if(Settings().cursorPieceSize==2)
+			if(GameType().cursorPieceSize==2)
 			{
 				PieceType cursorPiece = new PieceType(2,Piece.get2PieceCursorRotationSet());
 				BlockType cursorBlock = new BlockType();
@@ -514,7 +513,7 @@ public class GameLogic extends EnginePart
 			}
 
 
-			if(Settings().cursorPieceSize==4)
+			if(GameType().cursorPieceSize==4)
 			{
 				PieceType cursorPiece = new PieceType(4,Piece.get4PieceCursorRotationSet());
 				BlockType cursorBlock = new BlockType();
@@ -527,38 +526,40 @@ public class GameLogic extends EnginePart
 
 
 
-		if(Settings().difficulty==Difficulty.EASY)
+		if(GameType().difficulty==Difficulty.EASY)
 		{
-			Settings().extraStage1Level=5;
-			Settings().extraStage2Level=6;
-			Settings().extraStage3Level=7;
-			Settings().extraStage4Level=8;
-			Settings().creditsLevel=9;
+			GameType().extraStage1Level=5;
+			GameType().extraStage2Level=6;
+			GameType().extraStage3Level=7;
+			GameType().extraStage4Level=8;
+			GameType().creditsLevel=9;
 			difficultyCaptionText = "Difficulty: Easy";
 		}
 		else
-		if(Settings().difficulty==Difficulty.NORMAL)
+		if(GameType().difficulty==Difficulty.NORMAL)
 		{
-			Settings().extraStage1Level=9;
-			Settings().extraStage2Level=14;
-			Settings().extraStage3Level=19;
-			Settings().extraStage4Level=25;
-			Settings().creditsLevel=99;
+			GameType().extraStage1Level=9;
+			GameType().extraStage2Level=14;
+			GameType().extraStage3Level=19;
+			GameType().extraStage4Level=25;
+			GameType().creditsLevel=99;
 			difficultyCaptionText = "Difficulty: Normal";
 		}
 		else
 		{
-			Settings().extraStage1Level=20;
-			Settings().extraStage2Level=30;
-			Settings().extraStage3Level=40;
-			Settings().extraStage4Level=50;
-			Settings().creditsLevel=60;
+			GameType().extraStage1Level=20;
+			GameType().extraStage2Level=30;
+			GameType().extraStage3Level=40;
+			GameType().extraStage4Level=50;
+			GameType().creditsLevel=60;
 			difficultyCaptionText = "Difficulty: Hard";
 		}
 
+        currentRoom.room_DifficultyName = difficultyCaptionText;
+
 
 		AudioManager().stopMusic(playingMusic);
-		playingMusic = Settings().normalMusic;
+		playingMusic = GameType().normalMusic;
 		AudioManager().playMusic(playingMusic);
 
 
@@ -567,7 +568,7 @@ public class GameLogic extends EnginePart
 //		{
 //			output = new BufferedWriter(new FileWriter(new File(System.getProperty("user.home")+"\\Desktop\\output.txt")));
 //
-//			String settingsString = Settings().toGSON();
+//			String settingsString = GameType().toGSON();
 //
 //			output.write(settingsString);
 //			output.close();
@@ -675,7 +676,7 @@ public class GameLogic extends EnginePart
 	{//=========================================================================================================================
 
 		flashScreenTicksCounter+=ticks();
-		if(flashScreenTicksCounter>Settings().flashScreenSpeedTicks)
+		if(flashScreenTicksCounter>GameType().flashScreenSpeedTicks)
 		{
 			flashScreenTicksCounter=0;
 
@@ -696,7 +697,7 @@ public class GameLogic extends EnginePart
 
 		flashBlocksTicksCounter+=ticks();
 
-		if(flashBlocksTicksCounter>Settings().flashBlockSpeedTicks)
+		if(flashBlocksTicksCounter>GameType().flashBlockSpeedTicks)
 		{
 			flashBlocksTicksCounter=0;
 
@@ -743,31 +744,31 @@ public class GameLogic extends EnginePart
 						if(p.pieceType.bombPiece)
 						{
 							makeAnnouncementCaption("BOMB",BobColor.BLUE);
-							AudioManager().playSound(Settings().gotBombSound,getVolume(),1.0f,1);
+							AudioManager().playSound(GameType().gotBombSound,getVolume(),1.0f,1);
 						}
 
 						if(p.pieceType.weightPiece)
 						{
 							makeAnnouncementCaption("WEIGHT",BobColor.ORANGE);
-							AudioManager().playSound(Settings().gotWeightSound,getVolume(),1.0f,1);
+							AudioManager().playSound(GameType().gotWeightSound,getVolume(),1.0f,1);
 						}
 
 						if(p.pieceType.clearEveryRowPieceIsOnIfAnySingleRowCleared)
 						{
 							makeAnnouncementCaption("FLASHING CLEAR",BobColor.GREEN);
-							AudioManager().playSound(Settings().flashingClearSound,getVolume(),1.0f,1);
+							AudioManager().playSound(GameType().flashingClearSound,getVolume(),1.0f,1);
 						}
 
 						if(p.pieceType.pieceRemovalShooterPiece)
 						{
 							makeAnnouncementCaption("SUBTRACTOR",BobColor.RED);
-							AudioManager().playSound(Settings().gotSubtractorSound,getVolume(),1.0f,1);
+							AudioManager().playSound(GameType().gotSubtractorSound,getVolume(),1.0f,1);
 						}
 
 						if(p.pieceType.pieceShooterPiece)
 						{
 							makeAnnouncementCaption("ADDER",BobColor.YELLOW);
-							AudioManager().playSound(Settings().gotAdderSound,getVolume(),1.0f,1);
+							AudioManager().playSound(GameType().gotAdderSound,getVolume(),1.0f,1);
 						}
 
 
@@ -777,7 +778,7 @@ public class GameLogic extends EnginePart
 					{
 
 						makeAnnouncementCaption("SCANLINE CLEAR",BobColor.RED);
-						AudioManager().playSound(Settings().scanlineClearSound,getVolume(),1.0f,1);
+						AudioManager().playSound(GameType().scanlineClearSound,getVolume(),1.0f,1);
 
 						//add every other line to clear blocks
 						for(int y=gridH()-2;y>=0;y-=2)
@@ -809,9 +810,9 @@ public class GameLogic extends EnginePart
 				&&
 				(
 					//flash blocks slower, remove one at a time
-					Settings().removingBlocksDelayTicksBetweenEachBlock==0
+					GameType().removingBlocksDelayTicksBetweenEachBlock==0
 					||
-					removeBlocksTicksCounter>Settings().removingBlocksDelayTicksBetweenEachBlock
+					removeBlocksTicksCounter>GameType().removingBlocksDelayTicksBetweenEachBlock
 				)
 			)
 			{
@@ -839,7 +840,7 @@ public class GameLogic extends EnginePart
 
 
 
-				if(Settings().chainRule_CheckEntireLine)
+				if(GameType().chainRule_CheckEntireLine)
 				{
 					//clear line by line and add score per line
 					for(int i=0;i<currentChainBlocks.size();i++)
@@ -876,16 +877,18 @@ public class GameLogic extends EnginePart
 			}
 		}
 
+        currentSessionStats.totalBlocksCleared += blocksCleared;
+
 		timesToFlashScreenQueue+=linesCleared;
 
-		if(linesCleared==1)AudioManager().playSound(Settings().singleLineFlashingSound,getVolume(),1.0f,1);
-		if(linesCleared==2)AudioManager().playSound(Settings().doubleLineFlashingSound,getVolume(),1.0f,1);
-		if(linesCleared==3)AudioManager().playSound(Settings().tripleLineFlashingSound,getVolume(),1.0f,1);
-		if(linesCleared>=4){AudioManager().playSound(Settings().quadLineFlashingSound,getVolume(),1.0f,1);makeAnnouncementCaption("SOSUMI!",BobColor.GREEN);}
+		if(linesCleared==1)AudioManager().playSound(GameType().singleLineFlashingSound,getVolume(),1.0f,1);
+		if(linesCleared==2)AudioManager().playSound(GameType().doubleLineFlashingSound,getVolume(),1.0f,1);
+		if(linesCleared==3)AudioManager().playSound(GameType().tripleLineFlashingSound,getVolume(),1.0f,1);
+		if(linesCleared>=4){AudioManager().playSound(GameType().quadLineFlashingSound,getVolume(),1.0f,1);makeAnnouncementCaption("SOSUMI!",BobColor.GREEN);}
 
 
-		if(Settings().chainRule_CheckEntireLine)lineClearDelayTicksCounter+=linesCleared*Settings().lineClearDelayTicksAmountPerLine;
-		else lineClearDelayTicksCounter+=blocksCleared*Settings().lineClearDelayTicksAmountPerBlock;
+		if(GameType().chainRule_CheckEntireLine)lineClearDelayTicksCounter+=linesCleared*GameType().lineClearDelayTicksAmountPerLine;
+		else lineClearDelayTicksCounter+=blocksCleared*GameType().lineClearDelayTicksAmountPerBlock;
 
 
 		currentChain = currentChainBlocks.size();
@@ -968,24 +971,24 @@ public class GameLogic extends EnginePart
 		if(playedReadySound==false)
 		{
 
-			AudioManager().playSound(Settings().readySound,getVolume(),1.0f,1);
+			AudioManager().playSound(GameType().readySound,getVolume(),1.0f,1);
 			playedReadySound = true;
 
-			Caption c = Engine().CaptionManager().newManagedCaption(0,(int)(getHeight()/2)-30,Settings().readyTicksAmount,"READY",BobFont.font_normal_16_outlined_smooth,BobColor.RED,BobColor.CLEAR,RenderOrder.ABOVE_TOP,3.0f,0);
+			Caption c = Engine().CaptionManager().newManagedCaption(0,(int)(getHeight()/2)-30,GameType().readyTicksAmount,"READY",BobFont.font_normal_16_outlined_smooth,BobColor.RED,BobColor.CLEAR,RenderOrder.ABOVE_TOP,3.0f,0);
 			c.screenX = (int)(grid.screenX+(grid.w()*cellW()/2)) - c.getWidth()/2;
 
 		}
 
 
 		readyTicksCounter+=Engine().engineTicksPassed();
-		if(readyTicksCounter>Settings().readyTicksAmount)
+		if(readyTicksCounter>GameType().readyTicksAmount)
 		{
 
 			readyTicksCounter = 0;
 			playedReadySound = true;
 			waitingForReady = false;
 
-			AudioManager().playSound(Settings().goSound,getVolume(),1.0f,1);
+			AudioManager().playSound(GameType().goSound,getVolume(),1.0f,1);
 			Caption c = Engine().CaptionManager().newManagedCaption(0,(int)(getHeight()/2),1000,"GO!",BobFont.font_normal_16_outlined_smooth,BobColor.GREEN,BobColor.CLEAR,RenderOrder.ABOVE_TOP,3.0f,0);
 			c.screenX = (int)(grid.screenX+(grid.w()*cellW()/2)) - c.getWidth()/2;
 
@@ -1144,7 +1147,7 @@ public class GameLogic extends EnginePart
 
 
 
-		if(Settings().garbageSpawnRule!=GarbageSpawnRule.NONE)processGarbageRules();
+		if(GameType().garbageSpawnRule!=GarbageSpawnRule.NONE)processGarbageRules();
 
 		processQueuedGarbageSentFromOtherPlayer();
 
@@ -1176,7 +1179,7 @@ public class GameLogic extends EnginePart
 
 
 
-		if(Settings().stackRiseGame)
+		if(GameType().stackRiseGame)
 		{
 			doStackRiseGame();
 		}
@@ -1230,7 +1233,7 @@ public class GameLogic extends EnginePart
 					currentChain=0;
 					comboChainTotal=0;
 
-					if(Settings().stackRiseGame)
+					if(GameType().stackRiseGame)
 					{
 						//don't make new piece since they are not "falling block" games
 					}
@@ -1274,15 +1277,15 @@ public class GameLogic extends EnginePart
 
 		currentChainBlocks = null;
 
-		ArrayList<BlockType> ignoreTypes = Settings().blockTypesToIgnoreWhenCheckingChainConnections;
-		ArrayList<BlockType> mustContainAtLeastOneTypes = Settings().blockTypesMustContainWhenCheckingChainConnections;
+		ArrayList<BlockType> ignoreTypes = GameType().getBlockTypesToIgnoreWhenCheckingChainConnections();
+		ArrayList<BlockType> mustContainAtLeastOneTypes = GameType().getBlockTypesMustContainWhenCheckingChainConnections();
 
 
 		//can use this while blocks are falling to detect sticky colors
 		grid.setColorConnections(ignoreTypes,null);
 
 
-		if(Settings().chainRule_CheckEntireLine)
+		if(GameType().chainRule_CheckEntireLine)
 		{
 			ArrayList<Block> chainBlocks = null;
 			chainBlocks = grid.checkLines(ignoreTypes,mustContainAtLeastOneTypes);
@@ -1291,9 +1294,9 @@ public class GameLogic extends EnginePart
 
 
 		int toRow = grid.h();
-		if(Settings().stackRiseGame)toRow = grid.h()-1;
+		if(GameType().stackRiseGame)toRow = grid.h()-1;
 
-		if(Settings().chainRule_AmountPerChain>0)
+		if(GameType().chainRule_AmountPerChain>0)
 		{
 
 			ArrayList<Block> chainBlocks = null;
@@ -1306,20 +1309,20 @@ public class GameLogic extends EnginePart
 
 					if(b!=null&&(ignoreTypes==null||ignoreTypes.contains(b.blockType)==false))
 					{
-						if(Settings().chainRule_CheckRowOrColumn)chainBlocks = grid.addBlocksConnectedToBlockToArrayIfNotInItAlreadyIfInRowOrColumnAtLeastAmount(b,chainBlocks,Settings().chainRule_AmountPerChain,0,grid.w(),0,toRow,ignoreTypes,mustContainAtLeastOneTypes);
-						if(Settings().chainRule_CheckDiagonal)chainBlocks = grid.addBlocksConnectedToBlockToArrayIfNotInItAlreadyIfDiagonalAtLeastAmount(b,chainBlocks,Settings().chainRule_AmountPerChain,0,grid.w(),0,toRow,ignoreTypes,mustContainAtLeastOneTypes);
+						if(GameType().chainRule_CheckRowOrColumn)chainBlocks = grid.addBlocksConnectedToBlockToArrayIfNotInItAlreadyIfInRowOrColumnAtLeastAmount(b,chainBlocks,GameType().chainRule_AmountPerChain,0,grid.w(),0,toRow,ignoreTypes,mustContainAtLeastOneTypes);
+						if(GameType().chainRule_CheckDiagonal)chainBlocks = grid.addBlocksConnectedToBlockToArrayIfNotInItAlreadyIfDiagonalAtLeastAmount(b,chainBlocks,GameType().chainRule_AmountPerChain,0,grid.w(),0,toRow,ignoreTypes,mustContainAtLeastOneTypes);
 					}
 				}
 			}
 
-			if(Settings().chainRule_CheckRecursiveConnections)chainBlocks = grid.checkRecursiveConnectedRowOrColumn(chainBlocks,Settings().chainRule_AmountPerChain,0,grid.w(),0,toRow,ignoreTypes,mustContainAtLeastOneTypes);
+			if(GameType().chainRule_CheckRecursiveConnections)chainBlocks = grid.checkRecursiveConnectedRowOrColumn(chainBlocks,GameType().chainRule_AmountPerChain,0,grid.w(),0,toRow,ignoreTypes,mustContainAtLeastOneTypes);
 
 			addToChainBlocks(chainBlocks);
 		}
 
-		if(Settings().chainRule_CheckTouchingBreakerBlocksChain)
+		if(GameType().chainRule_CheckTouchingBreakerBlocksChain)
 		{
-			ArrayList<Block> chainBlocks = grid.checkBreakerBlocks(toRow,Settings().blockTypesToIgnoreWhenCheckingChainConnections,Settings().blockTypesMustContainWhenCheckingChainConnections);
+			ArrayList<Block> chainBlocks = grid.checkBreakerBlocks(toRow,GameType().getBlockTypesToIgnoreWhenCheckingChainConnections(),GameType().getBlockTypesMustContainWhenCheckingChainConnections());
 			addToChainBlocks(chainBlocks);
 		}
 
@@ -1341,7 +1344,7 @@ public class GameLogic extends EnginePart
 		if(detectedChain())
 		{
 
-			int chainMinimum = Settings().chainRule_AmountPerChain;
+			int chainMinimum = GameType().chainRule_AmountPerChain;
 
 			if(currentCombo==0)
 			{
@@ -1353,7 +1356,7 @@ public class GameLogic extends EnginePart
 
 
 				int bonusAmount = (currentChain - chainMinimum);
-				if(Settings().chainRule_CheckEntireLine)
+				if(GameType().chainRule_CheckEntireLine)
 				{
 					bonusAmount = currentChain / chainMinimum;
 					if(bonusAmount==1)bonusAmount=0;
@@ -1372,6 +1375,8 @@ public class GameLogic extends EnginePart
 			else
 			{
 				currentCombo++;
+                if(currentCombo > currentSessionStats.biggestCombo) currentSessionStats.biggestCombo = currentCombo;
+                currentSessionStats.totalCombosMade++;
 				currentChain = currentChainBlocks.size();
 				comboChainTotal += currentChain;
 
@@ -1430,14 +1435,14 @@ public class GameLogic extends EnginePart
 				a.flashingToBeRemoved=true;
 			}
 
-			if(Settings().stackRiseGame)//TODO: check stop behavior for dama and puzzlefighter
+			if(GameType().stackRiseGame)//TODO: check stop behavior for dama and puzzlefighter
 			{
 				//stop
 				if(currentChainBlocks.size()>3)stopStackRiseTicksCounter+=1000*currentChainBlocks.size();
 			}
 
-			AudioManager().playSound(Settings().blocksFlashingSound,getVolume(),1.0f,1);
-			timesToFlashBlocksQueue = Settings().timesToFlashBlocks;
+			AudioManager().playSound(GameType().blocksFlashingSound,getVolume(),1.0f,1);
+			timesToFlashBlocksQueue = GameType().timesToFlashBlocks;
 		}
 	}
 
@@ -1525,9 +1530,9 @@ public class GameLogic extends EnginePart
 
 
 
-			int dropSpeedDiff = Settings().initialLineDropSpeedTicks - Settings().minimumLineDropSpeedTicks;
+			int dropSpeedDiff = GameType().initialLineDropSpeedTicks - GameType().minimumLineDropSpeedTicks;
 
-			int currentDropSpeedDiff = (currentLineDropSpeedTicks - Settings().minimumLineDropSpeedTicks);
+			int currentDropSpeedDiff = (currentLineDropSpeedTicks - GameType().minimumLineDropSpeedTicks);
 
 			int currentStackRise = minStackRise + (int)(((float)currentDropSpeedDiff / (float)dropSpeedDiff) * (float)stackRiseDiff);
 
@@ -1601,7 +1606,7 @@ public class GameLogic extends EnginePart
 	//=========================================================================================================================
 	public void manuallyApplyGravityWithoutChainChecking()
 	{//=========================================================================================================================
-		while(moveDownBlocksOverBlankSpaces()){moveDownLineTicksCounter=Settings().gravityRule_ticksToMoveDownBlocksOverBlankSpaces;}
+		while(moveDownBlocksOverBlankSpaces()){moveDownLineTicksCounter=GameType().gravityRule_ticksToMoveDownBlocksOverBlankSpaces;}
 	}
 
 
@@ -1612,7 +1617,7 @@ public class GameLogic extends EnginePart
 
 		boolean movedDownBlocks = true;
 
-		if(moveDownLineTicksCounter>=Settings().gravityRule_ticksToMoveDownBlocksOverBlankSpaces || Settings().moveDownAllLinesOverBlankSpacesAtOnce)
+		if(moveDownLineTicksCounter>=GameType().gravityRule_ticksToMoveDownBlocksOverBlankSpaces || GameType().moveDownAllLinesOverBlankSpacesAtOnce)
 		{
 
 			moveDownLineTicksCounter=0;
@@ -1620,21 +1625,21 @@ public class GameLogic extends EnginePart
 			do
 			{
 
-				if(Settings().chainRule_CheckEntireLine)
+				if(GameType().chainRule_CheckEntireLine)
 				{
 					movedDownBlocks = grid.moveDownLinesAboveBlankLinesOneLine();
 				}
 				else
 				{
 
-					if(Settings().gravityRule_onlyMoveDownDisconnectedBlocks)
-					movedDownBlocks = grid.moveDownDisconnectedBlocksAboveBlankSpacesOneLine(Settings().blockTypesToIgnoreWhenMovingDownBlocks);
+					if(GameType().gravityRule_onlyMoveDownDisconnectedBlocks)
+					movedDownBlocks = grid.moveDownDisconnectedBlocksAboveBlankSpacesOneLine(GameType().getBlockTypesToIgnoreWhenMovingDownBlocks());
 					else
-					movedDownBlocks = grid.moveDownAnyBlocksAboveBlankSpacesOneLine(Settings().blockTypesToIgnoreWhenMovingDownBlocks);
+					movedDownBlocks = grid.moveDownAnyBlocksAboveBlankSpacesOneLine(GameType().getBlockTypesToIgnoreWhenMovingDownBlocks());
 				}
 
 			}
-			while(Settings().moveDownAllLinesOverBlankSpacesAtOnce==true && movedDownBlocks==true);
+			while(GameType().moveDownAllLinesOverBlankSpacesAtOnce==true && movedDownBlocks==true);
 
 		}
 
@@ -1648,11 +1653,11 @@ public class GameLogic extends EnginePart
 	// =========================================================================================================================
 	private void pieceMoved()
 	{// =========================================================================================================================
-		lockDelayTicksCounter=Settings().maxLockDelayTicks;
+		lockDelayTicksCounter=GameType().maxLockDelayTicks;
 
 		//test one more down
 		currentPiece.yGrid++;
-		if(grid.doesPieceFit(currentPiece)==false)AudioManager().playSound(Settings().touchBottomSound,getVolume(),getSoundEffectSpeed(),1);
+		if(grid.doesPieceFit(currentPiece)==false)AudioManager().playSound(GameType().touchBottomSound,getVolume(),getSoundEffectSpeed(),1);
 		currentPiece.yGrid--;
 
 	}
@@ -1701,7 +1706,7 @@ public class GameLogic extends EnginePart
 
 				grid.setPiece(p);
 
-				AudioManager().playSound(Settings().hardDropClankSound,getVolume(),getSoundEffectSpeed(),1);
+				AudioManager().playSound(GameType().hardDropClankSound,getVolume(),getSoundEffectSpeed(),1);
 
 				grid.shakeSmall();
 
@@ -1735,7 +1740,7 @@ public class GameLogic extends EnginePart
 					b.xGrid = xGrid;
 					b.yGrid = currentPiece.yGrid;
 
-					AudioManager().playSound(Settings().hardDropSwishSound,getVolume(),getSoundEffectSpeed(),1);
+					AudioManager().playSound(GameType().hardDropSwishSound,getVolume(),getSoundEffectSpeed(),1);
 
 				}
 
@@ -1765,7 +1770,7 @@ public class GameLogic extends EnginePart
 			if(move==MovementType.ROTATE_COUNTERCLOCKWISE||move==MovementType.ROTATE_CLOCKWISE)
 			{
 
-				if(Settings().pieceClimbingAllowed)
+				if(GameType().pieceClimbingAllowed)
 				{
 
 					//try climbing if direction is pressed
@@ -1780,7 +1785,7 @@ public class GameLogic extends EnginePart
 							if(grid.doesPieceFit(currentPiece)==true)
 							{
 								pieceMoved();
-								AudioManager().playSound(Settings().diagonalWallKickSound,getVolume(),1.0f,1);
+								AudioManager().playSound(GameType().diagonalWallKickSound,getVolume(),1.0f,1);
 								canPressLeft=false;
 								ticksHoldingLeft = 0;
 								return true;
@@ -1803,7 +1808,7 @@ public class GameLogic extends EnginePart
 							if(grid.doesPieceFit(currentPiece)==true)
 							{
 								pieceMoved();
-								AudioManager().playSound(Settings().diagonalWallKickSound,getVolume(),1.0f,1);
+								AudioManager().playSound(GameType().diagonalWallKickSound,getVolume(),1.0f,1);
 								canPressRight=false;
 								ticksHoldingRight = 0;
 								return true;
@@ -1830,34 +1835,34 @@ public class GameLogic extends EnginePart
 					if(grid.doesPieceFit(currentPiece)==true)
 					{
 						pieceMoved();
-						AudioManager().playSound(Settings().wallKickSound,getVolume(),1.0f,1);
+						AudioManager().playSound(GameType().wallKickSound,getVolume(),1.0f,1);
 						return true;
 					}
 					else
 					{
 						currentPiece.xGrid--;
 
-						if(Settings().twoSpaceWallKickAllowed)
+						if(GameType().twoSpaceWallKickAllowed)
 						{
 							//check right 2
 							currentPiece.xGrid+=2;
 							if(grid.doesPieceFit(currentPiece)==true)
 							{
 								pieceMoved();
-								AudioManager().playSound(Settings().doubleWallKickSound,getVolume(),1.0f,1);
+								AudioManager().playSound(GameType().doubleWallKickSound,getVolume(),1.0f,1);
 								return true;
 							}
 							else{currentPiece.xGrid-=2;}
 						}
 
-						if(Settings().diagonalWallKickAllowed)
+						if(GameType().diagonalWallKickAllowed)
 						{
 							//check down
 							currentPiece.yGrid++;
 							if(grid.doesPieceFit(currentPiece)==true)
 							{
 								pieceMoved();
-								AudioManager().playSound(Settings().diagonalWallKickSound,getVolume(),1.0f,1);
+								AudioManager().playSound(GameType().diagonalWallKickSound,getVolume(),1.0f,1);
 								return true;
 							}
 							else
@@ -1870,7 +1875,7 @@ public class GameLogic extends EnginePart
 								if(grid.doesPieceFit(currentPiece)==true)
 								{
 									pieceMoved();
-									AudioManager().playSound(Settings().diagonalWallKickSound,getVolume(),1.0f,1);
+									AudioManager().playSound(GameType().diagonalWallKickSound,getVolume(),1.0f,1);
 									return true;
 								}
 								else
@@ -1891,34 +1896,34 @@ public class GameLogic extends EnginePart
 					if(grid.doesPieceFit(currentPiece)==true)
 					{
 						pieceMoved();
-						AudioManager().playSound(Settings().wallKickSound,getVolume(),1.0f,1);
+						AudioManager().playSound(GameType().wallKickSound,getVolume(),1.0f,1);
 						return true;
 					}
 					else
 					{
 						currentPiece.xGrid++;
 
-						if(Settings().twoSpaceWallKickAllowed)
+						if(GameType().twoSpaceWallKickAllowed)
 						{
 							//check left 2
 							currentPiece.xGrid-=2;
 							if(grid.doesPieceFit(currentPiece)==true)
 							{
 								pieceMoved();
-								AudioManager().playSound(Settings().doubleWallKickSound,getVolume(),1.0f,1);
+								AudioManager().playSound(GameType().doubleWallKickSound,getVolume(),1.0f,1);
 								return true;
 							}
 							else{currentPiece.xGrid+=2;}
 						}
 
-						if(Settings().diagonalWallKickAllowed)
+						if(GameType().diagonalWallKickAllowed)
 						{
 							//check down
 							currentPiece.yGrid++;
 							if(grid.doesPieceFit(currentPiece)==true)
 							{
 								pieceMoved();
-								AudioManager().playSound(Settings().diagonalWallKickSound,getVolume(),1.0f,1);
+								AudioManager().playSound(GameType().diagonalWallKickSound,getVolume(),1.0f,1);
 								return true;
 							}
 							else
@@ -1931,7 +1936,7 @@ public class GameLogic extends EnginePart
 								if(grid.doesPieceFit(currentPiece)==true)
 								{
 									pieceMoved();
-									AudioManager().playSound(Settings().diagonalWallKickSound,getVolume(),1.0f,1);
+									AudioManager().playSound(GameType().diagonalWallKickSound,getVolume(),1.0f,1);
 									return true;
 								}
 								else
@@ -1946,7 +1951,7 @@ public class GameLogic extends EnginePart
 					}
 				}
 
-				if(Settings().floorKickAllowed)
+				if(GameType().floorKickAllowed)
 				{
 
 					//check up 1
@@ -1954,21 +1959,21 @@ public class GameLogic extends EnginePart
 					if(grid.doesPieceFit(currentPiece)==true)
 					{
 						pieceMoved();
-						AudioManager().playSound(Settings().floorKickSound,getVolume(),1.0f,1);
+						AudioManager().playSound(GameType().floorKickSound,getVolume(),1.0f,1);
 						return true;
 					}
 					else
 					{
 						currentPiece.yGrid++;
 
-						if(Settings().twoSpaceWallKickAllowed)
+						if(GameType().twoSpaceWallKickAllowed)
 						{
 							//check up 2
 							currentPiece.yGrid-=2;
 							if(grid.doesPieceFit(currentPiece)==true)
 							{
 								pieceMoved();
-								AudioManager().playSound(Settings().floorKickSound,getVolume(),1.0f,1);
+								AudioManager().playSound(GameType().floorKickSound,getVolume(),1.0f,1);
 								return true;
 							}
 							else{currentPiece.yGrid+=2;}
@@ -1978,7 +1983,7 @@ public class GameLogic extends EnginePart
 				}
 
 				//DONE: handle 180 flip if rotating and piece does not fit
-				if(Settings().flip180Allowed)
+				if(GameType().flip180Allowed)
 				{
 
 					//rotate in direction again
@@ -1988,7 +1993,7 @@ public class GameLogic extends EnginePart
 					if(grid.doesPieceFit(currentPiece)==true)
 					{
 						pieceMoved();
-						AudioManager().playSound(Settings().pieceFlip180Sound,getVolume(),1.0f,1);
+						AudioManager().playSound(GameType().pieceFlip180Sound,getVolume(),1.0f,1);
 						return true;
 					}
 					else
@@ -1998,7 +2003,7 @@ public class GameLogic extends EnginePart
 						if(grid.doesPieceFit(currentPiece)==true)
 						{
 							pieceMoved();
-							AudioManager().playSound(Settings().pieceFlip180Sound,getVolume(),1.0f,1);
+							AudioManager().playSound(GameType().pieceFlip180Sound,getVolume(),1.0f,1);
 							return true;
 						}
 						else
@@ -2029,7 +2034,7 @@ public class GameLogic extends EnginePart
 			{
 
 
-				if(move==MovementType.HARD_DROP && Settings().hardDropPunchThroughToLowestValidGridPosition)
+				if(move==MovementType.HARD_DROP && GameType().hardDropPunchThroughToLowestValidGridPosition)
 				{
 
 					if(currentPiece!=null)
@@ -2079,7 +2084,7 @@ public class GameLogic extends EnginePart
 		//currentPiece.lastX = currentPiece.xGrid;
 		//currentPiece.lastY = currentPiece.yGrid;
 
-		spawnDelayTicksCounter=Settings().spawnDelayTicksAmountPerPiece;
+		spawnDelayTicksCounter=GameType().spawnDelayTicksAmountPerPiece;
 
 		lineDropTicksCounter=0;
 	}
@@ -2129,7 +2134,7 @@ public class GameLogic extends EnginePart
 				grid.deleteBlock(explodeBlocks.get(i));
 			}
 
-			AudioManager().playSound(Settings().hardDropClankSound,1.5f,0.25f,1);
+			AudioManager().playSound(GameType().hardDropClankSound,1.5f,0.25f,1);
 
 			grid.shakeHard();
 
@@ -2167,7 +2172,7 @@ public class GameLogic extends EnginePart
 			}
 			currentPiece.yGrid--;
 
-			AudioManager().playSound(Settings().hardDropClankSound,getVolume(),0.5f,1);
+			AudioManager().playSound(GameType().hardDropClankSound,getVolume(),0.5f,1);
 
 			grid.shakeHard();
 
@@ -2182,7 +2187,7 @@ public class GameLogic extends EnginePart
 
 		currentPiece = null;
 
-		AudioManager().playSound(Settings().pieceSetSound,getVolume(),getSoundEffectSpeed(),1);
+		AudioManager().playSound(GameType().pieceSetSound,getVolume(),getSoundEffectSpeed(),1);
 
 	}
 
@@ -2203,7 +2208,7 @@ public class GameLogic extends EnginePart
 		{
 			nextPieces = new ArrayList<Piece>();
 
-			for(int i=0;i<Settings().numberOfNextPiecesToShow;i++)
+			for(int i=0;i<GameType().numberOfNextPiecesToShow;i++)
 			{
 				nextPieces.add(grid.getRandomPiece());
 				createdPiecesCounterForFrequencyPieces++;
@@ -2232,6 +2237,7 @@ public class GameLogic extends EnginePart
 
 		piecesMadeThisGame++;
 		piecesMadeTotal++;
+        currentSessionStats.totalPiecesMade++;
 
 		if(garbageWaitPieces>0)
 		{
@@ -2322,7 +2328,7 @@ public class GameLogic extends EnginePart
 
 		if(garbageBlock==null)
 		{
-			Piece p = new Piece(this,grid,new PieceType(),grid.getRandomBlockType(Settings().garbageBlockTypes));
+			Piece p = new Piece(this,grid,new PieceType(),grid.getRandomBlockType(GameType().getGarbageBlockTypes()));
 			garbageBlock = p.blocks.get(0);
 		}
 
@@ -2339,19 +2345,22 @@ public class GameLogic extends EnginePart
 		{
 			if(garbageWaitPieces==0)
 			{
-				makeAnnouncementCaption("Processed VS Garbage: "+queuedGarbageAmountFromOtherPlayer);
+				//makeAnnouncementCaption("Processed VS Garbage: "+queuedGarbageAmountFromOtherPlayer);
 
-				while(queuedGarbageAmountFromOtherPlayer>0)
+                int garbageMultiplier = 2; //TODO room option?
+
+				while(queuedGarbageAmountFromOtherPlayer/(grid.w()/garbageMultiplier)>0)
 				{
-					queuedGarbageAmountFromOtherPlayer--;
+					queuedGarbageAmountFromOtherPlayer-=grid.w();
+                    if(queuedGarbageAmountFromOtherPlayer < 0) queuedGarbageAmountFromOtherPlayer = 0;
 
 
-					if(Settings().vsGarbageRule==VSGarbageRule.FALL_FROM_CEILING_IN_EVEN_ROWS)
+					if(GameType().vsGarbageRule==VSGarbageRule.FALL_FROM_CEILING_IN_EVEN_ROWS)
 					{
 						makeGarbageRowFromCeiling();
 						moveDownBlocksOverBlankSpaces();
 					}
-					if(Settings().vsGarbageRule==VSGarbageRule.RISE_FROM_FLOOR_IN_EVEN_ROWS)
+					if(GameType().vsGarbageRule==VSGarbageRule.RISE_FROM_FLOOR_IN_EVEN_ROWS)
 					{
 						makeGarbageRowFromFloor();
 					}
@@ -2406,37 +2415,37 @@ public class GameLogic extends EnginePart
 
 		boolean makeGarbage = false;
 
-		if(Settings().garbageSpawnRule==GarbageSpawnRule.TICKS)
+		if(GameType().garbageSpawnRule==GarbageSpawnRule.TICKS)
 		{
 			garbageValueCounter += ticks();
-			if(garbageValueCounter>Settings().garbageSpawnRuleAmount)
+			if(garbageValueCounter>GameType().garbageSpawnRuleAmount)
 			{
 				garbageValueCounter = 0;
 				makeGarbage=true;
 			}
 		}
 		else
-		if(Settings().garbageSpawnRule==GarbageSpawnRule.PIECES_MADE)
+		if(GameType().garbageSpawnRule==GarbageSpawnRule.PIECES_MADE)
 		{
-			if(piecesMadeThisGame>=garbageValueCounter+Settings().garbageSpawnRuleAmount)
+			if(piecesMadeThisGame>=garbageValueCounter+GameType().garbageSpawnRuleAmount)
 			{
 				garbageValueCounter = piecesMadeThisGame;
 				makeGarbage=true;
 			}
 		}
 		else
-		if(Settings().garbageSpawnRule==GarbageSpawnRule.BLOCKS_CLEARED)
+		if(GameType().garbageSpawnRule==GarbageSpawnRule.BLOCKS_CLEARED)
 		{
-			if(blocksClearedThisGame>=garbageValueCounter+Settings().garbageSpawnRuleAmount)
+			if(blocksClearedThisGame>=garbageValueCounter+GameType().garbageSpawnRuleAmount)
 			{
 				garbageValueCounter = blocksClearedThisGame;
 				makeGarbage=true;
 			}
 		}
 		else
-		if(Settings().garbageSpawnRule==GarbageSpawnRule.LINES_CLEARED)
+		if(GameType().garbageSpawnRule==GarbageSpawnRule.LINES_CLEARED)
 		{
-			if(linesClearedThisGame>=garbageValueCounter+Settings().garbageSpawnRuleAmount)
+			if(linesClearedThisGame>=garbageValueCounter+GameType().garbageSpawnRuleAmount)
 			{
 				garbageValueCounter = linesClearedThisGame;
 				makeGarbage=true;
@@ -2477,11 +2486,11 @@ public class GameLogic extends EnginePart
 //		if(side==BobsGame.LEFT)
 //		{
 //			// fill screen with black
-//			GLUtils.drawFilledRectXYWH(0,0,getWidth()/2,getHeight(),Settings().screenBackgroundColor.r(),Settings().screenBackgroundColor.g(),Settings().screenBackgroundColor.b(),1.0f);
+//			GLUtils.drawFilledRectXYWH(0,0,getWidth()/2,getHeight(),GameType().screenBackgroundColor.r(),GameType().screenBackgroundColor.g(),GameType().screenBackgroundColor.b(),1.0f);
 //		}
 //		else
 //		{
-//			GLUtils.drawFilledRectXYWH(getWidth()/2,0,getWidth()/2,getHeight(),Settings().screenBackgroundColor.r(),Settings().screenBackgroundColor.g(),Settings().screenBackgroundColor.b(),1.0f);
+//			GLUtils.drawFilledRectXYWH(getWidth()/2,0,getWidth()/2,getHeight(),GameType().screenBackgroundColor.r(),GameType().screenBackgroundColor.g(),GameType().screenBackgroundColor.b(),1.0f);
 //		}
 //
 //		//TODO: winamp style visualizations
@@ -2579,7 +2588,7 @@ public class GameLogic extends EnginePart
 	// =========================================================================================================================
 	private boolean nextPieceEnabled()
 	{// =========================================================================================================================
-		if(extraStage3==false&&extraStage4==false&&Settings().nextPieceEnabled==true)return true;
+		if(extraStage3==false&&extraStage4==false&&GameType().nextPieceEnabled==true)return true;
 		return false;
 	}
 
@@ -2674,7 +2683,7 @@ public class GameLogic extends EnginePart
 		if(currentPiece!=null)
 		{
 
-			if(Settings().stackRiseGame)
+			if(GameType().stackRiseGame)
 			{
 
 			}
@@ -2709,8 +2718,8 @@ public class GameLogic extends EnginePart
 	public void renderBackground()
 	{// =========================================================================================================================
 
-		//Settings().gridBorderColor = BobColor.yellow;
-		//Settings().gridBorderColor = BobColor.getHSBColor(captionColorCycleHueValue,1.0f,1.0f);
+		//GameType().gridBorderColor = BobColor.yellow;
+		//GameType().gridBorderColor = BobColor.getHSBColor(captionColorCycleHueValue,1.0f,1.0f);
 
 
 		// fill in checkered background
@@ -2752,7 +2761,7 @@ public class GameLogic extends EnginePart
 
 		grid.renderBlockOutlines();
 
-		if(Settings().stackRiseGame)
+		if(GameType().stackRiseGame)
 		{
 			grid.renderTransparentOverLastRow();
 		}
@@ -2768,7 +2777,7 @@ public class GameLogic extends EnginePart
 
 
 
-		if(currentLevel>=Settings().extraStage1Level)grid.shakeForeground();
+		if(currentLevel>=GameType().extraStage1Level)grid.shakeForeground();
 
 //		if(extraStage1)
 //		{
@@ -2842,7 +2851,7 @@ public class GameLogic extends EnginePart
 	// =========================================================================================================================
 	private float getSoundEffectSpeed()
 	{// =========================================================================================================================
-		if(Settings().useRandomSoundModulation)
+		if(GameType().useRandomSoundModulation)
 		{
 			return 0.5f+(float)(Math.random()*1.5f);
 		}
@@ -2865,23 +2874,23 @@ public class GameLogic extends EnginePart
 
 		boolean anythingAboveThreeQuarters=grid.isAnythingAboveThreeQuarters();
 
-		if(Settings().gridRule_showWarningForFieldThreeQuartersFilled && (anythingAboveThreeQuarters||extraStage1||extraStage2||extraStage3))
+		if(GameType().gridRule_showWarningForFieldThreeQuartersFilled && (anythingAboveThreeQuarters||extraStage1||extraStage2||extraStage3))
 		{
 			if(playingFastMusic==false)
 			{
 				playingFastMusic=true;
 
-				if(Settings().fastMusic==null||Settings().fastMusic.length()==0)
+				if(GameType().fastMusic==null||GameType().fastMusic.length()==0)
 				{
 					AudioManager().stopMusic(playingMusic);
-					playingMusic = Settings().normalMusic;
+					playingMusic = GameType().normalMusic;
 					AudioManager().playMusic(playingMusic,getVolume(),1.5f,true);
 				}
 				else
 				{
 					AudioManager().stopMusic(playingMusic);
-					playingMusic = Settings().fastMusic;
-					AudioManager().playMusic(Settings().fastMusic,getVolume(),1.0f,true);
+					playingMusic = GameType().fastMusic;
+					AudioManager().playMusic(GameType().fastMusic,getVolume(),1.0f,true);
 				}
 
 				if(anythingAboveThreeQuarters)makeAnnouncementCaption("Uh oh, be careful!");
@@ -2895,7 +2904,7 @@ public class GameLogic extends EnginePart
 				playingFastMusic=false;
 
 				AudioManager().stopMusic(playingMusic);
-				playingMusic = Settings().normalMusic;
+				playingMusic = GameType().normalMusic;
 				AudioManager().playMusic(playingMusic);
 			}
 
@@ -2975,7 +2984,7 @@ public class GameLogic extends EnginePart
 
 
 
-		if(controlsState().BUTTON_SPACE_HELD&&((Settings().repeatEnabledA&&repeatStartedA==false&&ticksHoldingA>=Settings().repeatStartDelayA)||(repeatStartedA&&ticksHoldingA>=Settings().repeatDelayA)))
+		if(controlsState().BUTTON_SPACE_HELD&&((GameType().repeatEnabledA&&repeatStartedA==false&&ticksHoldingA>=GameType().repeatStartDelayA)||(repeatStartedA&&ticksHoldingA>=GameType().repeatDelayA)))
 		{
 			canPressA=true;
 			ticksHoldingA=0;
@@ -2984,7 +2993,7 @@ public class GameLogic extends EnginePart
 		else ticksHoldingA+=ticks();
 
 
-		if(controlsState().BUTTON_LSHIFT_HELD&&((Settings().repeatEnabledB&&repeatStartedB==false&&ticksHoldingB>=Settings().repeatStartDelayB)||(repeatStartedB&&ticksHoldingB>=Settings().repeatDelayB)))
+		if(controlsState().BUTTON_LSHIFT_HELD&&((GameType().repeatEnabledB&&repeatStartedB==false&&ticksHoldingB>=GameType().repeatStartDelayB)||(repeatStartedB&&ticksHoldingB>=GameType().repeatDelayB)))
 		{
 			canPressB=true;
 			ticksHoldingB=0;
@@ -2993,7 +3002,7 @@ public class GameLogic extends EnginePart
 		else ticksHoldingB+=ticks();
 
 
-		if(controlsState().BUTTON_RIGHT_HELD&&((Settings().repeatEnabledRight&&repeatStartedRight==false&&ticksHoldingRight>=Settings().repeatStartDelayRight)||(repeatStartedRight&&ticksHoldingRight>=Settings().repeatDelayRight)))
+		if(controlsState().BUTTON_RIGHT_HELD&&((GameType().repeatEnabledRight&&repeatStartedRight==false&&ticksHoldingRight>=GameType().repeatStartDelayRight)||(repeatStartedRight&&ticksHoldingRight>=GameType().repeatDelayRight)))
 		{
 			canPressRight=true;
 			ticksHoldingRight=0;
@@ -3002,7 +3011,7 @@ public class GameLogic extends EnginePart
 		else ticksHoldingRight+=ticks();
 
 
-		if(controlsState().BUTTON_LEFT_HELD&&((Settings().repeatEnabledLeft&&repeatStartedLeft==false&&ticksHoldingLeft>=Settings().repeatStartDelayLeft)||(repeatStartedLeft&&ticksHoldingLeft>=Settings().repeatDelayLeft)))
+		if(controlsState().BUTTON_LEFT_HELD&&((GameType().repeatEnabledLeft&&repeatStartedLeft==false&&ticksHoldingLeft>=GameType().repeatStartDelayLeft)||(repeatStartedLeft&&ticksHoldingLeft>=GameType().repeatDelayLeft)))
 		{
 			canPressLeft=true;
 			ticksHoldingLeft=0;
@@ -3011,7 +3020,7 @@ public class GameLogic extends EnginePart
 		else ticksHoldingLeft+=ticks();
 
 
-		if(controlsState().BUTTON_DOWN_HELD&&((Settings().repeatEnabledDown&&repeatStartedDown==false&&ticksHoldingDown>=Settings().repeatStartDelayDown)||(repeatStartedDown&&ticksHoldingDown>=Settings().repeatDelayDown)))
+		if(controlsState().BUTTON_DOWN_HELD&&((GameType().repeatEnabledDown&&repeatStartedDown==false&&ticksHoldingDown>=GameType().repeatStartDelayDown)||(repeatStartedDown&&ticksHoldingDown>=GameType().repeatDelayDown)))
 		{
 			canPressDown=true;
 			ticksHoldingDown=0;
@@ -3020,7 +3029,7 @@ public class GameLogic extends EnginePart
 		else ticksHoldingDown+=ticks();
 
 
-		if(controlsState().BUTTON_UP_HELD&&((Settings().repeatEnabledUp&&repeatStartedUp==false&&ticksHoldingUp>=Settings().repeatStartDelayUp)||(repeatStartedUp&&ticksHoldingUp>=Settings().repeatDelayUp)))
+		if(controlsState().BUTTON_UP_HELD&&((GameType().repeatEnabledUp&&repeatStartedUp==false&&ticksHoldingUp>=GameType().repeatStartDelayUp)||(repeatStartedUp&&ticksHoldingUp>=GameType().repeatDelayUp)))
 		{
 			canPressUp=true;
 			ticksHoldingUp=0;
@@ -3029,7 +3038,7 @@ public class GameLogic extends EnginePart
 		else ticksHoldingUp+=ticks();
 
 
-		if(controlsState().BUTTON_LCTRL_HELD&&((Settings().repeatEnabledR&&repeatStartedR==false&&ticksHoldingR>=Settings().repeatStartDelayR)||(repeatStartedR&&ticksHoldingR>=Settings().repeatDelayR)))
+		if(controlsState().BUTTON_LCTRL_HELD&&((GameType().repeatEnabledR&&repeatStartedR==false&&ticksHoldingR>=GameType().repeatStartDelayR)||(repeatStartedR&&ticksHoldingR>=GameType().repeatDelayR)))
 		{
 			canPressR=true;
 			ticksHoldingR=0;
@@ -3045,26 +3054,26 @@ public class GameLogic extends EnginePart
 		// BEGIN ACTUAL KEY CHECK
 		if((controlsState().BUTTON_SPACE_HELD)&&(canPressA==true))
 		{
-			if(Settings().stackRiseGame&&Settings().cursorPieceSize==2)
+			if(GameType().stackRiseGame&&GameType().cursorPieceSize==2)
 			{
-				AudioManager().playSound(Settings().rotateSound,getVolume(),getSoundEffectSpeed(),1);
+				AudioManager().playSound(GameType().rotateSound,getVolume(),getSoundEffectSpeed(),1);
 				grid.cursorSwapBetweenTwoBlocks(currentPiece);
 			}
 			else
-			if(Settings().stackRiseGame&&Settings().cursorPieceSize==1)
+			if(GameType().stackRiseGame&&GameType().cursorPieceSize==1)
 			{
-				AudioManager().playSound(Settings().rotateSound,getVolume(),getSoundEffectSpeed(),1);
+				AudioManager().playSound(GameType().rotateSound,getVolume(),getSoundEffectSpeed(),1);
 				grid.cursorSwapHoldingBlockWithGrid(currentPiece);
 			}
 			else
-			if(Settings().stackRiseGame&&Settings().cursorPieceSize==4)
+			if(GameType().stackRiseGame&&GameType().cursorPieceSize==4)
 			{
-				AudioManager().playSound(Settings().rotateSound,getVolume(),getSoundEffectSpeed(),1);
+				AudioManager().playSound(GameType().rotateSound,getVolume(),getSoundEffectSpeed(),1);
 				grid.cursorRotateBlocks(currentPiece,MovementType.ROTATE_CLOCKWISE);
 			}
 			else
 			{
-				AudioManager().playSound(Settings().rotateSound,getVolume(),getSoundEffectSpeed(),1);
+				AudioManager().playSound(GameType().rotateSound,getVolume(),getSoundEffectSpeed(),1);
 				movePiece(MovementType.ROTATE_CLOCKWISE);
 			}
 
@@ -3076,26 +3085,26 @@ public class GameLogic extends EnginePart
 		{
 
 
-			if(Settings().stackRiseGame&&Settings().cursorPieceSize==2)
+			if(GameType().stackRiseGame&&GameType().cursorPieceSize==2)
 			{
-				AudioManager().playSound(Settings().rotateSound,getVolume(),getSoundEffectSpeed(),1);
+				AudioManager().playSound(GameType().rotateSound,getVolume(),getSoundEffectSpeed(),1);
 				grid.cursorSwapBetweenTwoBlocks(currentPiece);
 			}
 			else
-			if(Settings().stackRiseGame&&Settings().cursorPieceSize==1)
+			if(GameType().stackRiseGame&&GameType().cursorPieceSize==1)
 			{
-				AudioManager().playSound(Settings().rotateSound,getVolume(),getSoundEffectSpeed(),1);
+				AudioManager().playSound(GameType().rotateSound,getVolume(),getSoundEffectSpeed(),1);
 				grid.cursorSwapHoldingBlockWithGrid(currentPiece);
 			}
 			else
-			if(Settings().stackRiseGame&&Settings().cursorPieceSize==4)
+			if(GameType().stackRiseGame&&GameType().cursorPieceSize==4)
 			{
-				AudioManager().playSound(Settings().rotateSound,getVolume(),getSoundEffectSpeed(),1);
+				AudioManager().playSound(GameType().rotateSound,getVolume(),getSoundEffectSpeed(),1);
 				grid.cursorRotateBlocks(currentPiece,MovementType.ROTATE_COUNTERCLOCKWISE);
 			}
 			else
 			{
-				AudioManager().playSound(Settings().rotateSound,getVolume(),getSoundEffectSpeed(),1);
+				AudioManager().playSound(GameType().rotateSound,getVolume(),getSoundEffectSpeed(),1);
 				movePiece(MovementType.ROTATE_COUNTERCLOCKWISE);
 			}
 
@@ -3105,14 +3114,14 @@ public class GameLogic extends EnginePart
 
 		if((controlsState().BUTTON_RIGHT_HELD)&&(canPressRight==true))
 		{
-			if(Settings().stackRiseGame)
+			if(GameType().stackRiseGame)
 			{
-				AudioManager().playSound(Settings().moveRightSound,getVolume(),getSoundEffectSpeed(),1);
+				AudioManager().playSound(GameType().moveRightSound,getVolume(),getSoundEffectSpeed(),1);
 				if(currentPiece.xGrid<grid.w()-currentPiece.getWidth())currentPiece.xGrid++;
 			}
 			else
 			{
-				AudioManager().playSound(Settings().moveRightSound,getVolume(),getSoundEffectSpeed(),1);
+				AudioManager().playSound(GameType().moveRightSound,getVolume(),getSoundEffectSpeed(),1);
 				movePiece(MovementType.RIGHT);
 			}
 
@@ -3123,14 +3132,14 @@ public class GameLogic extends EnginePart
 
 		if((controlsState().BUTTON_LEFT_HELD)&&(canPressLeft==true))
 		{
-			if(Settings().stackRiseGame)
+			if(GameType().stackRiseGame)
 			{
-				AudioManager().playSound(Settings().moveLeftSound,getVolume(),getSoundEffectSpeed(),1);
+				AudioManager().playSound(GameType().moveLeftSound,getVolume(),getSoundEffectSpeed(),1);
 				if(currentPiece.xGrid>0)currentPiece.xGrid--;
 			}
 			else
 			{
-				AudioManager().playSound(Settings().moveLeftSound,getVolume(),getSoundEffectSpeed(),1);
+				AudioManager().playSound(GameType().moveLeftSound,getVolume(),getSoundEffectSpeed(),1);
 				movePiece(MovementType.LEFT);
 			}
 
@@ -3142,20 +3151,20 @@ public class GameLogic extends EnginePart
 		if((controlsState().BUTTON_DOWN_HELD)&&(canPressDown==true))
 		{
 
-			if(Settings().stackRiseGame)
+			if(GameType().stackRiseGame)
 			{
-				AudioManager().playSound(Settings().moveDownSound,getVolume(),getSoundEffectSpeed(),1);
+				AudioManager().playSound(GameType().moveDownSound,getVolume(),getSoundEffectSpeed(),1);
 				if(currentPiece.yGrid<grid.h()-(1+currentPiece.getHeight()))currentPiece.yGrid++;
 			}
 			else
 			{
 				if(pieceSetAtBottom==false)
 				{
-					AudioManager().playSound(Settings().moveDownSound,getVolume(),getSoundEffectSpeed(),1);
+					AudioManager().playSound(GameType().moveDownSound,getVolume(),getSoundEffectSpeed(),1);
 
 					movePiece(MovementType.DOWN);
 
-					if(Settings().dropLockType==DropLockType.SOFT_DROP_INSTANT_LOCK)
+					if(GameType().dropLockType==DropLockType.SOFT_DROP_INSTANT_LOCK)
 					{
 						lockDelayTicksCounter=0;
 					}
@@ -3174,9 +3183,9 @@ public class GameLogic extends EnginePart
 		if((controlsState().BUTTON_UP_HELD)&&(canPressUp==true))
 		{
 
-			if(Settings().stackRiseGame)
+			if(GameType().stackRiseGame)
 			{
-				AudioManager().playSound(Settings().moveUpSound,getVolume(),getSoundEffectSpeed(),1);
+				AudioManager().playSound(GameType().moveUpSound,getVolume(),getSoundEffectSpeed(),1);
 				if(currentPiece.yGrid>1)currentPiece.yGrid--;
 			}
 			else
@@ -3184,14 +3193,14 @@ public class GameLogic extends EnginePart
 
 				if(pieceSetAtBottom==false)
 				{
-					AudioManager().playSound(Settings().hardDropSwishSound,getVolume(),2.0f,1);
+					AudioManager().playSound(GameType().hardDropSwishSound,getVolume(),2.0f,1);
 
 					if(currentPiece!=null)currentPiece.setBlocksSlamming();
 
 
 					while(movePiece(MovementType.HARD_DROP)==true)
 					{
-						if(Settings().dropLockType==DropLockType.HARD_DROP_INSTANT_LOCK)
+						if(GameType().dropLockType==DropLockType.HARD_DROP_INSTANT_LOCK)
 						{
 							lockDelayTicksCounter=0;
 						}
@@ -3201,7 +3210,7 @@ public class GameLogic extends EnginePart
 
 					grid.shakeSmall();
 
-					AudioManager().playSound(Settings().hardDropClankSound,getVolume(),0.5f,1);
+					AudioManager().playSound(GameType().hardDropClankSound,getVolume(),0.5f,1);
 				}
 
 			}
@@ -3214,13 +3223,13 @@ public class GameLogic extends EnginePart
 		if((controlsState().BUTTON_LCTRL_HELD)&&(canPressR==true))
 		{
 
-			if(Settings().stackRiseGame)
+			if(GameType().stackRiseGame)
 			{
 
 			}
 			else
 			{
-				if(Settings().holdPieceEnabled==true)
+				if(GameType().holdPieceEnabled==true)
 				{
 					if(holdPiece!=null || switchedHoldPieceAlready)
 					{
@@ -3231,15 +3240,15 @@ public class GameLogic extends EnginePart
 							holdPiece = currentPiece;
 							currentPiece = tempPiece;
 
-							if(Settings().resetHoldPieceRotation)holdPiece.setRotation(0);
+							if(GameType().resetHoldPieceRotation)holdPiece.setRotation(0);
 
 							setCurrentPieceAtTop();
 
-							AudioManager().playSound(Settings().switchHoldPieceSound,getVolume(),1.0f,1);
+							AudioManager().playSound(GameType().switchHoldPieceSound,getVolume(),1.0f,1);
 						}
 						else
 						{
-							AudioManager().playSound(Settings().cantHoldPieceSound,getVolume(),1.0f,1);
+							AudioManager().playSound(GameType().cantHoldPieceSound,getVolume(),1.0f,1);
 						}
 					}
 					else
@@ -3248,9 +3257,9 @@ public class GameLogic extends EnginePart
 						{
 							holdPiece = currentPiece;
 
-							if(Settings().resetHoldPieceRotation)holdPiece.setRotation(0);
+							if(GameType().resetHoldPieceRotation)holdPiece.setRotation(0);
 
-							AudioManager().playSound(Settings().switchHoldPieceSound,getVolume(),getSoundEffectSpeed(),1);
+							AudioManager().playSound(GameType().switchHoldPieceSound,getVolume(),getSoundEffectSpeed(),1);
 							newRandomPiece();
 						}
 					}
@@ -3265,7 +3274,7 @@ public class GameLogic extends EnginePart
 
 
 
-		if(Settings().stackRiseGame)
+		if(GameType().stackRiseGame)
 		{
 			if(controlsState().BUTTON_LCTRL_HELD)
 			{
@@ -3277,7 +3286,7 @@ public class GameLogic extends EnginePart
 					if(manualStackRiseSoundToggle>3)
 					{
 						manualStackRiseSoundToggle=0;
-						AudioManager().playSound(Settings().stackRiseSound,getVolume(),1.0f,1);
+						AudioManager().playSound(GameType().stackRiseSound,getVolume(),1.0f,1);
 					}
 					grid.scrollUpStack(currentPiece,1);
 				}
@@ -3307,11 +3316,14 @@ public class GameLogic extends EnginePart
 		if(startedWinSequence==false)
 		{
 			startedWinSequence=true;
+            currentSessionStats.lastTimePlayed = System.currentTimeMillis();
+            currentSessionStats.totalTimePlayed = currentSessionStats.lastTimePlayed - currentSessionStats.firstTimePlayed;
+            currentSessionStats.singlePlayerGamesCompleted++;
 
-			AudioManager().playSound(Settings().winSound,getVolume(),1.0f,1);
+			AudioManager().playSound(GameType().winSound,getVolume(),1.0f,1);
 
 			AudioManager().stopMusic(playingMusic);
-			playingMusic = Settings().winMusic;
+			playingMusic = GameType().winMusic;
 			AudioManager().playMusic(playingMusic);
 
 			if(winCaption==null)
@@ -3336,11 +3348,14 @@ public class GameLogic extends EnginePart
 		if(startedLoseSequence==false)
 		{
 			startedLoseSequence=true;
+            currentSessionStats.lastTimePlayed = System.currentTimeMillis();
+            currentSessionStats.totalTimePlayed = currentSessionStats.lastTimePlayed - currentSessionStats.firstTimePlayed;
+            currentSessionStats.singlePlayerGamesLost++;
 
-			AudioManager().playSound(Settings().loseSound,getVolume(),1.0f,1);
+			AudioManager().playSound(GameType().loseSound,getVolume(),1.0f,1);
 
 			AudioManager().stopMusic(playingMusic);
-			playingMusic = Settings().loseMusic;
+			playingMusic = GameType().loseMusic;
 			AudioManager().playMusic(playingMusic);
 
 			if(loseCaption==null)
@@ -3366,11 +3381,11 @@ public class GameLogic extends EnginePart
 		{
 			startedDeathSequence=true;
 
-			AudioManager().playSound(Settings().deadSound,getVolume(),1.0f,1);
+			AudioManager().playSound(GameType().deadSound,getVolume(),1.0f,1);
 
 
 			AudioManager().stopMusic(playingMusic);
-			playingMusic = Settings().deadMusic;
+			playingMusic = GameType().deadMusic;
 			AudioManager().playMusic(playingMusic);
 
 			if(firstDeath==false)
@@ -3424,7 +3439,7 @@ public class GameLogic extends EnginePart
 
 			AudioManager().stopMusic(playingMusic);
 
-			playingMusic = Settings().creditsMusic;
+			playingMusic = GameType().creditsMusic;
 			AudioManager().playMusic(playingMusic);
 
 			if(creditsCaption==null)
@@ -3731,7 +3746,7 @@ public class GameLogic extends EnginePart
 		if(currentComboCaption==null)currentComboCaption=makeInfoCaption("currentComboCaption");
 		if(comboChainTotalCaption==null)comboChainTotalCaption=makeInfoCaption("comboChainTotalCaption");
 
-		if(Settings().stackRiseGame)if(stopCounterCaption==null)stopCounterCaption=makeInfoCaption("stopCounterCaption");
+		if(GameType().stackRiseGame)if(stopCounterCaption==null)stopCounterCaption=makeInfoCaption("stopCounterCaption");
 		if(seedCaption==null)seedCaption=makeInfoCaption("seedCaption");
 
 
@@ -3762,10 +3777,10 @@ public class GameLogic extends EnginePart
 		if(stopCounterCaption!=null)stopCounterCaption.replaceText(stopCounterCaptionText);
 
 
-		if(currentLevel==Settings().extraStage1Level)levelCaptionText = "Level: EX1";
-		else if(currentLevel==Settings().extraStage2Level)levelCaptionText = "Level: EX2";
-		else if(currentLevel==Settings().extraStage3Level)levelCaptionText = "Level: EX3";
-		else if(currentLevel==Settings().extraStage4Level)levelCaptionText = "Level: EX4";
+		if(currentLevel==GameType().extraStage1Level)levelCaptionText = "Level: EX1";
+		else if(currentLevel==GameType().extraStage2Level)levelCaptionText = "Level: EX2";
+		else if(currentLevel==GameType().extraStage3Level)levelCaptionText = "Level: EX3";
+		else if(currentLevel==GameType().extraStage4Level)levelCaptionText = "Level: EX4";
 		else
 		{
 			levelCaptionText = "Level: "+currentLevel;
@@ -3774,8 +3789,8 @@ public class GameLogic extends EnginePart
 
 
 		levelCaption.replaceText(levelCaptionText);
-		gameTypeCaption.replaceText(Settings().gameTypeCaptionText);
-		rulesCaption.replaceText(Settings().rulesCaptionText);
+		gameTypeCaption.replaceText(GameType().gameTypeCaptionText);
+		rulesCaption.replaceText(GameType().rulesCaptionText);
 		difficultyCaption.replaceText(difficultyCaptionText);
 
 		gravityCaption.replaceText("Gravity: "+String.format("%.3f",(16.7f/(float)currentLineDropSpeedTicks))+"G");
@@ -3914,17 +3929,6 @@ public class GameLogic extends EnginePart
 		int oldWidth = gridW();
 		int oldHeight = gridH();
 
-		Settings s = new Settings();
-		setSettings(s);
-
-
-
-		//setGameType(currentGameType+1);
-
-
-
-		//int newGame = 0;
-		//do{newGame = getRandomIntLessThan(gameCount);}while(newGame==currentGameType);
 		setGameType(getGameTypeFromRandomBag());
 
 
@@ -3983,38 +3987,40 @@ public class GameLogic extends EnginePart
 		{
 			lastPiecesMadeThisGame = piecesMadeThisGame;
 
-			if(currentLineDropSpeedTicks>Settings().minimumLineDropSpeedTicks)currentLineDropSpeedTicks*=0.98f;
-			if(currentLineDropSpeedTicks<Settings().minimumLineDropSpeedTicks)currentLineDropSpeedTicks=Settings().minimumLineDropSpeedTicks;
+			if(currentLineDropSpeedTicks>GameType().minimumLineDropSpeedTicks)currentLineDropSpeedTicks*=0.98f;
+			if(currentLineDropSpeedTicks<GameType().minimumLineDropSpeedTicks)currentLineDropSpeedTicks=GameType().minimumLineDropSpeedTicks;
 		}
 
 
 
-		if(Settings().scoreType == ScoreType.LINES_CLEARED)
+        currentSessionStats.singlePlayerHighestLevelReached = currentLevel;
+
+		if(GameType().scoreType == ScoreType.LINES_CLEARED)
 		{
 
-			if(Settings().scoreTypeAmountPerLevelGained>0)
+			if(GameType().scoreTypeAmountPerLevelGained>0)
 			{
-				if(linesClearedThisGame/Settings().scoreTypeAmountPerLevelGained>=1)currentLevel++;
+				if(linesClearedThisGame/GameType().scoreTypeAmountPerLevelGained>=1)currentLevel++;
 			}
 
 		}
 		else
-		if(Settings().scoreType == ScoreType.BLOCKS_CLEARED)
+		if(GameType().scoreType == ScoreType.BLOCKS_CLEARED)
 		{
 
-			if(Settings().scoreTypeAmountPerLevelGained>0)
+			if(GameType().scoreTypeAmountPerLevelGained>0)
 			{
-				if(blocksClearedThisGame/Settings().scoreTypeAmountPerLevelGained>=1)currentLevel++;
+				if(blocksClearedThisGame/GameType().scoreTypeAmountPerLevelGained>=1)currentLevel++;
 			}
 
 		}
 		else
-		if(Settings().scoreType == ScoreType.PIECES_MADE)
+		if(GameType().scoreType == ScoreType.PIECES_MADE)
 		{
 
-			if(Settings().scoreTypeAmountPerLevelGained>0)
+			if(GameType().scoreTypeAmountPerLevelGained>0)
 			{
-				if(piecesMadeThisGame/Settings().scoreTypeAmountPerLevelGained>=1)currentLevel++;
+				if(piecesMadeThisGame/GameType().scoreTypeAmountPerLevelGained>=1)currentLevel++;
 			}
 
 		}
@@ -4030,64 +4036,64 @@ public class GameLogic extends EnginePart
 
 			changeGame();
 
-			timesToFlashScreenQueue=Settings().flashScreenTimesPerLevel;
+			timesToFlashScreenQueue=GameType().flashScreenTimesPerLevel;
 
 
 			if(currentLevel>0)
 			{
-				if(currentLevel<Settings().extraStage1Level)
+				if(currentLevel<GameType().extraStage1Level)
 				makeAnnouncementCaption("Level up!");
 
 				//makeRandomLevelUpCaption();
 
 				grid.setRandomWholePieceColors(false,currentPiece,nextPieces);
 
-				AudioManager().playSound(Settings().levelUpSound,getVolume(),1.0f,1);
+				AudioManager().playSound(GameType().levelUpSound,getVolume(),1.0f,1);
 			}
 
 
-			if(currentLevel==Settings().extraStage1Level&&extraStage1==false)
+			if(currentLevel==GameType().extraStage1Level&&extraStage1==false)
 			{
 				extraStage1=true;
 				makeAnnouncementCaption("Wow, it's the special stage!",BobColor.yellow);
 
-				AudioManager().playSound(Settings().extraStage1Sound,getVolume(),1.0f,1);
+				AudioManager().playSound(GameType().extraStage1Sound,getVolume(),1.0f,1);
 			}
 
 
-			if(currentLevel==Settings().extraStage2Level&&extraStage2==false)
+			if(currentLevel==GameType().extraStage2Level&&extraStage2==false)
 			{
 				extraStage2=true;
 				makeAnnouncementCaption("Whoa, I've never gotten this far!",BobColor.orange);
 
-				AudioManager().playSound(Settings().extraStage2Sound,getVolume(),1.0f,1);
+				AudioManager().playSound(GameType().extraStage2Sound,getVolume(),1.0f,1);
 			}
 
 
-			if(currentLevel==Settings().extraStage3Level&&extraStage3==false)
+			if(currentLevel==GameType().extraStage3Level&&extraStage3==false)
 			{
 				extraStage3=true;
 				makeAnnouncementCaption("Amazing!",BobColor.red);
 
-				AudioManager().playSound(Settings().extraStage3Sound,getVolume(),1.0f,1);
+				AudioManager().playSound(GameType().extraStage3Sound,getVolume(),1.0f,1);
 			}
 
 
-			if(currentLevel==Settings().extraStage4Level&&extraStage4==false)
+			if(currentLevel==GameType().extraStage4Level&&extraStage4==false)
 			{
 				extraStage4=true;
 				makeAnnouncementCaption("What is going on?!",BobColor.magenta);
 
-				AudioManager().playSound(Settings().extraStage4Sound,getVolume(),1.0f,1);
+				AudioManager().playSound(GameType().extraStage4Sound,getVolume(),1.0f,1);
 			}
 
 
-			if(currentLevel>Settings().creditsLevel)
+			if(currentLevel>GameType().creditsLevel)
 			{
 				credits=true;
 				makeAnnouncementCaption("You did it!!!",BobColor.blue);
 
-				AudioManager().playSound(Settings().creditsSound,getVolume(),1.0f,1);
+				AudioManager().playSound(GameType().creditsSound,getVolume(),1.0f,1);
 			}
 
 		}
@@ -4098,17 +4104,12 @@ public class GameLogic extends EnginePart
 
 
 	//=========================================================================================================================
-	public Settings Settings()
+	public GameType GameType()
 	{//=========================================================================================================================
 		return settings;
 	}
 
 	//=========================================================================================================================
-	public void setSettings(Settings settings)
-	{//=========================================================================================================================
-		this.settings = settings;
-	}
-
 
 
 	//=========================================================================================================================
@@ -4121,25 +4122,25 @@ public class GameLogic extends EnginePart
 	//=========================================================================================================================
 	public int cellW()
 	{//=========================================================================================================================
-		return blockWidth + Settings().gridPixelsBetweenColumns;
+		return blockWidth + GameType().gridPixelsBetweenColumns;
 	}
 
 	//=========================================================================================================================
 	public int cellH()
 	{//=========================================================================================================================
-		return blockHeight + Settings().gridPixelsBetweenRows;
+		return blockHeight + GameType().gridPixelsBetweenRows;
 	}
 
 	//=========================================================================================================================
 	public int gridW()
 	{//=========================================================================================================================
-		return Settings().gridWidth;
+		return GameType().gridWidth;
 	}
 
 	//=========================================================================================================================
 	public int gridH()
 	{//=========================================================================================================================
-		return Settings().gridHeight;
+		return GameType().gridHeight;
 	}
 
 
@@ -4157,7 +4158,7 @@ public class GameLogic extends EnginePart
 
 
 	//=========================================================================================================================
-	public class ControlsState
+	public static class ControlsState
 	{//=========================================================================================================================
 		public boolean BUTTON_SPACE_HELD = false;
 		public boolean BUTTON_LCTRL_HELD = false;
@@ -4169,7 +4170,7 @@ public class GameLogic extends EnginePart
 	}
 
 	//=========================================================================================================================
-	public class FrameState
+	public static class FrameState
 	{//=========================================================================================================================
 		public ControlsState controlsState = new ControlsState();
 		public long ticksPassed = 0;
@@ -4177,7 +4178,7 @@ public class GameLogic extends EnginePart
 	}
 
 	// =========================================================================================================================
-	public class NetworkPacket
+	public static class NetworkPacket
 	{// =========================================================================================================================
 		public Vector<FrameState> frameStates = new Vector<FrameState>();
 	}

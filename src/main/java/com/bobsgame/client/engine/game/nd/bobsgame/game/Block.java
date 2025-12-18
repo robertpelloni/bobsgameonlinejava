@@ -159,9 +159,9 @@ public class Block
 		return Game().blockHeight;
 	}
 
-	public Settings Settings()
+	public GameType GameType()
 	{
-		return Game().Settings();
+		return Game().GameType();
 	}
 
 	public GameLogic Game()
@@ -251,7 +251,7 @@ public class Block
 			{
 				animationFrame++;
 				animationFrameTicks = animationFrameSpeed;
-				if(Settings().blockAnimationTicksRandomUpToBetweenLoop>0)animationFrameTicks+=Game().getRandomIntLessThan(Settings().blockAnimationTicksRandomUpToBetweenLoop);
+				if(GameType().blockAnimationTicksRandomUpToBetweenLoop>0)animationFrameTicks+=Game().getRandomIntLessThan(GameType().blockAnimationTicksRandomUpToBetweenLoop);
 			}
 		}
 
@@ -471,7 +471,7 @@ public class Block
 				}
 			}
 
-			int ticks = (int)Settings().blockMovementInterpolationTicks;
+			int ticks = (int)GameType().blockMovementInterpolationTicks;
 			if(customInterpolationTicks!=-1) ticks = customInterpolationTicks;
 
 			if(ticksSinceLastMovement<ticks)
@@ -594,7 +594,7 @@ public class Block
 		//do locking animation, draw darker if locked into Grid()
 		//-------------------------------------------------
 		BobColor drawColor = renderColor;
-		if(Settings().fadeBlocksDarkerWhenLocking&&locking)
+		if(GameType().fadeBlocksDarkerWhenLocking&&locking)
 		{
 
 			for(int i=0;i<lockingAnimationFrame;i++)drawColor = drawColor.darker(0.1f);
@@ -602,7 +602,7 @@ public class Block
 			if(lockingAnimationFrame>5)drawColor = BobColor.white;
 		}
 		else
-		if(Settings().blockRule_drawBlocksDarkerWhenLocked&&setInGrid&&flashingToBeRemoved==false)drawColor = drawColor.darker(0.5f);//.darker();//a=0.6f;//
+		if(GameType().blockRule_drawBlocksDarkerWhenLocked&&setInGrid&&flashingToBeRemoved==false)drawColor = drawColor.darker(0.5f);//.darker();//a=0.6f;//
 
 
 
@@ -733,7 +733,7 @@ public class Block
 		boolean connectedUpLeft = false;
 		boolean connectedDownLeft = false;
 
-		if(Settings().blockRule_drawBlocksConnectedByColorIgnoringPiece)
+		if(GameType().blockRule_drawBlocksConnectedByColorIgnoringPiece)
 		{
 			if(connectedBlocksByColor!=null)
 			for(int i=0;i<connectedBlocksByColor.size();i++)
@@ -753,7 +753,7 @@ public class Block
 			}
 		}
 
-		if(Settings().blockRule_drawBlocksConnectedByPieceIgnoringColor)
+		if(GameType().blockRule_drawBlocksConnectedByPieceIgnoringColor)
 		{
 			if(connectedBlocksByPiece!=null)
 			for(int i=0;i<connectedBlocksByPiece.size();i++)
@@ -784,7 +784,7 @@ public class Block
 		}
 
 
-		if(Settings().blockRule_drawBlocksConnectedByColorInPiece)
+		if(GameType().blockRule_drawBlocksConnectedByColorInPiece)
 		{
 			if(connectedBlocksByPiece!=null)
 			for(int i=0;i<connectedBlocksByPiece.size();i++)
@@ -909,7 +909,7 @@ public class Block
 
 
 
-		if(Settings().blockRule_drawDotToSquareOffBlockCorners)
+		if(GameType().blockRule_drawDotToSquareOffBlockCorners)
 		{
 			if(connectedDown&&connectedRight&&!connectedDownRight)GLUtils.drawFilledRectXYWH(screenX+w-1,screenY+h-1,1*s,1*s,r,g,b,a);
 			if(connectedDown&&connectedLeft&&!connectedDownLeft)GLUtils.drawFilledRectXYWH(screenX,screenY+h-1,1*s,1*s,r,g,b,a);
@@ -919,14 +919,14 @@ public class Block
 
 
 
-		if(Settings().blockRule_fillSolidSquareWhenSetInGrid&&setInGrid&&flashingToBeRemoved==false)
+		if(GameType().blockRule_fillSolidSquareWhenSetInGrid&&setInGrid&&flashingToBeRemoved==false)
 		{
 			BobColor c = new BobColor(renderColor,0.1f);
 			GLUtils.drawFilledRectXYWH(screenX,screenY,w,h,c.r(),c.g(),c.b(),c.a());
 		}
 
 
-		if(Settings().drawDotOnRotationPiece)
+		if(GameType().drawDotOnRotationPiece)
 		{
 			BobColor dotColor = renderColor.lighter().lighter();
 
@@ -943,7 +943,7 @@ public class Block
 		float w = blockW()*s;
 		float h = blockH()*s;
 
-		if(Settings().gridRule_outlineOpenBlockEdges&&setInGrid==true&&disappearing==false)
+		if(GameType().gridRule_outlineOpenBlockEdges&&setInGrid==true&&disappearing==false)
 		{
 			if(grid!=null)
 			{
