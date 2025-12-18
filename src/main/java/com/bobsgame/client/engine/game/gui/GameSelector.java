@@ -41,11 +41,8 @@ public class GameSelector extends MenuPanel {
                 if(sel >= 0) {
                     GameSequence seq = sequenceListModel.getEntry(sel);
 
-                    if(GUIManager() != null && GUIManager().ND() != null && GUIManager().ND().getGame() instanceof BobsGame) {
-                         BobsGame bg = (BobsGame)GUIManager().ND().getGame();
-                         bg.ME.setGameSequence(seq);
-                         GUIManager().closeAllMenusAndND();
-                         GUIManager().ND().setActivated(true);
+                    if(GUIManager() != null) {
+                         GUIManager().openGameSetupMenu(seq);
                     }
                 }
             }

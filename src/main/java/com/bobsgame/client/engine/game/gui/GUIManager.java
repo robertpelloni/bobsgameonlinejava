@@ -38,6 +38,12 @@ public class GUIManager extends EnginePart
     public com.bobsgame.client.engine.game.gui.GameSelector gameSelector = null;
     public GUI gameSelectorGUI = null;
 
+    public com.bobsgame.client.engine.game.gui.GameSetupMenu gameSetupMenu = null;
+    public GUI gameSetupMenuGUI = null;
+
+    public com.bobsgame.client.engine.game.gui.RoomOptionsMenu roomOptionsMenu = null;
+    public GUI roomOptionsMenuGUI = null;
+
 	public ArrayList<GameChallengeNotificationPanel> gameChallenges = new ArrayList<GameChallengeNotificationPanel>();
 	public ArrayList<GUI> gameChallengesGUIs = new ArrayList<GUI>();
 
@@ -119,6 +125,14 @@ public class GUIManager extends EnginePart
         gameSelectorGUI = new GUI(gameSelector, LWJGLUtils.TWLrenderer);
         gameSelectorGUI.applyTheme(LWJGLUtils.TWLthemeManager);
 
+        gameSetupMenu = new com.bobsgame.client.engine.game.gui.GameSetupMenu();
+        gameSetupMenuGUI = new GUI(gameSetupMenu, LWJGLUtils.TWLrenderer);
+        gameSetupMenuGUI.applyTheme(LWJGLUtils.TWLthemeManager);
+
+        roomOptionsMenu = new com.bobsgame.client.engine.game.gui.RoomOptionsMenu();
+        roomOptionsMenuGUI = new GUI(roomOptionsMenu, LWJGLUtils.TWLrenderer);
+        roomOptionsMenuGUI.applyTheme(LWJGLUtils.TWLthemeManager);
+
 		keyboardScreen = new KeyboardScreen();
 		keyboardScreenGUI = new GUI(keyboardScreen, LWJGLUtils.TWLrenderer);
 		keyboardScreenGUI.applyTheme(LWJGLUtils.TWLthemeManager);
@@ -155,6 +169,8 @@ public class GUIManager extends EnginePart
         gameSequenceEditor.update();
         customGameEditor.update();
         gameSelector.update();
+        gameSetupMenu.update();
+        roomOptionsMenu.update();
 
 		for(int i=0;i<gameChallenges.size();i++)
 		{
@@ -181,6 +197,8 @@ public class GUIManager extends EnginePart
         if(gameSequenceEditor.isActivated()){gameSequenceEditor.renderBefore();gameSequenceEditorGUI.update();gameSequenceEditor.render();}
         if(customGameEditor.isActivated()){customGameEditor.renderBefore();customGameEditorGUI.update();customGameEditor.render();}
         if(gameSelector.isActivated()){gameSelector.renderBefore();gameSelectorGUI.update();gameSelector.render();}
+        if(gameSetupMenu.isActivated()){gameSetupMenu.renderBefore();gameSetupMenuGUI.update();gameSetupMenu.render();}
+        if(roomOptionsMenu.isActivated()){roomOptionsMenu.renderBefore();roomOptionsMenuGUI.update();roomOptionsMenu.render();}
 
 		for(int i=0;i<gameChallenges.size();i++)
 		{
@@ -241,6 +259,8 @@ public class GUIManager extends EnginePart
         gameSequenceEditorGUI.destroy();
         customGameEditorGUI.destroy();
         gameSelectorGUI.destroy();
+        gameSetupMenuGUI.destroy();
+        roomOptionsMenuGUI.destroy();
 
 		for(int i=0;i<gameChallenges.size();i++)
 		{
@@ -276,6 +296,12 @@ public class GUIManager extends EnginePart
 
         gameSelector.mainPanelLayout.setTheme(GUIManager.darkThemeString);
         gameSelector.mainPanelLayout.reapplyTheme();
+
+        gameSetupMenu.mainPanelLayout.setTheme(GUIManager.darkThemeString);
+        gameSetupMenu.mainPanelLayout.reapplyTheme();
+
+        roomOptionsMenu.mainPanelLayout.setTheme(GUIManager.darkThemeString);
+        roomOptionsMenu.mainPanelLayout.reapplyTheme();
 
 		keyboardScreen.mainPanelLayout.setTheme(GUIManager.darkThemeString);
 		keyboardScreen.mainPanelLayout.reapplyTheme();
@@ -313,6 +339,12 @@ public class GUIManager extends EnginePart
 
         gameSelector.mainPanelLayout.setTheme(GUIManager.lightThemeString);
         gameSelector.mainPanelLayout.reapplyTheme();
+
+        gameSetupMenu.mainPanelLayout.setTheme(GUIManager.lightThemeString);
+        gameSetupMenu.mainPanelLayout.reapplyTheme();
+
+        roomOptionsMenu.mainPanelLayout.setTheme(GUIManager.lightThemeString);
+        roomOptionsMenu.mainPanelLayout.reapplyTheme();
 
 		keyboardScreen.mainPanelLayout.setTheme(GUIManager.lightThemeString);
 		keyboardScreen.mainPanelLayout.reapplyTheme();
@@ -412,6 +444,8 @@ public class GUIManager extends EnginePart
         gameSequenceEditor.setActivated(false);
         customGameEditor.setActivated(false);
         gameSelector.setActivated(false);
+        gameSetupMenu.setActivated(false);
+        roomOptionsMenu.setActivated(false);
 
 		StuffMenu().setActivated(true);
 
@@ -430,6 +464,55 @@ public class GUIManager extends EnginePart
     public void openGameSelector() {
         closeAllMenusAndND();
         gameSelector.setActivated(true);
+    }
+
+    public void openGameSetupMenu(com.bobsgame.client.engine.game.nd.bobsgame.game.GameSequence seq) {
+        closeAllMenusAndND();
+
+        // Initialize a new Room with this sequence
+        com.bobsgame.client.engine.game.nd.bobsgame.game.Room room = new com.bobsgame.client.engine.game.nd.bobsgame.game.Room();
+        room.gameSequence = seq;
+        room.setDefaults();
+
+        gameSetupMenu.setRoom(room);
+        gameSetupMenu.setActivated(true);
+    }
+
+    public void openRoomOptionsMenu() {
+        closeAllMenusAndND();
+        // Pass the room from setup menu? Or assume GameSetupMenu holds state.
+        // GameSetupMenu persists while hidden?
+        // For simplicity, let's just show it. It shares the room reference via GameSetupMenu.
+        // Ideally we pass it.
+        // Let's assume GameSetupMenu is the "owner" of the current config session.
+        // But we closed all menus.
+
+        // Actually, let's keep GameSetupMenu active?
+        // No, closeAllMenusAndND hides them.
+
+        // Let's just have roomOptionsMenu get the room from gameSetupMenu?
+        // Or better, pass it.
+        // Refactoring openRoomOptionsMenu to take Room
+
+        // For now, let's cheat and grab it from gameSetupMenu if we can, or rely on caller?
+        // The caller was GameSetupMenu.
+
+        // Let's modify the signature in next step or assume GameSetupMenu passed it.
+        // Actually GameSetupMenu called GUIManager().openRoomOptionsMenu().
+        // I'll fix this in GameSetupMenu.java to pass the room.
+
+        roomOptionsMenu.setActivated(true);
+    }
+
+    public void openRoomOptionsMenu(com.bobsgame.client.engine.game.nd.bobsgame.game.Room room) {
+        closeAllMenusAndND();
+        roomOptionsMenu.setRoom(room);
+        roomOptionsMenu.setActivated(true);
+    }
+
+    public void closeRoomOptionsMenu() {
+        closeAllMenusAndND();
+        gameSetupMenu.setActivated(true);
     }
 
 
@@ -470,6 +553,8 @@ public class GUIManager extends EnginePart
         gameSequenceEditor.setActivated(false);
         customGameEditor.setActivated(false);
         gameSelector.setActivated(false);
+        gameSetupMenu.setActivated(false);
+        roomOptionsMenu.setActivated(false);
 	}
 
 
