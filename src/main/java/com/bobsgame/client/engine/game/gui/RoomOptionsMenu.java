@@ -21,6 +21,20 @@ public class RoomOptionsMenu extends MenuPanel {
     private ToggleButton endlessModeButton;
     private Label endlessModeLabel;
 
+    private ToggleButton privateRoomButton;
+    private Label privateRoomLabel;
+
+    private ToggleButton tournamentRoomButton;
+    private Label tournamentRoomLabel;
+
+    private Label maxPlayersLabel;
+    private Scrollbar maxPlayersScrollbar;
+    private Label maxPlayersValueLabel;
+
+    private Label sendGarbageToLabel;
+    private Scrollbar sendGarbageToScrollbar;
+    private Label sendGarbageToValueLabel;
+
     private Button backButton;
 
     public RoomOptionsMenu() {
@@ -61,6 +75,33 @@ public class RoomOptionsMenu extends MenuPanel {
         });
         endlessModeLabel.setLabelFor(endlessModeButton);
 
+        // Private Room
+        privateRoomLabel = new Label("Private Room");
+        privateRoomButton = new ToggleButton("");
+        privateRoomButton.addCallback(new Runnable() { public void run() { updateValues(); } });
+        privateRoomLabel.setLabelFor(privateRoomButton);
+
+        // Tournament Room
+        tournamentRoomLabel = new Label("Tournament Mode");
+        tournamentRoomButton = new ToggleButton("");
+        tournamentRoomButton.addCallback(new Runnable() { public void run() { updateValues(); } });
+        tournamentRoomLabel.setLabelFor(tournamentRoomButton);
+
+        // Max Players
+        maxPlayersLabel = new Label("Max Players (0=Unl):");
+        maxPlayersScrollbar = new Scrollbar(Scrollbar.Orientation.HORIZONTAL);
+        maxPlayersScrollbar.setMinMaxValue(0, 50); // Arbitrary max
+        maxPlayersScrollbar.addCallback(new Runnable() { public void run() { updateValues(); } });
+        maxPlayersValueLabel = new Label("0");
+
+        // Send Garbage To
+        sendGarbageToLabel = new Label("Send Garbage To:");
+        sendGarbageToScrollbar = new Scrollbar(Scrollbar.Orientation.HORIZONTAL);
+        sendGarbageToScrollbar.setMinMaxValue(0, 4); // 0-4 options
+        sendGarbageToScrollbar.addCallback(new Runnable() { public void run() { updateValues(); } });
+        sendGarbageToValueLabel = new Label("All");
+
+
         backButton = new Button("Done");
         backButton.addCallback(new Runnable() {
             public void run() {
@@ -74,6 +115,10 @@ public class RoomOptionsMenu extends MenuPanel {
                 .addGroup(insideScrollPaneLayout.createSequentialGroup().addWidget(gameSpeedStartLabel).addWidget(gameSpeedStartScrollbar).addWidget(gameSpeedStartValueLabel))
                 .addGroup(insideScrollPaneLayout.createSequentialGroup().addWidget(multiplayerGarbageLabel).addWidget(multiplayerGarbageScrollbar).addWidget(multiplayerGarbageValueLabel))
                 .addGroup(insideScrollPaneLayout.createSequentialGroup().addWidget(endlessModeLabel).addWidget(endlessModeButton))
+                .addGroup(insideScrollPaneLayout.createSequentialGroup().addWidget(privateRoomLabel).addWidget(privateRoomButton))
+                .addGroup(insideScrollPaneLayout.createSequentialGroup().addWidget(tournamentRoomLabel).addWidget(tournamentRoomButton))
+                .addGroup(insideScrollPaneLayout.createSequentialGroup().addWidget(maxPlayersLabel).addWidget(maxPlayersScrollbar).addWidget(maxPlayersValueLabel))
+                .addGroup(insideScrollPaneLayout.createSequentialGroup().addWidget(sendGarbageToLabel).addWidget(sendGarbageToScrollbar).addWidget(sendGarbageToValueLabel))
                 .addWidget(backButton)
         );
 
@@ -83,6 +128,10 @@ public class RoomOptionsMenu extends MenuPanel {
                 .addGroup(insideScrollPaneLayout.createParallelGroup().addWidget(gameSpeedStartLabel).addWidget(gameSpeedStartScrollbar).addWidget(gameSpeedStartValueLabel))
                 .addGroup(insideScrollPaneLayout.createParallelGroup().addWidget(multiplayerGarbageLabel).addWidget(multiplayerGarbageScrollbar).addWidget(multiplayerGarbageValueLabel))
                 .addGroup(insideScrollPaneLayout.createParallelGroup().addWidget(endlessModeLabel).addWidget(endlessModeButton))
+                .addGroup(insideScrollPaneLayout.createParallelGroup().addWidget(privateRoomLabel).addWidget(privateRoomButton))
+                .addGroup(insideScrollPaneLayout.createParallelGroup().addWidget(tournamentRoomLabel).addWidget(tournamentRoomButton))
+                .addGroup(insideScrollPaneLayout.createParallelGroup().addWidget(maxPlayersLabel).addWidget(maxPlayersScrollbar).addWidget(maxPlayersValueLabel))
+                .addGroup(insideScrollPaneLayout.createParallelGroup().addWidget(sendGarbageToLabel).addWidget(sendGarbageToScrollbar).addWidget(sendGarbageToValueLabel))
                 .addWidget(backButton)
         );
     }
@@ -97,6 +146,10 @@ public class RoomOptionsMenu extends MenuPanel {
             gameSpeedStartScrollbar.setValue((int)(room.gameSpeedStart * 100));
             multiplayerGarbageScrollbar.setValue((int)(room.multiplayer_GarbageMultiplier * 100));
             endlessModeButton.setActive(room.endlessMode);
+            privateRoomButton.setActive(room.multiplayer_PrivateRoom);
+            tournamentRoomButton.setActive(room.multiplayer_TournamentRoom);
+            maxPlayersScrollbar.setValue(room.multiplayer_MaxPlayers);
+            sendGarbageToScrollbar.setValue(room.multiplayer_SendGarbageTo);
             updateLabels();
         }
     }
@@ -106,6 +159,10 @@ public class RoomOptionsMenu extends MenuPanel {
             room.gameSpeedStart = gameSpeedStartScrollbar.getValue() / 100.0f;
             room.multiplayer_GarbageMultiplier = multiplayerGarbageScrollbar.getValue() / 100.0f;
             room.endlessMode = endlessModeButton.isActive();
+            room.multiplayer_PrivateRoom = privateRoomButton.isActive();
+            room.multiplayer_TournamentRoom = tournamentRoomButton.isActive();
+            room.multiplayer_MaxPlayers = maxPlayersScrollbar.getValue();
+            room.multiplayer_SendGarbageTo = sendGarbageToScrollbar.getValue();
             updateLabels();
         }
     }
@@ -113,5 +170,16 @@ public class RoomOptionsMenu extends MenuPanel {
     private void updateLabels() {
         gameSpeedStartValueLabel.setText(gameSpeedStartScrollbar.getValue() + "%");
         multiplayerGarbageValueLabel.setText(multiplayerGarbageScrollbar.getValue() + "%");
+        maxPlayersValueLabel.setText(maxPlayersScrollbar.getValue() == 0 ? "Unlimited" : String.valueOf(maxPlayersScrollbar.getValue()));
+
+        String sendTo = "Unknown";
+        switch(sendGarbageToScrollbar.getValue()) {
+            case 0: sendTo = "All"; break;
+            case 1: sendTo = "All 50%"; break;
+            case 2: sendTo = "Random"; break;
+            case 3: sendTo = "Rotate"; break;
+            case 4: sendTo = "Least Blocks"; break;
+        }
+        sendGarbageToValueLabel.setText(sendTo);
     }
 }

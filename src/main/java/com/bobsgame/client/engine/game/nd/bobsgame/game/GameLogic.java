@@ -3982,12 +3982,18 @@ public class GameLogic extends EnginePart
 	{//=========================================================================================================================
 
 
+        //TODO: implement variable gameSpeed
+        float gameSpeed = 0.0f; //should be member variable initialized to currentRoom.gameSpeedStart
 
 		if(piecesMadeThisGame>lastPiecesMadeThisGame)
 		{
 			lastPiecesMadeThisGame = piecesMadeThisGame;
 
-			if(currentLineDropSpeedTicks>GameType().minimumLineDropSpeedTicks)currentLineDropSpeedTicks*=0.98f;
+            gameSpeed += currentRoom.gameSpeedChangeRate;
+            if(gameSpeed > currentRoom.gameSpeedMaximum) gameSpeed = currentRoom.gameSpeedMaximum;
+            if(gameSpeed < 0.0f) gameSpeed = 0.0f;
+
+			if(currentLineDropSpeedTicks>GameType().minimumLineDropSpeedTicks)currentLineDropSpeedTicks*=0.98f; //TODO: use gameSpeed logic from C++
 			if(currentLineDropSpeedTicks<GameType().minimumLineDropSpeedTicks)currentLineDropSpeedTicks=GameType().minimumLineDropSpeedTicks;
 		}
 
@@ -3995,12 +4001,14 @@ public class GameLogic extends EnginePart
 
         currentSessionStats.singlePlayerHighestLevelReached = currentLevel;
 
+        int amount = (int)(GameType().scoreTypeAmountPerLevelGained * currentRoom.levelUpMultiplier); //TODO: compound multiplier
+
 		if(GameType().scoreType == ScoreType.LINES_CLEARED)
 		{
 
-			if(GameType().scoreTypeAmountPerLevelGained>0)
+			if(amount>0)
 			{
-				if(linesClearedThisGame/GameType().scoreTypeAmountPerLevelGained>=1)currentLevel++;
+				if(linesClearedThisGame/amount>=1)currentLevel++;
 			}
 
 		}
@@ -4008,9 +4016,9 @@ public class GameLogic extends EnginePart
 		if(GameType().scoreType == ScoreType.BLOCKS_CLEARED)
 		{
 
-			if(GameType().scoreTypeAmountPerLevelGained>0)
+			if(amount>0)
 			{
-				if(blocksClearedThisGame/GameType().scoreTypeAmountPerLevelGained>=1)currentLevel++;
+				if(blocksClearedThisGame/amount>=1)currentLevel++;
 			}
 
 		}
@@ -4018,9 +4026,9 @@ public class GameLogic extends EnginePart
 		if(GameType().scoreType == ScoreType.PIECES_MADE)
 		{
 
-			if(GameType().scoreTypeAmountPerLevelGained>0)
+			if(amount>0)
 			{
-				if(piecesMadeThisGame/GameType().scoreTypeAmountPerLevelGained>=1)currentLevel++;
+				if(piecesMadeThisGame/amount>=1)currentLevel++;
 			}
 
 		}
