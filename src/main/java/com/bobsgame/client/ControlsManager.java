@@ -595,11 +595,77 @@ public class ControlsManager {
 	public int JOY_ZOOMIN = notSet;
 	public int JOY_ZOOMOUT = notSet;
 
+	public int controller = -1;
 	public int controller= -1;
 
-	float minVal = 0.9f;
+	float minVal = 0.5f;
+
+    public ControlsManager() {
+        // Initialize default controller mapping (GamePad style)
+        // This is a naive implementation; a real one would allow rebinding.
+        // GLFW provides standard gamepad mappings if available.
+        JOY_UP = gameController_LeftAnalog_YAxis_Negative;
+        JOY_DOWN = gameController_LeftAnalog_YAxis_Positive;
+        JOY_LEFT = gameController_LeftAnalog_XAxis_Negative;
+        JOY_RIGHT = gameController_LeftAnalog_XAxis_Positive;
+        JOY_ACTION = GLFW.GLFW_GAMEPAD_BUTTON_A;
+        JOY_RUN = GLFW.GLFW_GAMEPAD_BUTTON_B;
+        JOY_ND = GLFW.GLFW_GAMEPAD_BUTTON_START;
+        JOY_STUFF = GLFW.GLFW_GAMEPAD_BUTTON_BACK;
+        JOY_ZOOMIN = GLFW.GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER;
+        JOY_ZOOMOUT = GLFW.GLFW_GAMEPAD_BUTTON_LEFT_BUMPER;
+    }
 	
 	public boolean isJoystickButtonHeld(int id) {
+        // Find first connected joystick if not set
+        if (controller == -1) {
+            for (int i = GLFW.GLFW_JOYSTICK_1; i <= GLFW.GLFW_JOYSTICK_LAST; i++) {
+                if (GLFW.glfwJoystickPresent(i)) {
+                    controller = i;
+                    break;
+                }
+            }
+        }
+
+		if (controller == -1) return false;
+		if (id == notSet) return false;
+
+        // Use GLFWGamepadState if possible for standardized mapping
+        if (GLFW.glfwJoystickIsGamepad(controller)) {
+            try (org.lwjgl.system.MemoryStack stack = org.lwjgl.system.MemoryStack.stackPush()) {
+                GLFWGamepadState state = GLFWGamepadState.malloc(stack);
+                if (GLFW.glfwGetGamepadState(controller, state)) {
+
+                    if (id == gameController_LeftAnalog_XAxis_Negative) return state.axes(GLFW.GLFW_GAMEPAD_AXIS_LEFT_X) < -minVal;
+                    if (id == gameController_LeftAnalog_XAxis_Positive) return state.axes(GLFW.GLFW_GAMEPAD_AXIS_LEFT_X) > minVal;
+                    if (id == gameController_LeftAnalog_YAxis_Negative) return state.axes(GLFW.GLFW_GAMEPAD_AXIS_LEFT_Y) < -minVal;
+                    if (id == gameController_LeftAnalog_YAxis_Positive) return state.axes(GLFW.GLFW_GAMEPAD_AXIS_LEFT_Y) > minVal;
+
+                    if (id == gameController_RightAnalog_XAxis_Negative) return state.axes(GLFW.GLFW_GAMEPAD_AXIS_RIGHT_X) < -minVal;
+                    if (id == gameController_RightAnalog_XAxis_Positive) return state.axes(GLFW.GLFW_GAMEPAD_AXIS_RIGHT_X) > minVal;
+                    if (id == gameController_RightAnalog_YAxis_Negative) return state.axes(GLFW.GLFW_GAMEPAD_AXIS_RIGHT_Y) < -minVal;
+                    if (id == gameController_RightAnalog_YAxis_Positive) return state.axes(GLFW.GLFW_GAMEPAD_AXIS_RIGHT_Y) > minVal;
+
+                    if (id >= 0 && id < 15) { // Gamepad buttons are 0-14
+                        return state.buttons(id) == GLFW.GLFW_PRESS;
+                    }
+                }
+            }
+        } else {
+            // Fallback for generic joystick
+            ByteBuffer buttons = GLFW.glfwGetJoystickButtons(controller);
+            FloatBuffer axes = GLFW.glfwGetJoystickAxes(controller);
+
+            if (buttons == null || axes == null) return false;
+
+            if (id == gameController_LeftAnalog_XAxis_Negative) return axes.capacity() > 0 && axes.get(0) < -minVal;
+            if (id == gameController_LeftAnalog_XAxis_Positive) return axes.capacity() > 0 && axes.get(0) > minVal;
+            if (id == gameController_LeftAnalog_YAxis_Negative) return axes.capacity() > 1 && axes.get(1) < -minVal;
+            if (id == gameController_LeftAnalog_YAxis_Positive) return axes.capacity() > 1 && axes.get(1) > minVal;
+
+            if (id >= 0 && id < buttons.capacity()) {
+                return buttons.get(id) == GLFW.GLFW_PRESS;
+            }
 		if (controller == -1) return false;
 		if (id == notSet) return false;
 
