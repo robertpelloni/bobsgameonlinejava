@@ -305,6 +305,11 @@ public class GameLogic extends EnginePart
 	int currentCombo=0;
 	int comboChainTotal=0;
 
+    public boolean slamWithUp = true;
+    public boolean slamLock = true;
+    public boolean singleDownLock = false;
+    public boolean doubleDownLock = false;
+
 	public int queuedGarbageAmountToSend = 0;
 
 	int queuedGarbageAmountFromOtherPlayer = 0;
@@ -3164,7 +3169,9 @@ public class GameLogic extends EnginePart
 				{
 					AudioManager().playSound(GameType().moveDownSound,getVolume(),getSoundEffectSpeed(),1);
 
-					movePiece(MovementType.DOWN);
+					boolean moved = movePiece(MovementType.DOWN);
+
+                    if(!moved && singleDownLock) lockDelayTicksCounter = 0;
 
 					if(GameType().dropLockType==DropLockType.SOFT_DROP_INSTANT_LOCK)
 					{
@@ -3193,7 +3200,7 @@ public class GameLogic extends EnginePart
 			else
 			{
 
-				if(pieceSetAtBottom==false)
+				if(pieceSetAtBottom==false && slamWithUp)
 				{
 					AudioManager().playSound(GameType().hardDropSwishSound,getVolume(),2.0f,1);
 
@@ -3202,10 +3209,13 @@ public class GameLogic extends EnginePart
 
 					while(movePiece(MovementType.HARD_DROP)==true)
 					{
-						if(GameType().dropLockType==DropLockType.HARD_DROP_INSTANT_LOCK)
-						{
-							lockDelayTicksCounter=0;
-						}
+                        if(slamLock)
+                        {
+						    if(GameType().dropLockType==DropLockType.HARD_DROP_INSTANT_LOCK)
+						    {
+							    lockDelayTicksCounter=0;
+						    }
+                        }
 					}
 
 

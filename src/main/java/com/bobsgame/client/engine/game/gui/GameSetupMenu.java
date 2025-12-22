@@ -30,6 +30,7 @@ public class GameSetupMenu extends MenuPanel {
     private Button voteDownButton;
 
     private Button startButton;
+    private Button controlsButton;
     private Button backButton;
 
     public GameSetupMenu() {
@@ -66,6 +67,18 @@ public class GameSetupMenu extends MenuPanel {
             }
         });
 
+        controlsButton = new Button("Controls...");
+        controlsButton.addCallback(new Runnable() {
+            public void run() {
+                if(GUIManager() != null && GUIManager().ND() != null && GUIManager().ND().getGame() instanceof BobsGame) {
+                    BobsGame bg = (BobsGame)GUIManager().ND().getGame();
+                    // We need to initialize ME if it doesn't exist, or use a dummy?
+                    // Actually ME exists.
+                    GUIManager().openPlayerControlsMenu(bg.ME);
+                }
+            }
+        });
+
         startButton = new Button("Start Game");
         startButton.addCallback(new Runnable() {
             public void run() {
@@ -87,6 +100,7 @@ public class GameSetupMenu extends MenuPanel {
                 .addGroup(insideScrollPaneLayout.createSequentialGroup().addWidget(difficultyLabel).addWidget(difficultyComboBox))
                 .addWidget(roomOptionsButton)
                 .addGroup(insideScrollPaneLayout.createSequentialGroup().addWidget(voteUpButton).addWidget(voteDownButton))
+                .addWidget(controlsButton)
                 .addWidget(startButton)
                 .addWidget(backButton)
         );
@@ -98,6 +112,7 @@ public class GameSetupMenu extends MenuPanel {
                 .addGroup(insideScrollPaneLayout.createParallelGroup().addWidget(difficultyLabel).addWidget(difficultyComboBox))
                 .addWidget(roomOptionsButton)
                 .addGroup(insideScrollPaneLayout.createParallelGroup().addWidget(voteUpButton).addWidget(voteDownButton))
+                .addWidget(controlsButton)
                 .addWidget(startButton)
                 .addWidget(backButton)
         );
