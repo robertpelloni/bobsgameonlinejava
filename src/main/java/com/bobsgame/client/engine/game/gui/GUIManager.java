@@ -47,6 +47,9 @@ public class GUIManager extends EnginePart
     public com.bobsgame.client.engine.game.gui.PlayerControlsMenu playerControlsMenu = null;
     public GUI playerControlsMenuGUI = null;
 
+    public com.bobsgame.client.engine.game.gui.gameTestMenu.GameTestMenu gameTestMenu = null;
+    public GUI gameTestMenuGUI = null;
+
 	public ArrayList<GameChallengeNotificationPanel> gameChallenges = new ArrayList<GameChallengeNotificationPanel>();
 	public ArrayList<GUI> gameChallengesGUIs = new ArrayList<GUI>();
 
@@ -140,6 +143,10 @@ public class GUIManager extends EnginePart
         playerControlsMenuGUI = new GUI(playerControlsMenu, LWJGLUtils.TWLrenderer);
         playerControlsMenuGUI.applyTheme(LWJGLUtils.TWLthemeManager);
 
+        gameTestMenu = new com.bobsgame.client.engine.game.gui.gameTestMenu.GameTestMenu();
+        gameTestMenuGUI = new GUI(gameTestMenu, LWJGLUtils.TWLrenderer);
+        gameTestMenuGUI.applyTheme(LWJGLUtils.TWLthemeManager);
+
 		keyboardScreen = new KeyboardScreen();
 		keyboardScreenGUI = new GUI(keyboardScreen, LWJGLUtils.TWLrenderer);
 		keyboardScreenGUI.applyTheme(LWJGLUtils.TWLthemeManager);
@@ -179,6 +186,7 @@ public class GUIManager extends EnginePart
         gameSetupMenu.update();
         roomOptionsMenu.update();
         playerControlsMenu.update();
+        gameTestMenu.update();
 
 		for(int i=0;i<gameChallenges.size();i++)
 		{
@@ -208,6 +216,7 @@ public class GUIManager extends EnginePart
         if(gameSetupMenu.isActivated()){gameSetupMenu.renderBefore();gameSetupMenuGUI.update();gameSetupMenu.render();}
         if(roomOptionsMenu.isActivated()){roomOptionsMenu.renderBefore();roomOptionsMenuGUI.update();roomOptionsMenu.render();}
         if(playerControlsMenu.isActivated()){playerControlsMenu.renderBefore();playerControlsMenuGUI.update();playerControlsMenu.render();}
+        if(gameTestMenu.isActivated()){gameTestMenu.renderBefore();gameTestMenuGUI.update();gameTestMenu.render();}
 
 		for(int i=0;i<gameChallenges.size();i++)
 		{
@@ -271,6 +280,7 @@ public class GUIManager extends EnginePart
         gameSetupMenuGUI.destroy();
         roomOptionsMenuGUI.destroy();
         playerControlsMenuGUI.destroy();
+        gameTestMenuGUI.destroy();
 
 		for(int i=0;i<gameChallenges.size();i++)
 		{
@@ -315,6 +325,9 @@ public class GUIManager extends EnginePart
 
         playerControlsMenu.mainPanelLayout.setTheme(GUIManager.darkThemeString);
         playerControlsMenu.mainPanelLayout.reapplyTheme();
+
+        gameTestMenu.mainPanelLayout.setTheme(GUIManager.darkThemeString);
+        gameTestMenu.mainPanelLayout.reapplyTheme();
 
 		keyboardScreen.mainPanelLayout.setTheme(GUIManager.darkThemeString);
 		keyboardScreen.mainPanelLayout.reapplyTheme();
@@ -361,6 +374,9 @@ public class GUIManager extends EnginePart
 
         playerControlsMenu.mainPanelLayout.setTheme(GUIManager.lightThemeString);
         playerControlsMenu.mainPanelLayout.reapplyTheme();
+
+        gameTestMenu.mainPanelLayout.setTheme(GUIManager.lightThemeString);
+        gameTestMenu.mainPanelLayout.reapplyTheme();
 
 		keyboardScreen.mainPanelLayout.setTheme(GUIManager.lightThemeString);
 		keyboardScreen.mainPanelLayout.reapplyTheme();
@@ -463,6 +479,7 @@ public class GUIManager extends EnginePart
         gameSetupMenu.setActivated(false);
         roomOptionsMenu.setActivated(false);
         playerControlsMenu.setActivated(false);
+        gameTestMenu.setActivated(false);
 
 		StuffMenu().setActivated(true);
 
@@ -543,6 +560,16 @@ public class GUIManager extends EnginePart
         gameSetupMenu.setActivated(true);
     }
 
+    public void openGameTestMenu() {
+        closeAllMenusAndND();
+        gameTestMenu.setActivated(true);
+    }
+
+    public void closeGameTestMenu() {
+        closeAllMenusAndND();
+        stuffMenu.setActivated(true); // Return to main menu
+    }
+
 
 	//=========================================================================================================================
 	public void enableAllMenusAndND()
@@ -584,6 +611,7 @@ public class GUIManager extends EnginePart
         gameSetupMenu.setActivated(false);
         roomOptionsMenu.setActivated(false);
         playerControlsMenu.setActivated(false);
+        gameTestMenu.setActivated(false);
 	}
 
 

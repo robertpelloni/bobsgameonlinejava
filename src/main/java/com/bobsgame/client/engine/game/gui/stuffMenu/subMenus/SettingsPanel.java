@@ -4,6 +4,7 @@ import com.bobsgame.client.engine.game.gui.GUIManager;
 import com.bobsgame.client.engine.game.gui.stuffMenu.SubPanel;
 import com.bobsgame.client.engine.map.MapManager;
 import com.bobsgame.client.LWJGLUtils;
+import com.bobsgame.client.settings.GlobalSettings;
 
 import de.matthiasmann.twl.DialogLayout;
 import de.matthiasmann.twl.Label;
@@ -44,6 +45,46 @@ public class SettingsPanel extends SubPanel
 	Label statusBarGlossLabel;
 	final public Scrollbar statusBarGlossScrollbar = new Scrollbar(Orientation.HORIZONTAL);
 	final Label statusBarGlossValueLabel = new Label("Default");
+
+    // Global Settings UI
+    Label musicVolumeLabel;
+    final Scrollbar musicVolumeScrollbar = new Scrollbar(Orientation.HORIZONTAL);
+    final Label musicVolumeValueLabel = new Label("100%");
+
+    Label brightnessLabel;
+    final Scrollbar brightnessScrollbar = new Scrollbar(Orientation.HORIZONTAL);
+    final Label brightnessValueLabel = new Label("100%");
+
+    Label contrastLabel;
+    final Scrollbar contrastScrollbar = new Scrollbar(Orientation.HORIZONTAL);
+    final Label contrastValueLabel = new Label("100%");
+
+    Label saturationLabel;
+    final Scrollbar saturationScrollbar = new Scrollbar(Orientation.HORIZONTAL);
+    final Label saturationValueLabel = new Label("100%");
+
+    Label hueLabel;
+    final Scrollbar hueScrollbar = new Scrollbar(Orientation.HORIZONTAL);
+    final Label hueValueLabel = new Label("0%");
+
+    Label screenFlashLabel;
+    final Scrollbar screenFlashScrollbar = new Scrollbar(Orientation.HORIZONTAL);
+    final Label screenFlashValueLabel = new Label("50%");
+
+    final ToggleButton showStatsToggle = new ToggleButton("");
+    Label showStatsLabel;
+
+    final ToggleButton showScoreBarsToggle = new ToggleButton("");
+    Label showScoreBarsLabel;
+
+    final ToggleButton censorToggle = new ToggleButton("");
+    Label censorLabel;
+
+    final ToggleButton hideChatToggle = new ToggleButton("");
+    Label hideChatLabel;
+
+    final ToggleButton hideNotificationsToggle = new ToggleButton("");
+    Label hideNotificationsLabel;
 
 	DialogLayout guiSettingsDialogLayout;
 
@@ -96,6 +137,8 @@ public class SettingsPanel extends SubPanel
 		initGUISettingsSubPanel();
 
 		initGraphicsSettingsSubPanel();
+
+        initGlobalSettingsUI();
 
 
 		insideLayout.setHorizontalGroup
@@ -432,6 +475,12 @@ public class SettingsPanel extends SubPanel
 										statusBarGlossValueLabel
 								)
 						)
+                        ,
+                        // Add new global settings here to GUI layout
+                        guiSettingsDialogLayout.createSequentialGroup()
+                            .addGroup(guiSettingsDialogLayout.createParallelGroup(musicVolumeLabel, brightnessLabel, contrastLabel, saturationLabel, hueLabel, screenFlashLabel, showStatsLabel, showScoreBarsLabel, censorLabel, hideChatLabel, hideNotificationsLabel))
+                            .addGroup(guiSettingsDialogLayout.createParallelGroup(musicVolumeScrollbar, brightnessScrollbar, contrastScrollbar, saturationScrollbar, hueScrollbar, screenFlashScrollbar, showStatsToggle, showScoreBarsToggle, censorToggle, hideChatToggle, hideNotificationsToggle))
+                            .addGroup(guiSettingsDialogLayout.createParallelGroup(musicVolumeValueLabel, brightnessValueLabel, contrastValueLabel, saturationValueLabel, hueValueLabel, screenFlashValueLabel))
 
 
 				)
@@ -444,6 +493,17 @@ public class SettingsPanel extends SubPanel
 				.addGroup(guiSettingsDialogLayout.createParallelGroup(whiteThemeToggleButton, whiteStatusBarToggleButtonLabel))
 				//.addGroup(guiSettingsDialogLayout.createParallelGroup(grayscaleToggleButtonLabel, grayscaleToggleButton))
 				.addGroup(guiSettingsDialogLayout.createParallelGroup(statusBarGlossLabel,statusBarGlossScrollbar,statusBarGlossValueLabel))
+                .addGroup(guiSettingsDialogLayout.createParallelGroup(musicVolumeLabel, musicVolumeScrollbar, musicVolumeValueLabel))
+                .addGroup(guiSettingsDialogLayout.createParallelGroup(brightnessLabel, brightnessScrollbar, brightnessValueLabel))
+                .addGroup(guiSettingsDialogLayout.createParallelGroup(contrastLabel, contrastScrollbar, contrastValueLabel))
+                .addGroup(guiSettingsDialogLayout.createParallelGroup(saturationLabel, saturationScrollbar, saturationValueLabel))
+                .addGroup(guiSettingsDialogLayout.createParallelGroup(hueLabel, hueScrollbar, hueValueLabel))
+                .addGroup(guiSettingsDialogLayout.createParallelGroup(screenFlashLabel, screenFlashScrollbar, screenFlashValueLabel))
+                .addGroup(guiSettingsDialogLayout.createParallelGroup(showStatsLabel, showStatsToggle))
+                .addGroup(guiSettingsDialogLayout.createParallelGroup(showScoreBarsLabel, showScoreBarsToggle))
+                .addGroup(guiSettingsDialogLayout.createParallelGroup(censorLabel, censorToggle))
+                .addGroup(guiSettingsDialogLayout.createParallelGroup(hideChatLabel, hideChatToggle))
+                .addGroup(guiSettingsDialogLayout.createParallelGroup(hideNotificationsLabel, hideNotificationsToggle))
 		);
 
 
@@ -717,6 +777,99 @@ public class SettingsPanel extends SubPanel
 	}
 
 
+    public void initGlobalSettingsUI() {
+        final GlobalSettings gs = GlobalSettings.getInstance();
+
+        // Music Volume
+        musicVolumeLabel = new Label("Music Volume:");
+        musicVolumeScrollbar.setMinMaxValue(0, 100);
+        musicVolumeScrollbar.setValue(gs.musicVolume);
+        musicVolumeScrollbar.addCallback(new Runnable() { public void run() {
+            gs.musicVolume = musicVolumeScrollbar.getValue();
+            musicVolumeValueLabel.setText(gs.musicVolume + "%");
+            gs.save();
+        }});
+        musicVolumeValueLabel.setText(gs.musicVolume + "%");
+
+        // Brightness
+        brightnessLabel = new Label("Brightness:");
+        brightnessScrollbar.setMinMaxValue(0, 200);
+        brightnessScrollbar.setValue((int)(gs.brightness * 100));
+        brightnessScrollbar.addCallback(new Runnable() { public void run() {
+            gs.brightness = brightnessScrollbar.getValue() / 100.0f;
+            brightnessValueLabel.setText((int)(gs.brightness * 100) + "%");
+            gs.save();
+        }});
+        brightnessValueLabel.setText((int)(gs.brightness * 100) + "%");
+
+        // Contrast
+        contrastLabel = new Label("Contrast:");
+        contrastScrollbar.setMinMaxValue(0, 200);
+        contrastScrollbar.setValue((int)(gs.contrast * 100));
+        contrastScrollbar.addCallback(new Runnable() { public void run() {
+            gs.contrast = contrastScrollbar.getValue() / 100.0f;
+            contrastValueLabel.setText((int)(gs.contrast * 100) + "%");
+            gs.save();
+        }});
+        contrastValueLabel.setText((int)(gs.contrast * 100) + "%");
+
+        // Saturation
+        saturationLabel = new Label("Saturation:");
+        saturationScrollbar.setMinMaxValue(0, 200);
+        saturationScrollbar.setValue((int)(gs.saturation * 100));
+        saturationScrollbar.addCallback(new Runnable() { public void run() {
+            gs.saturation = saturationScrollbar.getValue() / 100.0f;
+            saturationValueLabel.setText((int)(gs.saturation * 100) + "%");
+            gs.save();
+        }});
+        saturationValueLabel.setText((int)(gs.saturation * 100) + "%");
+
+        // Hue
+        hueLabel = new Label("Hue Shift:");
+        hueScrollbar.setMinMaxValue(0, 100);
+        hueScrollbar.setValue((int)(gs.hue * 100));
+        hueScrollbar.addCallback(new Runnable() { public void run() {
+            gs.hue = hueScrollbar.getValue() / 100.0f;
+            hueValueLabel.setText((int)(gs.hue * 100) + "%");
+            gs.save();
+        }});
+        hueValueLabel.setText((int)(gs.hue * 100) + "%");
+
+        // Screen Flash
+        screenFlashLabel = new Label("Level Up Flash:");
+        screenFlashScrollbar.setMinMaxValue(0, 50);
+        screenFlashScrollbar.setValue((int)(gs.bobsGame_screenFlashOnLevelUpAlpha * 100));
+        screenFlashScrollbar.addCallback(new Runnable() { public void run() {
+            gs.bobsGame_screenFlashOnLevelUpAlpha = screenFlashScrollbar.getValue() / 100.0f;
+            screenFlashValueLabel.setText((int)(gs.bobsGame_screenFlashOnLevelUpAlpha * 100) + "%");
+            gs.save();
+        }});
+        screenFlashValueLabel.setText((int)(gs.bobsGame_screenFlashOnLevelUpAlpha * 100) + "%");
+
+        // Toggles
+        setupToggle(showStatsToggle, "Show Stats", gs.bobsGame_showDetailedGameInfoCaptions, new Runnable() { public void run() { gs.bobsGame_showDetailedGameInfoCaptions = showStatsToggle.isActive(); gs.save(); }});
+        showStatsLabel = new Label("Show Detailed Stats:"); showStatsLabel.setLabelFor(showStatsToggle);
+
+        setupToggle(showScoreBarsToggle, "Score Bars", gs.bobsGame_showScoreBarsInSinglePlayer, new Runnable() { public void run() { gs.bobsGame_showScoreBarsInSinglePlayer = showScoreBarsToggle.isActive(); gs.save(); }});
+        showScoreBarsLabel = new Label("Show Score Bars:"); showScoreBarsLabel.setLabelFor(showScoreBarsToggle);
+
+        setupToggle(censorToggle, "Censor", gs.censorBadWords, new Runnable() { public void run() { gs.censorBadWords = censorToggle.isActive(); gs.save(); }});
+        censorLabel = new Label("Censor Profanity:"); censorLabel.setLabelFor(censorToggle);
+
+        setupToggle(hideChatToggle, "Hide Chat", gs.hideChat, new Runnable() { public void run() { gs.hideChat = hideChatToggle.isActive(); gs.save(); }});
+        hideChatLabel = new Label("Hide Chat:"); hideChatLabel.setLabelFor(hideChatToggle);
+
+        setupToggle(hideNotificationsToggle, "Hide Notif", gs.hideNotifications, new Runnable() { public void run() { gs.hideNotifications = hideNotificationsToggle.isActive(); gs.save(); }});
+        hideNotificationsLabel = new Label("Hide Notifications:"); hideNotificationsLabel.setLabelFor(hideNotificationsToggle);
+    }
+
+    private void setupToggle(ToggleButton btn, String text, boolean active, Runnable cb) {
+        btn.setText(text); // Or leave empty if using label
+        btn.setTheme(GUIManager.checkboxTheme);
+        btn.setActive(active);
+        btn.addCallback(cb);
+    }
+
 	//=========================================================================================================================
 	public void layout()
 	{//=========================================================================================================================
@@ -727,6 +880,13 @@ public class SettingsPanel extends SubPanel
 		playerWalkSpeedScrollbar.setMinSize(400, 20);
 
 		statusBarGlossScrollbar.setMinSize(400, 20);
+
+        musicVolumeScrollbar.setMinSize(400, 20);
+        brightnessScrollbar.setMinSize(400, 20);
+        contrastScrollbar.setMinSize(400, 20);
+        saturationScrollbar.setMinSize(400, 20);
+        hueScrollbar.setMinSize(400, 20);
+        screenFlashScrollbar.setMinSize(400, 20);
 		//statusBarGlossScrollbar.setMaxSize(400, 20);
 
 
