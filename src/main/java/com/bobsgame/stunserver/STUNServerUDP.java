@@ -3,6 +3,7 @@ package com.bobsgame.stunserver;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Vector;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 
 import com.bobsgame.STUNServerMain;
@@ -174,7 +175,7 @@ public class STUNServerUDP
 
 	}
 
-	Vector<STUNRequest> STUNRequestList = new Vector<STUNRequest>();
+	CopyOnWriteArrayList<STUNRequest> STUNRequestList = new CopyOnWriteArrayList<STUNRequest>();
 
 	//===============================================================================================
 	public synchronized int getSTUNRequestListSize()

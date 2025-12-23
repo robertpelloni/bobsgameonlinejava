@@ -79,7 +79,7 @@ public class GameServerTCP {
 
     Timer timer;
 
-    public Vector<Channel> channels = new Vector<Channel>();
+    public CopyOnWriteArrayList<Channel> channels = new CopyOnWriteArrayList<Channel>();
     public ConcurrentHashMap<BobsGameClient, Channel> channelsByClient = new ConcurrentHashMap<BobsGameClient, Channel>();
     public ConcurrentHashMap<Channel, BobsGameClient> clientsByChannel = new ConcurrentHashMap<Channel, BobsGameClient>();
     public ConcurrentHashMap<Long, BobsGameClient> clientsByUserID = new ConcurrentHashMap<Long, BobsGameClient>();
@@ -87,7 +87,7 @@ public class GameServerTCP {
     public ConcurrentHashMap<String, BobsGameClient> clientsByEmailAddress = new ConcurrentHashMap<String, BobsGameClient>();
     public ConcurrentHashMap<String, BobsGameClient> clientsByUserName = new ConcurrentHashMap<String, BobsGameClient>();
 
-    public Vector<BobsGameRoom> rooms = new Vector<BobsGameRoom>();
+    public CopyOnWriteArrayList<BobsGameRoom> rooms = new CopyOnWriteArrayList<BobsGameRoom>();
     public ConcurrentHashMap<Long, BobsGameRoom> roomsByUserID = new ConcurrentHashMap<Long, BobsGameRoom>();
     public ConcurrentHashMap<String, BobsGameRoom> roomsByRoomUUID = new ConcurrentHashMap<String, BobsGameRoom>();
 

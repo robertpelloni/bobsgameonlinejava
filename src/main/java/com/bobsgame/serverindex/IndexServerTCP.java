@@ -27,6 +27,7 @@ import io.netty.util.concurrent.EventExecutorGroup;
 import java.net.ConnectException;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.io.IOException;
 
 import org.slf4j.LoggerFactory;
@@ -44,7 +45,7 @@ public class IndexServerTCP {
 
     Timer timer;
 
-    public Vector<BobsGameServer> serverList = new Vector<BobsGameServer>();
+    public CopyOnWriteArrayList<BobsGameServer> serverList = new CopyOnWriteArrayList<BobsGameServer>();
     public ConcurrentHashMap<Channel, BobsGameServer> serversByChannel = new ConcurrentHashMap<Channel, BobsGameServer>();
     public ConcurrentHashMap<Integer, BobsGameServer> serversByServerID = new ConcurrentHashMap<Integer, BobsGameServer>();
 

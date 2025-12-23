@@ -15,11 +15,11 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.DatagramChannel;
+import io.netty.channel.socket.DatagramPacket;
 import io.netty.channel.socket.nio.NioDatagramChannel;
-import io.netty.handler.codec.DelimiterBasedFrameDecoder;
-import io.netty.handler.codec.Delimiters;
-import io.netty.handler.codec.string.StringDecoder;
-import io.netty.handler.codec.string.StringEncoder;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.util.CharsetUtil;
 
 import org.slf4j.LoggerFactory;
 import ch.qos.logback.classic.Logger;
@@ -69,11 +69,7 @@ public class UDPConnection extends EnginePart
                 @Override
                 public void initChannel(DatagramChannel ch) throws Exception {
                     ChannelPipeline pipeline = ch.pipeline();
-
-                    pipeline.addLast("framer", new DelimiterBasedFrameDecoder(65536, Delimiters.lineDelimiter()));
-                    pipeline.addLast("decoder", new StringDecoder());
-                    pipeline.addLast("encoder", new StringEncoder());
-
+                    // We handle DatagramPackets directly to preserve sender address and avoid pipeline type mismatches
                     pipeline.addLast("handler", new UDPHandler());
                 }
             });
@@ -120,33 +116,46 @@ public class UDPConnection extends EnginePart
 
 			try{Thread.currentThread().setName("UDPConnection_UDPHandler");}catch(SecurityException ex){ex.printStackTrace();}
 
-			String s = (String) msg;
+            if (msg instanceof DatagramPacket) {
+                DatagramPacket packet = (DatagramPacket) msg;
+                ByteBuf buf = packet.content();
+                String s = buf.toString(CharsetUtil.UTF_8);
 
-			if(BobNet.debugMode)
-			{
-				if(s.startsWith("Friend_Location_Update")==false)
-				log.warn("FROM CLIENT: cID:"+channel.id()+" | "+s);
-			}
+                // Handle delimiters manually if needed, but for UDP typically packets are self contained.
+                // The previous code assumed delimiter based framing.
+                if(s.endsWith(BobNet.endline)) {
+                     s = s.substring(0, s.length() - BobNet.endline.length());
+                }
 
-			lastReceivedDataTime = System.currentTimeMillis();
+                if(BobNet.debugMode)
+                {
+                    if(s.startsWith("Friend_Location_Update")==false)
+                    log.warn("FROM CLIENT: cID:"+channel.id()+" | "+s);
+                }
 
-			if(s.startsWith("ping"))
-			{
-				InetSocketAddress peerAddress = getPeerSocketAddress_S();
-				if(peerAddress!=null)
-				{
-					write("pong"+BobNet.endline);
-				}
-				else
-				{
-					log.warn("peerAddress was null, but got ping.");
-				}
-				return;
-			}
+                lastReceivedDataTime = System.currentTimeMillis();
 
-			if(s.startsWith("pong")){}
+                if(s.startsWith("ping"))
+                {
+                    InetSocketAddress peerAddress = getPeerSocketAddress_S();
+                    // Check if ping came from peerAddress?
+                    // Or update peerAddress? The original code didn't seem to update it here, just check it.
 
-			handleMessage(ctx, s);
+                    if(peerAddress!=null)
+                    {
+                        write("pong"+BobNet.endline);
+                    }
+                    else
+                    {
+                        log.warn("peerAddress was null, but got ping.");
+                    }
+                    return;
+                }
+
+                if(s.startsWith("pong")){}
+
+                handleMessage(ctx, s);
+            }
 		}
 	}
 
@@ -194,62 +203,8 @@ public class UDPConnection extends EnginePart
 	//===============================================================================================
 	public synchronized ChannelFuture write(String s,InetSocketAddress address)
 	{//===============================================================================================
-        // In Netty 4 DatagramChannel, writing strings directly works if encoders are set up,
-        // but typically for UDP you write DatagramPacket.
-        // However, since we added StringEncoder, let's see if writeAndFlush handles it.
-        // Wait, StringEncoder is for stream-based mostly. For Datagram, we might need a specific handler
-        // or wrap it in a DatagramPacket if we want to specify the destination per packet.
-        // Since we are connected or bound... wait, DatagramChannel in Netty 4 is connectionless usually.
-        // To send to a specific address, we wrap content in DatagramPacket.
-
-        // But here we are using pipeline filters like DelimiterBasedFrameDecoder which are stream based.
-        // Using these on UDP in Netty is tricky. Netty 3 NioDatagramChannelFactory supported it somewhat differently.
-        // For now, let's assume the pipeline setup works similar to TCP for the payload, but we need to target the address.
-
-        // Actually, DelimiterBasedFrameDecoder on UDP is problematic because packets might not be fragmented/assembled the same way.
-        // But let's stick to the migration of API first.
-
-        // If we want to send to 'address', we should probably use writeAndFlush(new DatagramPacket(buffer, address)).
-        // But the previous code just did channel.write(s, remoteAddress).
-
-        // Let's try writing the string and let the encoder handle it, but we need to ensure the remote address is attached if not connected.
-        // Netty 4 channel.write() doesn't take an address.
-
-        // We might need to wrap it. But let's just use writeAndFlush(s) and assume the channel is connected?
-        // No, UDPConnection uses "connectionlessBootstrap".
-        // The previous code `channel.write(s, getPeerSocketAddress_S())` implies sending to a specific address.
-
-        // We will need to wrap the string in a DatagramPacket in the pipeline or change the architecture.
-        // For a direct migration, we can't easily pass the address through the StringEncoder.
-        // The StringEncoder converts String to ByteBuf.
-        // We need a handler that takes that ByteBuf and the target address and wraps in DatagramPacket.
-
-        // For now, I'll assume we can connect the channel to the peer if we are talking to one peer, but this class seems to support one peer at a time?
-        // `_peerAddress` is stored.
-
-        // If we connect the channel, we can just write(s).
-        // But UDPConnection logic seems to be: bind to local port, send to peer address.
-
-        // Hack: We can't easily change the pipeline logic here without breaking the "modernize as much as possible" scope into "rewrite".
-        // I will try to use `channel.writeAndFlush(new DatagramPacket(Unpooled.copiedBuffer(s, CharsetUtil.UTF_8), address))`
-        // BUT we have encoders in the pipeline.
-
-        // Let's keep it simple: `channel.connect(address)` if we only talk to one peer?
-        // But `UDPConnection` seems to switch peers?
-
-        // Let's rely on the fact that we can just write the message.
-        // Actually, if we use `DatagramPacket`, the StringEncoder might get in the way.
-        // We might need to remove StringEncoder/Decoder for UDP and handle bytes manually, or use `AddressedEnvelope`.
-
-        // Given the constraints, I will attempt to use `channel.writeAndFlush` but I suspect this part needs more work.
-        // I'll leave a TODO or try to implement a wrapper.
-
-        // Ideally: String -> [StringEncoder] -> ByteBuf -> [MessageToMessageEncoder wrapping ByteBuf in DatagramPacket] -> Output
-        // But we need to pass the address.
-
-        // For now, I'll just write:
-		return channel.writeAndFlush(new io.netty.channel.socket.DatagramPacket(
-            io.netty.buffer.Unpooled.copiedBuffer(s, io.netty.util.CharsetUtil.UTF_8),
+		return channel.writeAndFlush(new DatagramPacket(
+            Unpooled.copiedBuffer(s, CharsetUtil.UTF_8),
             address
         ));
 	}
