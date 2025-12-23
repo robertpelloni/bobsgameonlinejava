@@ -53,7 +53,8 @@ import com.maxmind.geoip2.model.CityResponse;
 import com.maxmind.geoip2.record.Country;
 import com.maxmind.geoip2.record.Subdivision;
 
-import com.mchange.v2.c3p0.ComboPooledDataSource;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 
 import com.restfb.DefaultFacebookClient;
 import com.restfb.FacebookClient;
@@ -96,8 +97,8 @@ public class GameServerTCP {
 
     public static Logger log = (Logger) LoggerFactory.getLogger(GameServerTCP.class);
 
-    static ComboPooledDataSource amazonRDSConnectionPool = null;
-    static ComboPooledDataSource dreamhostSQLConnectionPool = null;
+    static HikariDataSource amazonRDSConnectionPool = null;
+    static HikariDataSource dreamhostSQLConnectionPool = null;
 
     public GameServerTCP() {
         timer = new HashedWheelTimer();
@@ -140,47 +141,35 @@ public class GameServerTCP {
         }
 
         // Database setup
-        System.setProperty("com.mchange.v2.log.MLog", "com.mchange.v2.log.slf4j.Slf4jMLog");
-        ((Logger) LoggerFactory.getLogger(com.mchange.v2.async.ThreadPoolAsynchronousRunner.class)).setLevel(Level.WARN);
-        ((Logger) LoggerFactory.getLogger(com.mchange.v2.resourcepool.ResourcePool.class)).setLevel(Level.WARN);
-        ((Logger) LoggerFactory.getLogger("com.mchange.v2.resourcepool.BasicResourcePool")).setLevel(Level.WARN);
-        ((Logger) LoggerFactory.getLogger(com.mchange.v2.c3p0.impl.C3P0PooledConnectionPool.class)).setLevel(Level.WARN);
-
         try {
-            Class.forName("com.mysql.jdbc.Driver");
+            Class.forName("com.mysql.cj.jdbc.Driver");
         } catch (Exception e) {
             e.printStackTrace();
             return;
         }
 
         try {
-            amazonRDSConnectionPool = new ComboPooledDataSource();
-            amazonRDSConnectionPool.setDriverClass("com.mysql.jdbc.Driver");
-            amazonRDSConnectionPool.setJdbcUrl(PrivateCredentials.AMAZON_RDS_URL);
-            amazonRDSConnectionPool.setUser(PrivateCredentials.AMAZON_RDS_USERNAME);
-            amazonRDSConnectionPool.setPassword(PrivateCredentials.AMAZON_RDS_PASSWORD);
-            amazonRDSConnectionPool.setMinPoolSize(3);
-            amazonRDSConnectionPool.setAcquireIncrement(5);
-            amazonRDSConnectionPool.setMaxPoolSize(80);
-            amazonRDSConnectionPool.setAutoCommitOnClose(true);
-            amazonRDSConnectionPool.setTestConnectionOnCheckin(true);
-            amazonRDSConnectionPool.setTestConnectionOnCheckout(true);
-            amazonRDSConnectionPool.setAutomaticTestTable("c3p0_test_table");
-            amazonRDSConnectionPool.setIdleConnectionTestPeriod(30);
+            HikariConfig amazonConfig = new HikariConfig();
+            amazonConfig.setJdbcUrl(PrivateCredentials.AMAZON_RDS_URL);
+            amazonConfig.setUsername(PrivateCredentials.AMAZON_RDS_USERNAME);
+            amazonConfig.setPassword(PrivateCredentials.AMAZON_RDS_PASSWORD);
+            amazonConfig.setDriverClassName("com.mysql.cj.jdbc.Driver");
+            amazonConfig.addDataSourceProperty("cachePrepStmts", "true");
+            amazonConfig.addDataSourceProperty("prepStmtCacheSize", "250");
+            amazonConfig.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+            amazonConfig.setMaximumPoolSize(80);
+            amazonRDSConnectionPool = new HikariDataSource(amazonConfig);
 
-            dreamhostSQLConnectionPool = new ComboPooledDataSource();
-            dreamhostSQLConnectionPool.setDriverClass("com.mysql.jdbc.Driver");
-            dreamhostSQLConnectionPool.setJdbcUrl(PrivateCredentials.DREAMHOST_SQL_URL);
-            dreamhostSQLConnectionPool.setUser(PrivateCredentials.DREAMHOST_SQL_USERNAME);
-            dreamhostSQLConnectionPool.setPassword(PrivateCredentials.DREAMHOST_SQL_PASSWORD);
-            dreamhostSQLConnectionPool.setMinPoolSize(3);
-            dreamhostSQLConnectionPool.setAcquireIncrement(5);
-            dreamhostSQLConnectionPool.setMaxPoolSize(20);
-            dreamhostSQLConnectionPool.setAutoCommitOnClose(true);
-            dreamhostSQLConnectionPool.setTestConnectionOnCheckin(true);
-            dreamhostSQLConnectionPool.setTestConnectionOnCheckout(true);
-            dreamhostSQLConnectionPool.setAutomaticTestTable("c3p0_test_table");
-            dreamhostSQLConnectionPool.setIdleConnectionTestPeriod(30);
+            HikariConfig dreamhostConfig = new HikariConfig();
+            dreamhostConfig.setJdbcUrl(PrivateCredentials.DREAMHOST_SQL_URL);
+            dreamhostConfig.setUsername(PrivateCredentials.DREAMHOST_SQL_USERNAME);
+            dreamhostConfig.setPassword(PrivateCredentials.DREAMHOST_SQL_PASSWORD);
+            dreamhostConfig.setDriverClassName("com.mysql.cj.jdbc.Driver");
+            dreamhostConfig.addDataSourceProperty("cachePrepStmts", "true");
+            dreamhostConfig.addDataSourceProperty("prepStmtCacheSize", "250");
+            dreamhostConfig.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+            dreamhostConfig.setMaximumPoolSize(20);
+            dreamhostSQLConnectionPool = new HikariDataSource(dreamhostConfig);
 
         } catch (Exception e) {
             e.printStackTrace();
