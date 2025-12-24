@@ -50,6 +50,12 @@ public class GUIManager extends EnginePart
     public com.bobsgame.client.engine.game.gui.gameTestMenu.GameTestMenu gameTestMenu = null;
     public GUI gameTestMenuGUI = null;
 
+    public com.bobsgame.client.engine.game.gui.LoginMenu loginMenu = null;
+    public GUI loginMenuGUI = null;
+
+    public com.bobsgame.client.engine.game.gui.CreateAccountMenu createAccountMenu = null;
+    public GUI createAccountMenuGUI = null;
+
 	public ArrayList<GameChallengeNotificationPanel> gameChallenges = new ArrayList<GameChallengeNotificationPanel>();
 	public ArrayList<GUI> gameChallengesGUIs = new ArrayList<GUI>();
 
@@ -147,6 +153,14 @@ public class GUIManager extends EnginePart
         gameTestMenuGUI = new GUI(gameTestMenu, LWJGLUtils.TWLrenderer);
         gameTestMenuGUI.applyTheme(LWJGLUtils.TWLthemeManager);
 
+        loginMenu = new com.bobsgame.client.engine.game.gui.LoginMenu();
+        loginMenuGUI = new GUI(loginMenu, LWJGLUtils.TWLrenderer);
+        loginMenuGUI.applyTheme(LWJGLUtils.TWLthemeManager);
+
+        createAccountMenu = new com.bobsgame.client.engine.game.gui.CreateAccountMenu();
+        createAccountMenuGUI = new GUI(createAccountMenu, LWJGLUtils.TWLrenderer);
+        createAccountMenuGUI.applyTheme(LWJGLUtils.TWLthemeManager);
+
 		keyboardScreen = new KeyboardScreen();
 		keyboardScreenGUI = new GUI(keyboardScreen, LWJGLUtils.TWLrenderer);
 		keyboardScreenGUI.applyTheme(LWJGLUtils.TWLthemeManager);
@@ -187,6 +201,8 @@ public class GUIManager extends EnginePart
         roomOptionsMenu.update();
         playerControlsMenu.update();
         gameTestMenu.update();
+        loginMenu.update();
+        createAccountMenu.update();
 
 		for(int i=0;i<gameChallenges.size();i++)
 		{
@@ -217,6 +233,8 @@ public class GUIManager extends EnginePart
         if(roomOptionsMenu.isActivated()){roomOptionsMenu.renderBefore();roomOptionsMenuGUI.update();roomOptionsMenu.render();}
         if(playerControlsMenu.isActivated()){playerControlsMenu.renderBefore();playerControlsMenuGUI.update();playerControlsMenu.render();}
         if(gameTestMenu.isActivated()){gameTestMenu.renderBefore();gameTestMenuGUI.update();gameTestMenu.render();}
+        if(loginMenu.isActivated()){loginMenu.renderBefore();loginMenuGUI.update();loginMenu.render();}
+        if(createAccountMenu.isActivated()){createAccountMenu.renderBefore();createAccountMenuGUI.update();createAccountMenu.render();}
 
 		for(int i=0;i<gameChallenges.size();i++)
 		{
@@ -281,6 +299,8 @@ public class GUIManager extends EnginePart
         roomOptionsMenuGUI.destroy();
         playerControlsMenuGUI.destroy();
         gameTestMenuGUI.destroy();
+        loginMenuGUI.destroy();
+        createAccountMenuGUI.destroy();
 
 		for(int i=0;i<gameChallenges.size();i++)
 		{
@@ -328,6 +348,12 @@ public class GUIManager extends EnginePart
 
         gameTestMenu.mainPanelLayout.setTheme(GUIManager.darkThemeString);
         gameTestMenu.mainPanelLayout.reapplyTheme();
+
+        loginMenu.mainPanelLayout.setTheme(GUIManager.darkThemeString);
+        loginMenu.mainPanelLayout.reapplyTheme();
+
+        createAccountMenu.mainPanelLayout.setTheme(GUIManager.darkThemeString);
+        createAccountMenu.mainPanelLayout.reapplyTheme();
 
 		keyboardScreen.mainPanelLayout.setTheme(GUIManager.darkThemeString);
 		keyboardScreen.mainPanelLayout.reapplyTheme();
@@ -377,6 +403,12 @@ public class GUIManager extends EnginePart
 
         gameTestMenu.mainPanelLayout.setTheme(GUIManager.lightThemeString);
         gameTestMenu.mainPanelLayout.reapplyTheme();
+
+        loginMenu.mainPanelLayout.setTheme(GUIManager.lightThemeString);
+        loginMenu.mainPanelLayout.reapplyTheme();
+
+        createAccountMenu.mainPanelLayout.setTheme(GUIManager.lightThemeString);
+        createAccountMenu.mainPanelLayout.reapplyTheme();
 
 		keyboardScreen.mainPanelLayout.setTheme(GUIManager.lightThemeString);
 		keyboardScreen.mainPanelLayout.reapplyTheme();
@@ -480,6 +512,8 @@ public class GUIManager extends EnginePart
         roomOptionsMenu.setActivated(false);
         playerControlsMenu.setActivated(false);
         gameTestMenu.setActivated(false);
+        loginMenu.setActivated(false);
+        createAccountMenu.setActivated(false);
 
 		StuffMenu().setActivated(true);
 
@@ -570,6 +604,26 @@ public class GUIManager extends EnginePart
         stuffMenu.setActivated(true); // Return to main menu
     }
 
+    public void openLoginMenu() {
+        closeAllMenusAndND();
+        loginMenu.setActivated(true);
+    }
+
+    public void closeLoginMenu() {
+        closeAllMenusAndND();
+        stuffMenu.setActivated(true);
+    }
+
+    public void openCreateAccountMenu() {
+        closeAllMenusAndND();
+        createAccountMenu.setActivated(true);
+    }
+
+    public void closeCreateAccountMenu() {
+        closeAllMenusAndND();
+        loginMenu.setActivated(true);
+    }
+
 
 	//=========================================================================================================================
 	public void enableAllMenusAndND()
@@ -612,6 +666,8 @@ public class GUIManager extends EnginePart
         roomOptionsMenu.setActivated(false);
         playerControlsMenu.setActivated(false);
         gameTestMenu.setActivated(false);
+        loginMenu.setActivated(false);
+        createAccountMenu.setActivated(false);
 	}
 
 
