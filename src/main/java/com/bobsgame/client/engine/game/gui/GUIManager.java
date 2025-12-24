@@ -56,6 +56,12 @@ public class GUIManager extends EnginePart
     public com.bobsgame.client.engine.game.gui.CreateAccountMenu createAccountMenu = null;
     public GUI createAccountMenuGUI = null;
 
+    public com.bobsgame.client.engine.game.gui.LocalMultiplayerMenu localMultiplayerMenu = null;
+    public GUI localMultiplayerMenuGUI = null;
+
+    public com.bobsgame.client.engine.game.gui.NetworkLobbyMenu networkLobbyMenu = null;
+    public GUI networkLobbyMenuGUI = null;
+
 	public ArrayList<GameChallengeNotificationPanel> gameChallenges = new ArrayList<GameChallengeNotificationPanel>();
 	public ArrayList<GUI> gameChallengesGUIs = new ArrayList<GUI>();
 
@@ -161,6 +167,14 @@ public class GUIManager extends EnginePart
         createAccountMenuGUI = new GUI(createAccountMenu, LWJGLUtils.TWLrenderer);
         createAccountMenuGUI.applyTheme(LWJGLUtils.TWLthemeManager);
 
+        localMultiplayerMenu = new com.bobsgame.client.engine.game.gui.LocalMultiplayerMenu();
+        localMultiplayerMenuGUI = new GUI(localMultiplayerMenu, LWJGLUtils.TWLrenderer);
+        localMultiplayerMenuGUI.applyTheme(LWJGLUtils.TWLthemeManager);
+
+        networkLobbyMenu = new com.bobsgame.client.engine.game.gui.NetworkLobbyMenu();
+        networkLobbyMenuGUI = new GUI(networkLobbyMenu, LWJGLUtils.TWLrenderer);
+        networkLobbyMenuGUI.applyTheme(LWJGLUtils.TWLthemeManager);
+
 		keyboardScreen = new KeyboardScreen();
 		keyboardScreenGUI = new GUI(keyboardScreen, LWJGLUtils.TWLrenderer);
 		keyboardScreenGUI.applyTheme(LWJGLUtils.TWLthemeManager);
@@ -203,6 +217,8 @@ public class GUIManager extends EnginePart
         gameTestMenu.update();
         loginMenu.update();
         createAccountMenu.update();
+        localMultiplayerMenu.update();
+        networkLobbyMenu.update();
 
 		for(int i=0;i<gameChallenges.size();i++)
 		{
@@ -235,6 +251,8 @@ public class GUIManager extends EnginePart
         if(gameTestMenu.isActivated()){gameTestMenu.renderBefore();gameTestMenuGUI.update();gameTestMenu.render();}
         if(loginMenu.isActivated()){loginMenu.renderBefore();loginMenuGUI.update();loginMenu.render();}
         if(createAccountMenu.isActivated()){createAccountMenu.renderBefore();createAccountMenuGUI.update();createAccountMenu.render();}
+        if(localMultiplayerMenu.isActivated()){localMultiplayerMenu.renderBefore();localMultiplayerMenuGUI.update();localMultiplayerMenu.render();}
+        if(networkLobbyMenu.isActivated()){networkLobbyMenu.renderBefore();networkLobbyMenuGUI.update();networkLobbyMenu.render();}
 
 		for(int i=0;i<gameChallenges.size();i++)
 		{
@@ -301,6 +319,8 @@ public class GUIManager extends EnginePart
         gameTestMenuGUI.destroy();
         loginMenuGUI.destroy();
         createAccountMenuGUI.destroy();
+        localMultiplayerMenuGUI.destroy();
+        networkLobbyMenuGUI.destroy();
 
 		for(int i=0;i<gameChallenges.size();i++)
 		{
@@ -354,6 +374,12 @@ public class GUIManager extends EnginePart
 
         createAccountMenu.mainPanelLayout.setTheme(GUIManager.darkThemeString);
         createAccountMenu.mainPanelLayout.reapplyTheme();
+
+        localMultiplayerMenu.mainPanelLayout.setTheme(GUIManager.darkThemeString);
+        localMultiplayerMenu.mainPanelLayout.reapplyTheme();
+
+        networkLobbyMenu.mainPanelLayout.setTheme(GUIManager.darkThemeString);
+        networkLobbyMenu.mainPanelLayout.reapplyTheme();
 
 		keyboardScreen.mainPanelLayout.setTheme(GUIManager.darkThemeString);
 		keyboardScreen.mainPanelLayout.reapplyTheme();
@@ -409,6 +435,12 @@ public class GUIManager extends EnginePart
 
         createAccountMenu.mainPanelLayout.setTheme(GUIManager.lightThemeString);
         createAccountMenu.mainPanelLayout.reapplyTheme();
+
+        localMultiplayerMenu.mainPanelLayout.setTheme(GUIManager.lightThemeString);
+        localMultiplayerMenu.mainPanelLayout.reapplyTheme();
+
+        networkLobbyMenu.mainPanelLayout.setTheme(GUIManager.lightThemeString);
+        networkLobbyMenu.mainPanelLayout.reapplyTheme();
 
 		keyboardScreen.mainPanelLayout.setTheme(GUIManager.lightThemeString);
 		keyboardScreen.mainPanelLayout.reapplyTheme();
@@ -514,6 +546,8 @@ public class GUIManager extends EnginePart
         gameTestMenu.setActivated(false);
         loginMenu.setActivated(false);
         createAccountMenu.setActivated(false);
+        localMultiplayerMenu.setActivated(false);
+        networkLobbyMenu.setActivated(false);
 
 		StuffMenu().setActivated(true);
 
@@ -624,6 +658,26 @@ public class GUIManager extends EnginePart
         loginMenu.setActivated(true);
     }
 
+    public void openLocalMultiplayerMenu() {
+        closeAllMenusAndND();
+        localMultiplayerMenu.setActivated(true);
+    }
+
+    public void closeLocalMultiplayerMenu() {
+        closeAllMenusAndND();
+        stuffMenu.setActivated(true); // Should go to Start Screen? StuffMenu is Main Menu here?
+    }
+
+    public void openNetworkLobbyMenu() {
+        closeAllMenusAndND();
+        networkLobbyMenu.setActivated(true);
+    }
+
+    public void closeNetworkLobbyMenu() {
+        closeAllMenusAndND();
+        stuffMenu.setActivated(true);
+    }
+
 
 	//=========================================================================================================================
 	public void enableAllMenusAndND()
@@ -668,6 +722,8 @@ public class GUIManager extends EnginePart
         gameTestMenu.setActivated(false);
         loginMenu.setActivated(false);
         createAccountMenu.setActivated(false);
+        localMultiplayerMenu.setActivated(false);
+        networkLobbyMenu.setActivated(false);
 	}
 
 
