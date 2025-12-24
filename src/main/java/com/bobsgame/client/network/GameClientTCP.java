@@ -231,6 +231,8 @@ public class GameClientTCP extends EnginePart
 			if(s.startsWith(BobNet.Online_Friends_List_Response)){incomingOnlineFriendsListResponse(s);return;}
 			if(s.startsWith(BobNet.Friend_Is_Online_Notification)){incomingFriendOnlineNotification(s);return;}
 
+            if(s.startsWith(BobNet.Bobs_Game_RoomList_Response)){incomingOKGameRoomListResponse(s);return;}
+
 		}
 
 	}
@@ -1511,6 +1513,30 @@ public class GameClientTCP extends EnginePart
 
 		FriendManager().addNewOnlineFriendIfNotExist(friendUserID,type);
 	}
+
+    //=========================================================================================================================
+    // ROOM LIST
+    //=========================================================================================================================
+
+    private String _okGameRoomListResponse = "";
+
+    public void sendOKGameRoomListRequest_S() {
+        connectAndAuthorizeAndWriteToChannel(BobNet.Bobs_Game_RoomList_Request + BobNet.endline);
+    }
+
+    private void incomingOKGameRoomListResponse(String s) {
+        // Bobs_Game_RoomList_Response:room1:room2...
+        s = s.substring(s.indexOf(":")+1);
+        synchronized(this) {
+            _okGameRoomListResponse = s;
+        }
+    }
+
+    public synchronized String getAndResetOKGameRoomListResponse_S() {
+        String r = _okGameRoomListResponse;
+        _okGameRoomListResponse = "";
+        return r;
+    }
 
 
 

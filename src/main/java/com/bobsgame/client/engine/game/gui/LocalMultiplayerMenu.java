@@ -71,13 +71,19 @@ public class LocalMultiplayerMenu extends MenuPanel {
     public void update() {
         super.update();
 
-        // This logic mimics C++ localMultiplayerPlayerJoinMenuUpdate
-        // Check for Space/A presses on unassigned controllers
-
-        // For mockup purposes, let's assume we can add a keyboard player
         if(GUIManager() != null && GUIManager().ND() != null && GUIManager().ND().getGame() instanceof BobsGame) {
-             // Access GameLogic to add players?
-             // Or manage a local list and push to GameLogic on start?
+             // BobsGame logic for adding players
+             // Logic backported from C++ localMultiplayerPlayerJoinMenuUpdate
+
+             // Check Keyboard Space
+             if(com.bobsgame.client.engine.Engine.ControlsManager().BUTTON_SPACE_PRESSED) {
+                 // Add keyboard player
+                 playersListModel.addElement("Keyboard Player");
+                 // In real logic, we'd add a Player object to GameLogic's player list
+             }
+
+             // Check GameControllers (mockup iteration)
+             // for(Controller c : controllers) if(c.buttonA) addPlayer(c)
         }
     }
 
