@@ -5,11 +5,11 @@
 - [x] **Branch Merging**: Merged `modernize-*` feature branches into `main`.
 - [x] **Documentation**: Created Dashboard, Versioning, and LLM Instructions.
 - [x] **Structure**: Clarified project directory structure.
+- [x] **CI/CD**: Established a robust CI/CD pipeline (GitHub Actions).
 
 ## In Progress
 - [ ] **Modernization**: Continue refactoring legacy Java code to modern standards.
 - [ ] **Testing**: Increase unit test coverage.
-- [ ] **CI/CD**: Establish a robust CI/CD pipeline (GitHub Actions).
 - [ ] **Build Environment**: Resolve Gradle incompatibility with Java 25 (Requires Java 21).
 
 ## Planned
