@@ -1,26 +1,39 @@
 package com.bobsgame.client.network;
 
-import java.net.InetSocketAddress;
-import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelPipeline;
-import io.netty.channel.EventLoopGroup;
-import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.DatagramPacket;
-import io.netty.channel.socket.nio.NioDatagramChannel;
-import io.netty.util.CharsetUtil;
-import io.netty.buffer.Unpooled;
+import static org.jboss.netty.channel.Channels.pipeline;
 
+import java.net.InetSocketAddress;
+import java.util.concurrent.Executors;
+
+import org.jboss.netty.bootstrap.ConnectionlessBootstrap;
+import org.jboss.netty.channel.AdaptiveReceiveBufferSizePredictorFactory;
+import org.jboss.netty.channel.Channel;
+import org.jboss.netty.channel.ChannelFuture;
+import org.jboss.netty.channel.ChannelHandlerContext;
+import org.jboss.netty.channel.ChannelPipeline;
+import org.jboss.netty.channel.ChannelPipelineFactory;
+import org.jboss.netty.channel.ChannelStateEvent;
+import org.jboss.netty.channel.MessageEvent;
+import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
+import org.jboss.netty.channel.socket.DatagramChannelFactory;
+import org.jboss.netty.channel.socket.nio.NioDatagramChannelFactory;
+import org.jboss.netty.handler.codec.frame.DelimiterBasedFrameDecoder;
+import org.jboss.netty.handler.codec.frame.Delimiters;
+import org.jboss.netty.handler.codec.string.StringDecoder;
+import org.jboss.netty.handler.codec.string.StringEncoder;
 import org.slf4j.LoggerFactory;
+
 import ch.qos.logback.classic.Logger;
 
+import com.bobsgame.client.console.Console;
 import com.bobsgame.client.engine.Engine;
 import com.bobsgame.client.engine.EnginePart;
+import com.bobsgame.client.engine.game.FriendCharacter;
 import com.bobsgame.net.BobNet;
+import com.bobsgame.shared.BobColor;
+
+
+
 
 //===============================================================================================
 public class UDPConnection extends EnginePart
@@ -28,15 +41,22 @@ public class UDPConnection extends EnginePart
 
 	public static Logger log = (Logger) LoggerFactory.getLogger(UDPConnection.class);
 
+
+
+
+
 	String peerIP_S = "";//synchronized
 	int peerUDPPort_S = -1;//synchronized
 	int myUDPPort = -1;
 
-	Bootstrap connectionlessBootstrap;
+
+	ConnectionlessBootstrap connectionlessBootstrap;
+	DatagramChannelFactory channelFactory;
 	private Channel channel;
-    EventLoopGroup workerGroup;
+
 
 	private int port;
+
 
 	long lastReceivedDataTime = System.currentTimeMillis();
 	long lastSentPingTime = System.currentTimeMillis();
@@ -49,34 +69,73 @@ public class UDPConnection extends EnginePart
 
 		this.myUDPPort = myPort;
 
-        workerGroup = new NioEventLoopGroup();
-		connectionlessBootstrap = new Bootstrap();
-        connectionlessBootstrap.group(workerGroup)
-            .channel(NioDatagramChannel.class)
-            .handler(new ChannelInitializer<NioDatagramChannel>() {
-                @Override
-                public void initChannel(NioDatagramChannel ch) throws Exception {
-                    ChannelPipeline pipeline = ch.pipeline();
-                    pipeline.addLast("handler", new UDPHandler());
-                }
-            });
+		channelFactory = new NioDatagramChannelFactory(Executors.newCachedThreadPool());
+		connectionlessBootstrap = new ConnectionlessBootstrap(channelFactory);
 
-		//connectionlessBootstrap.setOption("receiveBufferSizePredictorFactory", new AdaptiveReceiveBufferSizePredictorFactory(16000,16000,65536));
-		//connectionlessBootstrap.setOption("broadcast", "false");
-		//connectionlessBootstrap.setOption("reuseAddress", "true");
+		final ChannelPipelineFactory perDatagramFactory = new ChannelPipelineFactory()
+		{
+
+			public ChannelPipeline getPipeline() throws Exception
+			{
+
+				//Create a default pipeline implementation.
+				ChannelPipeline pipeline = pipeline();
+
+
+				//Add the text line codec combination first,
+				pipeline.addLast("framer", new DelimiterBasedFrameDecoder(65536, Delimiters.lineDelimiter()));//8192
+				pipeline.addLast("decoder", new StringDecoder());
+				pipeline.addLast("encoder", new StringEncoder());
+
+
+				//and then business logic.
+				pipeline.addLast("handler", new UDPHandler());
+
+				return pipeline;
+
+				// Add your handlers here
+				//return Channels.pipeline();
+			}
+
+		};
+
+		connectionlessBootstrap.setPipelineFactory(perDatagramFactory);
+
+		//if i want a new pipeline for each datagram
+//		new ChannelPipelineFactory()
+//		{
+//			public ChannelPipeline getPipeline() throws Exception
+//			{
+//				return Channels.pipeline(new DistinctChannelPipelineHandler(perDatagramFactory));
+//			}
+//		});
+
+
+		//connectionlessBootstrap.setOption("sendBufferSize", 65536);
+		//connectionlessBootstrap.setOption("receiveBufferSize", 65536);
+		connectionlessBootstrap.setOption("receiveBufferSizePredictorFactory", new AdaptiveReceiveBufferSizePredictorFactory(16000,16000,65536));
+
+		//udpConnectionlessBootstrap.setOption("broadcast", "true");
+		connectionlessBootstrap.setOption("broadcast", "false");
+
+		connectionlessBootstrap.setOption("reuseAddress", "true");
+
 
 		this.port = myUDPPort;
 
-        try {
-		    channel = connectionlessBootstrap.bind(port).sync().channel();
-		    log.info("UDP Channel: "+channel.id().toString());
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+		//connectionlessBootstrap.setOption("localAddress", new InetSocketAddress(port));
+		//connectionlessBootstrap.setOption("tcpNoDelay", true);
+
+		channel = connectionlessBootstrap.bind(new InetSocketAddress(port));
+
+		log.info("UDP Channel: "+channel.getId().toString());
 	}
 
+
+
+
 	//===============================================================================================
-	public class UDPHandler extends SimpleChannelInboundHandler<DatagramPacket>
+	public class UDPHandler extends SimpleChannelUpstreamHandler
 	{//===============================================================================================
 
 		//===============================================================================================
@@ -87,30 +146,44 @@ public class UDPConnection extends EnginePart
 
 		//===============================================================================================
 		@Override
-		public void channelActive(ChannelHandlerContext ctx) throws Exception
+		public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception
 		{//===============================================================================================
-			log.debug("UDP channelActive: "+ctx.channel().id());
+			log.debug("UDP channelConnected: "+e.getChannel().getId()+" IP: "+e.getChannel().getRemoteAddress().toString());
 		}
 		//===============================================================================================
 		@Override
-		public void channelInactive(ChannelHandlerContext ctx) throws Exception
+		public void channelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent e)
 		{//===============================================================================================
-			log.debug("UDP channelInactive: "+ctx.channel().id());
+			log.debug("UDP channelDisconnected: "+e.getChannel().getId()+" IP: "+e.getChannel().getRemoteAddress().toString());
+		}
+		//===============================================================================================
+		@Override
+		public void channelClosed(ChannelHandlerContext ctx, ChannelStateEvent e)
+		{//===============================================================================================
+			log.debug("UDP channelClosed: "+e.getChannel().getId());
+		}
+		//===============================================================================================
+		@Override
+		public void channelUnbound(ChannelHandlerContext ctx, ChannelStateEvent e)
+		{//===============================================================================================
+			log.debug("UDP channelUnbound: "+e.getChannel().getId());
 		}
 
 		//===============================================================================================
 		@Override
-		protected void channelRead0(ChannelHandlerContext ctx, DatagramPacket packet) throws Exception
+		public void messageReceived(ChannelHandlerContext ctx, MessageEvent e)
 		{//===============================================================================================
 
 			try{Thread.currentThread().setName("UDPConnection_UDPHandler");}catch(SecurityException ex){ex.printStackTrace();}
 
-			String s = packet.content().toString(CharsetUtil.UTF_8);
+			String s = (String) e.getMessage();
+
 
 			if(BobNet.debugMode)
 			{
+
 				if(s.startsWith("Friend_Location_Update")==false)
-				log.warn("FROM CLIENT: cID:"+channel.id()+" | "+s);
+				log.warn("FROM CLIENT: cID:"+channel.getId()+" | "+s);
 			}
 
 			lastReceivedDataTime = System.currentTimeMillis();
@@ -131,14 +204,8 @@ public class UDPConnection extends EnginePart
 
 			if(s.startsWith("pong")){}
 
-			handleMessage(ctx,s, packet.sender());
+			handleMessage(ctx,e);
 		}
-
-        @Override
-        public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-             cause.printStackTrace();
-             //ctx.close();
-        }
 
 	}
 
@@ -147,7 +214,7 @@ public class UDPConnection extends EnginePart
 	{//===============================================================================================
 
 		if(channel!=null)channel.close().awaitUninterruptibly();
-		workerGroup.shutdownGracefully();
+		connectionlessBootstrap.releaseExternalResources();
 	}
 
 	//===============================================================================================
@@ -163,7 +230,7 @@ public class UDPConnection extends EnginePart
 		if(BobNet.debugMode)
 		{
 			if(s.startsWith("Friend_Location_Update")==false&&s.startsWith("Friend_Connect_Request")==false)
-			log.debug("SEND CLIENT: cID:"+channel.id()+" | "+s.substring(0,s.length()-2));
+			log.debug("SEND CLIENT: cID:"+channel.getId()+" | "+s.substring(0,s.length()-2));
 		}
 
 		InetSocketAddress peerAddress = getPeerSocketAddress_S();
@@ -179,9 +246,15 @@ public class UDPConnection extends EnginePart
 	//===============================================================================================
 	public synchronized ChannelFuture write(String s,InetSocketAddress address)
 	{//===============================================================================================
-		ChannelFuture c = channel.writeAndFlush(new DatagramPacket(
-                Unpooled.copiedBuffer(s, CharsetUtil.UTF_8),
-                address));
+		ChannelFuture c = channel.write(s,getPeerSocketAddress_S());
+//		try
+//		{
+//			c.sync();
+//		}
+//		catch(InterruptedException e)
+//		{
+//			e.printStackTrace();
+//		}
 		return c;
 	}
 
@@ -307,13 +380,13 @@ public class UDPConnection extends EnginePart
 
 
 	//===============================================================================================
-	public void handleMessage(ChannelHandlerContext ctx, String s, InetSocketAddress sender)
+	public void handleMessage(ChannelHandlerContext ctx, MessageEvent e)
 	{//===============================================================================================
 		//override this
 		log.error("This function should always be overridden");
 	}
 	//===============================================================================================
-	public void incomingPeerConnectResponse(String s)
+	public void incomingPeerConnectResponse(MessageEvent e)
 	{//===============================================================================================
 		//override this
 		log.error("This function should always be overridden");

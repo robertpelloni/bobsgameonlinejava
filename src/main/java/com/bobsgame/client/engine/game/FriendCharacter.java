@@ -1,8 +1,9 @@
 package com.bobsgame.client.engine.game;
 
-import java.net.InetSocketAddress;
+import static org.jboss.netty.channel.Channels.pipeline;
 
-import io.netty.channel.ChannelHandlerContext;
+import org.jboss.netty.channel.ChannelHandlerContext;
+import org.jboss.netty.channel.MessageEvent;
 import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.classic.Logger;
@@ -129,15 +130,17 @@ public class FriendCharacter extends Character
 	}
 
 	//===============================================================================================
-	public void handleMessage(ChannelHandlerContext ctx, String s, InetSocketAddress sender)
+	public void handleMessage(ChannelHandlerContext ctx, MessageEvent e)
 	{//===============================================================================================
 
-		if(s.startsWith(BobNet.Friend_LocationStatus_Update)){incomingFriendLocationStatusUpdate(s, sender);return;}
-		if(s.startsWith(BobNet.Friend_Data_Request)){incomingFriendDataRequest(s, sender);return;}
-		if(s.startsWith(BobNet.Friend_Data_Response)){incomingFriendDataResponse(s, sender);return;}
-		if(s.startsWith(BobNet.Game_Challenge_Request)){incomingGameChallengeRequest(s, sender);return;}
+		String s = (String) e.getMessage();
 
-		if(game!=null)game.handleMessage(ctx, s);
+		if(s.startsWith(BobNet.Friend_LocationStatus_Update)){incomingFriendLocationStatusUpdate(e);return;}
+		if(s.startsWith(BobNet.Friend_Data_Request)){incomingFriendDataRequest(e);return;}
+		if(s.startsWith(BobNet.Friend_Data_Response)){incomingFriendDataResponse(e);return;}
+		if(s.startsWith(BobNet.Game_Challenge_Request)){incomingGameChallengeRequest(e);return;}
+
+		if(game!=null)game.handleMessage(ctx, e);
 	}
 
 
@@ -338,7 +341,7 @@ public class FriendCharacter extends Character
 
 
 	//===============================================================================================
-	public void incomingFriendDataRequest(String s, InetSocketAddress sender)
+	public void incomingFriendDataRequest(MessageEvent e)
 	{//===============================================================================================
 
 		//allowed info depends on type of friend, zip code friends should not get full name, etc.
@@ -350,16 +353,17 @@ public class FriendCharacter extends Character
 		FriendData myFriendData = new FriendData();
 		myFriendData.initWithGameSave(GameSave());
 
-		String data = myFriendData.encode(friendType);
+		String s = myFriendData.encode(friendType);
 
-		connection.write(BobNet.Friend_Data_Response+data+BobNet.endline);
+		connection.write(BobNet.Friend_Data_Response+s+BobNet.endline);
 	}
 
 
 	//===============================================================================================
-	public void incomingFriendDataResponse(String s, InetSocketAddress sender)
+	public void incomingFriendDataResponse(MessageEvent e)
 	{//===============================================================================================
 
+		String s = e.getMessage().toString();
 		s = s.substring(s.indexOf(":")+1);
 
 		FriendData f = new FriendData();
@@ -389,10 +393,11 @@ public class FriendCharacter extends Character
 	}
 
 	//===============================================================================================
-	public void incomingFriendLocationStatusUpdate(String s, InetSocketAddress sender)
+	public void incomingFriendLocationStatusUpdate(MessageEvent e)
 	{//===============================================================================================
 
 		//FriendLocationUpdate:mapName,x,y,status
+		String s = e.getMessage().toString();
 		s = s.substring(s.indexOf(":")+1);
 
 		String mapName = s.substring(0,s.indexOf(","));
@@ -476,11 +481,12 @@ public class FriendCharacter extends Character
 
 
 	//===============================================================================================
-	public void incomingGameChallengeRequest(String s, InetSocketAddress sender)
+	public void incomingGameChallengeRequest(MessageEvent e)
 	{//===============================================================================================
 
 
 
+		String s = e.getMessage().toString();
 		s = s.substring(s.indexOf(":")+1);
 		String gameName = s;
 
@@ -926,6 +932,23 @@ public class FriendCharacter extends Character
 
 
 	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 }

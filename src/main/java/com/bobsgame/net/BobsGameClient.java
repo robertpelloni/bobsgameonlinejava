@@ -4,7 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-import io.netty.channel.Channel;
+import org.jboss.netty.channel.Channel;
 
 
 

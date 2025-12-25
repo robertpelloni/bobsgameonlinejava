@@ -18,7 +18,7 @@ import com.bobsgame.client.LWJGLUtils;
 import com.bobsgame.client.engine.game.nd.ND;
 import com.bobsgame.client.engine.game.nd.bobsgame.BobsGame;
 import com.bobsgame.client.engine.game.nd.bobsgame.game.GameLogic;
-import com.bobsgame.client.engine.game.nd.bobsgame.game.GameType;
+import com.bobsgame.client.engine.game.nd.bobsgame.game.Settings;
 import com.bobsgame.client.engine.map.Area;
 import com.bobsgame.net.BobNet;
 
@@ -41,7 +41,7 @@ public class BobsGameStadium extends StadiumGameEngine
 
 	public long randomSeed = -1;
 
-	GameType originalSettings = null;
+	Settings originalSettings = null;
 
 
 	long timeRenderBegan = System.currentTimeMillis();
@@ -121,7 +121,7 @@ public class BobsGameStadium extends StadiumGameEngine
 
 			randomSeed = ME.randomSeed;
 
-			originalSettings = ME.GameType();
+			originalSettings = ME.Settings();
 		}
 
 	}
@@ -405,7 +405,7 @@ public class BobsGameStadium extends StadiumGameEngine
 
 
 
-			int blurPasses = ME.GameType().bloomTimes;
+			int blurPasses = ME.Settings().bloomTimes;
 
 			for (int i = 0; i < blurPasses; i++)
 			{
@@ -472,7 +472,7 @@ public class BobsGameStadium extends StadiumGameEngine
 			LWJGLUtils.useShader(LWJGLUtils.bloomShader);
 			{
 				LWJGLUtils.setShaderVar1f(LWJGLUtils.bloomShader, "OriginalIntensity", 0.8f);
-				LWJGLUtils.setShaderVar1f(LWJGLUtils.bloomShader, "BloomIntensity", ME.GameType().bloomIntensity);
+				LWJGLUtils.setShaderVar1f(LWJGLUtils.bloomShader, "BloomIntensity", ME.Settings().bloomIntensity);
 				LWJGLUtils.setShaderVar1i(LWJGLUtils.bloomShader, "u_texture0", 0);
 				LWJGLUtils.setShaderVar1i(LWJGLUtils.bloomShader, "u_texture1", 1);
 				GLUtils.drawTexture(LWJGLUtils.nDFBO_MaskTexture, 0.0f, 1.0f, 1.0f, 0.0f, 0, getWidth(), 0, getHeight(), 1.0f, GLUtils.FILTER_FBO_LINEAR_NO_MIPMAPPING);

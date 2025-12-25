@@ -120,9 +120,9 @@ public class Piece
 	}
 
 
-	public GameType GameType()
+	public Settings Settings()
 	{
-		return Game().GameType();
+		return Game().Settings();
 	}
 
 	public GameLogic Game()
@@ -216,7 +216,7 @@ public class Piece
 		}
 
 
-		if(GameType().whenGeneratingPieceDontMatchTwoBlocksOfTheSameSpecialRandomTypeAndColor)
+		if(Settings().whenGeneratingPieceDontMatchTwoBlocksOfTheSameSpecialRandomTypeAndColor)
 		{
 
 			//don't match a green crash piece with a green crash piece
@@ -249,7 +249,7 @@ public class Piece
 
 		}
 
-		if(GameType().whenGeneratingPieceDontMatchNormalBlockWithBlockOfDifferentTypeAndSameColor)
+		if(Settings().whenGeneratingPieceDontMatchNormalBlockWithBlockOfDifferentTypeAndSameColor)
 		{
 
 			//don't match a green crash piece with a green gem
@@ -288,7 +288,7 @@ public class Piece
 
 		}
 
-		if(GameType().whenGeneratingPieceDontMatchAllBlockColors)
+		if(Settings().whenGeneratingPieceDontMatchAllBlockColors)
 		{
 
 			//don't make 3 jewels of the same color
@@ -455,7 +455,7 @@ public class Piece
 					{
 						b.counterCount=-2;
 						BobColor color = b.color();
-						b.blockType = grid.getRandomBlockTypeFromArrayExcludingSpecialBlockTypes(GameType().getNormalBlockTypes());
+						b.blockType = grid.getRandomBlockTypeFromArrayExcludingSpecialBlockTypes(Settings().normalBlockTypes);
 						b.setColor(color);
 					}
 				}
@@ -598,20 +598,20 @@ public class Piece
 		int h = cellH();
 
 
-		if(GameType().currentPieceMoveUpHalfABlock)y-=cellH()/3;
+		if(Settings().currentPieceMoveUpHalfABlock)y-=cellH()/3;
 
-		if(GameType().currentPieceRenderAsNormalPiece)
+		if(Settings().currentPieceRenderAsNormalPiece)
 		{
 			render(x,y);
 		}
 
-		if(GameType().currentPieceRule_OutlineBlockAtZeroZero)renderOutlineBlockZeroZero(x,y,cursorAlpha,false);
+		if(Settings().currentPieceRule_OutlineBlockAtZeroZero)renderOutlineBlockZeroZero(x,y,cursorAlpha,false);
 
-		if(GameType().currentPieceOutlineFirstBlockRegardlessOfPosition)renderOutlineFirstBlock(x, y, cursorAlpha,false);
+		if(Settings().currentPieceOutlineFirstBlockRegardlessOfPosition)renderOutlineFirstBlock(x, y, cursorAlpha,false);
 
 
 
-		if(GameType().currentPieceRenderHoldingBlock)
+		if(Settings().currentPieceRenderHoldingBlock)
 		{
 			if(holdingBlock!=null)
 			{
@@ -619,12 +619,12 @@ public class Piece
 			}
 		}
 
-		if(GameType().currentPieceOutlineAllPieces)
+		if(Settings().currentPieceOutlineAllPieces)
 		{
 			for(int i=0;i<blocks.size();i++)
 			{
-				int ox = GameType().gridPixelsBetweenColumns;
-				int oy = GameType().gridPixelsBetweenRows;
+				int ox = Settings().gridPixelsBetweenColumns;
+				int oy = Settings().gridPixelsBetweenRows;
 
 
 				Block b = blocks.get(i);
@@ -682,7 +682,7 @@ public class Piece
 		{
 			Block b = blocks.get(i);
 
-			BobColor c = GameType().gridCheckeredBackgroundColor1;
+			BobColor c = Settings().gridCheckeredBackgroundColor1;
 			// fill in black square so background doesnt show through alpha
 			GLUtils.drawFilledRectXYWH(x+b.xInPiece*cellW(),y+b.yInPiece*cellH(),cellW(),cellH(),c.r(),c.g(),c.b(),1.0f);
 
@@ -690,9 +690,9 @@ public class Piece
 
 		}
 
-		if(GameType().currentPieceRule_OutlineBlockAtZeroZero)renderOutlineBlockZeroZero(x,y,ghostAlpha/2*alpha,true);
+		if(Settings().currentPieceRule_OutlineBlockAtZeroZero)renderOutlineBlockZeroZero(x,y,ghostAlpha/2*alpha,true);
 
-		if(GameType().currentPieceOutlineFirstBlockRegardlessOfPosition)renderOutlineFirstBlock(x, y, ghostAlpha/2*alpha,true);
+		if(Settings().currentPieceOutlineFirstBlockRegardlessOfPosition)renderOutlineFirstBlock(x, y, ghostAlpha/2*alpha,true);
 
 
 
@@ -781,7 +781,7 @@ public class Piece
 	// =========================================================================================================================
 	public void rotateCCW()
 	{// =========================================================================================================================
-		if(currentRotation==0)currentRotation=(pieceType.rotationSet.size() - 1);
+		if(currentRotation==0)currentRotation=pieceType.lastRotation;
 		else currentRotation=currentRotation-1;
 		setRotation(currentRotation);
 	}
@@ -790,7 +790,7 @@ public class Piece
 	// =========================================================================================================================
 	public void rotateCW()
 	{// =========================================================================================================================
-		if(currentRotation==(pieceType.rotationSet.size() - 1))currentRotation=0;
+		if(currentRotation==pieceType.lastRotation)currentRotation=0;
 		else currentRotation=currentRotation+1;
 		setRotation(currentRotation);
 	}

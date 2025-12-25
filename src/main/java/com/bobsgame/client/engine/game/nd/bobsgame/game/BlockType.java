@@ -1,16 +1,16 @@
 package com.bobsgame.client.engine.game.nd.bobsgame.game;
 
 import java.util.ArrayList;
-import java.util.UUID;
+
 import com.bobsgame.shared.BobColor;
+
+
 
 //=========================================================================================================================
 public class BlockType
 {//=========================================================================================================================
 
-    public String uuid = "";
-    public String name = "New Block Type";
-    @Override public String toString() { return name; }
+
 
 	public String sprite = null;
 	public String specialSprite = null;
@@ -19,13 +19,6 @@ public class BlockType
 	public int randomSpecialBlockChanceOneOutOf=0;
 	public int frequencySpecialBlockTypeOnceEveryNPieces=0;
 
-    // Classification Flags
-    public boolean useInNormalPieces = false;
-    public boolean useAsGarbage = false;
-    public boolean useAsPlayingFieldFiller = false;
-    public boolean ignoreWhenMovingDownBlocks = false;
-    public boolean chainConnectionsMustContainAtLeastOneBlockWithThisTrue = false;
-    public boolean ignoreWhenCheckingChainConnections = false;
 
 
 	public boolean flashingSpecialType = false;
@@ -35,8 +28,6 @@ public class BlockType
 
 	public boolean counterType = false;
 	public boolean pacmanType = false;
-    public boolean pacJarType = false;
-    public int ticksToChangeDirection = 1000;
 
 	public BlockType ifConnectedUpDownLeftRightToExplodingBlockChangeIntoThisType = null;
 	public boolean addToChainIfConnectedUpDownLeftRightToExplodingChainBlocks = false;
@@ -63,7 +54,7 @@ public class BlockType
 
 	public BlockType()
 	{
-        this.uuid = UUID.randomUUID().toString();
+
 	}
 
 
@@ -71,14 +62,14 @@ public class BlockType
 	//=========================================================================================================================
 	public BlockType(String sprite,BobColor[] colors)
 	{//=========================================================================================================================
-        this();
+
 		this.sprite = sprite;
 		this.colors = colors;
 	}
 	//=========================================================================================================================
 	public BlockType(String sprite,BobColor[] colors, BobColor specialColor)
 	{//=========================================================================================================================
-        this();
+
 		this.sprite = sprite;
 		this.colors = colors;
 		this.specialColor = specialColor;
@@ -87,7 +78,6 @@ public class BlockType
 	//=========================================================================================================================
 	public BlockType(String sprite, BobColor[] colors, int randomSpecialBlockChanceOneOutOf, int frequencySpecialBlockTypeOnceEveryNBlocks)
 	{//=========================================================================================================================
-        this();
 		this.sprite = sprite;
 		this.colors = colors;
 		this.randomSpecialBlockChanceOneOutOf = randomSpecialBlockChanceOneOutOf;
@@ -97,7 +87,6 @@ public class BlockType
 	//=========================================================================================================================
 	public BlockType(String sprite, BobColor[] colors, BobColor specialColor, int randomSpecialBlockChanceOneOutOf, int frequencySpecialBlockTypeOnceEveryNBlocks)
 	{//=========================================================================================================================
-        this();
 		this.sprite = sprite;
 		this.colors = colors;
 		this.specialColor = specialColor;
@@ -108,7 +97,7 @@ public class BlockType
 	//=========================================================================================================================
 	public BlockType(String sprite,String specialSprite,BobColor[] colors,BobColor specialColor,int randomSpecialBlockChanceOneOutOf,int frequencySpecialBlockTypeOnceEveryNBlocks)
 	{//=========================================================================================================================
-        this();
+
 		this.sprite = sprite;
 		this.specialSprite = specialSprite;
 		this.colors = colors;

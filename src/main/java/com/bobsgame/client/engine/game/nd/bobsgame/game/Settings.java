@@ -14,49 +14,8 @@ import com.google.gson.JsonParser;
 
 
 // =========================================================================================================================
-public class GameType
+public class Settings
 {// =========================================================================================================================
-
-    public String uuid = "";
-    public boolean downloaded = false;
-
-    public long creatorUserID = 0;
-    public String creatorUserName = "";
-    public long dateCreated = 0;
-    public long lastModified = 0;
-    public long howManyTimesUpdated = 0;
-    public long upVotes = 0;
-    public long downVotes = 0;
-    public String yourVote = "none";
-
-    public ArrayList<DifficultyType> difficultyTypes = new ArrayList<DifficultyType>();
-
-    public enum GameMode
-    {
-        DROP,
-        STACK,
-    }
-    public GameMode gameMode = GameMode.DROP;
-
-    public void applyDifficulty(String difficultyName) {
-        for(DifficultyType d : difficultyTypes) {
-            if(d.name.equalsIgnoreCase(difficultyName)) {
-                this.initialLineDropSpeedTicks = d.initialLineDropSpeedTicks;
-                this.minimumLineDropSpeedTicks = d.minimumLineDropSpeedTicks;
-                this.extraStage1Level = d.extraStage1Level;
-                this.extraStage2Level = d.extraStage2Level;
-                this.extraStage3Level = d.extraStage3Level;
-                this.extraStage4Level = d.extraStage4Level;
-                this.creditsLevel = d.creditsLevel;
-                this.garbageSpawnRuleAmount = d.playingFieldGarbageSpawnRuleAmount;
-                this.randomlyFillGrid = d.randomlyFillGrid;
-                this.randomlyFillGridStartY = d.randomlyFillGridStartY;
-                this.randomlyFillGridAmount = d.randomlyFillGridAmount;
-
-                // TODO: Handle block/piece type restrictions
-            }
-        }
-    }
 
 	//---------------------------------------------------
 	//controls
@@ -304,8 +263,6 @@ public class GameType
 	public int readyTicksAmount = 2000;
 
 
-public String name = "My New Game Type";
-    @Override public String toString() { return name; }
 	public String gameTypeCaptionText = "gameTypeCaptionText";
 	public String rulesCaptionText = "rulesCaptionText";
 
@@ -371,38 +328,15 @@ public String name = "My New Game Type";
 	public boolean blockRule_drawBlocksConnectedByColorInPiece = false;
 
 
-	public ArrayList<BlockType> blockTypes = new ArrayList<BlockType>();
+	//TODO: can change to blockType.garbage = true, etc.
+	public ArrayList<BlockType> normalBlockTypes = new ArrayList<BlockType>();
+	public ArrayList<BlockType> garbageBlockTypes = new ArrayList<BlockType>();
+	public ArrayList<BlockType> playingFieldBlockTypes = new ArrayList<BlockType>();
 
-    public ArrayList<BlockType> getNormalBlockTypes() {
-        ArrayList<BlockType> list = new ArrayList<BlockType>();
-        for(BlockType b : blockTypes) if(b.useInNormalPieces) list.add(b);
-        return list;
-    }
-    public ArrayList<BlockType> getGarbageBlockTypes() {
-        ArrayList<BlockType> list = new ArrayList<BlockType>();
-        for(BlockType b : blockTypes) if(b.useAsGarbage) list.add(b);
-        return list;
-    }
-    public ArrayList<BlockType> getPlayingFieldBlockTypes() {
-        ArrayList<BlockType> list = new ArrayList<BlockType>();
-        for(BlockType b : blockTypes) if(b.useAsPlayingFieldFiller) list.add(b);
-        return list;
-    }
-    public ArrayList<BlockType> getBlockTypesMustContainWhenCheckingChainConnections() {
-        ArrayList<BlockType> list = new ArrayList<BlockType>();
-        for(BlockType b : blockTypes) if(b.chainConnectionsMustContainAtLeastOneBlockWithThisTrue) list.add(b);
-        return list;
-    }
-    public ArrayList<BlockType> getBlockTypesToIgnoreWhenCheckingChainConnections() {
-        ArrayList<BlockType> list = new ArrayList<BlockType>();
-        for(BlockType b : blockTypes) if(b.ignoreWhenCheckingChainConnections) list.add(b);
-        return list;
-    }
-    public ArrayList<BlockType> getBlockTypesToIgnoreWhenMovingDownBlocks() {
-        ArrayList<BlockType> list = new ArrayList<BlockType>();
-        for(BlockType b : blockTypes) if(b.ignoreWhenMovingDownBlocks) list.add(b);
-        return list;
-    }
+	//TODO: can change these to blockType.ignoreWhenCheckingChain, etc
+	public ArrayList<BlockType> blockTypesMustContainWhenCheckingChainConnections = new ArrayList<BlockType>();
+	public ArrayList<BlockType> blockTypesToIgnoreWhenCheckingChainConnections = new ArrayList<BlockType>();
+	public ArrayList<BlockType> blockTypesToIgnoreWhenMovingDownBlocks = new ArrayList<BlockType>();
 
 
 
@@ -426,28 +360,11 @@ public String name = "My New Game Type";
 
 	public boolean currentPieceRule_getNewPiecesRandomlyOutOfBagWithOneOfEachPieceUntilEmpty = false;
 
-    public ArrayList<PieceType> pieceTypes = new ArrayList<PieceType>();
-
-    public ArrayList<PieceType> getNormalPieceTypes() {
-        ArrayList<PieceType> list = new ArrayList<PieceType>();
-        for(PieceType p : pieceTypes) if(p.useAsNormalPiece) list.add(p);
-        return list;
-    }
-    public ArrayList<PieceType> getDisallowedFirstPieceTypes() {
-        ArrayList<PieceType> list = new ArrayList<PieceType>();
-        for(PieceType p : pieceTypes) if(p.disallowAsFirstPiece) list.add(p);
-        return list;
-    }
-    public ArrayList<PieceType> getGarbagePieceTypes() {
-        ArrayList<PieceType> list = new ArrayList<PieceType>();
-        for(PieceType p : pieceTypes) if(p.useAsGarbagePiece) list.add(p);
-        return list;
-    }
-    public ArrayList<PieceType> getPlayingFieldPieceTypes() {
-        ArrayList<PieceType> list = new ArrayList<PieceType>();
-        for(PieceType p : pieceTypes) if(p.useAsPlayingFieldFillerPiece) list.add(p);
-        return list;
-    }
+	//TODO: can change these to pieceType.garbage, etc
+	public ArrayList<PieceType> normalPieceTypes = new ArrayList<PieceType>();
+	public ArrayList<PieceType> disallowedFirstPieceTypes = new ArrayList<PieceType>();
+	public ArrayList<PieceType> garbagePieceTypes = new ArrayList<PieceType>();
+	public ArrayList<PieceType> playingFieldPieceTypes = new ArrayList<PieceType>();
 
 
 
@@ -473,10 +390,10 @@ public String name = "My New Game Type";
 
 
 	//=========================================================================================================================
-	public GameType fromGSON(String gsonString)
+	public Settings fromGSON(String gsonString)
 	{//=========================================================================================================================
 		Gson gson = new Gson();
-		return gson.fromJson(gsonString,GameType.class);
+		return gson.fromJson(gsonString,Settings.class);
 
 	}
 
@@ -494,7 +411,7 @@ public String name = "My New Game Type";
 	}
 
 	//=========================================================================================================================
-	public GameType fromBase64GZippedGSON(String b64GZipJSON)
+	public Settings fromBase64GZippedGSON(String b64GZipJSON)
 	{//=========================================================================================================================
 
 		Gson gson = new Gson();
@@ -504,7 +421,7 @@ public String name = "My New Game Type";
 
 		if(json==null||json.length()==0){return null;}
 
-		return gson.fromJson(json,GameType.class);
+		return gson.fromJson(json,Settings.class);
 
 	}
 
@@ -534,15 +451,15 @@ public String name = "My New Game Type";
 	//=========================================================================================================================
 	public void addNormalPieceType(PieceType pieceType)
 	{//=========================================================================================================================
-        pieceType.useAsNormalPiece = true;
-		if(!pieceTypes.contains(pieceType)) pieceTypes.add(pieceType);
+
+		normalPieceTypes.add(pieceType);
 	}
 
 	//=========================================================================================================================
 	public void addPlayingFieldPieceType(PieceType pieceType)
 	{//=========================================================================================================================
-        pieceType.useAsPlayingFieldFillerPiece = true;
-		if(!pieceTypes.contains(pieceType)) pieceTypes.add(pieceType);
+
+		playingFieldPieceTypes.add(pieceType);
 	}
 
 
@@ -550,37 +467,44 @@ public String name = "My New Game Type";
 	//=========================================================================================================================
 	public void addDisallowedFirstPieceType(PieceType pieceType)
 	{//=========================================================================================================================
-        pieceType.disallowAsFirstPiece = true;
-		if(!pieceTypes.contains(pieceType)) pieceTypes.add(pieceType);
+
+		disallowedFirstPieceTypes.add(pieceType);
 	}
 
 
 	//=========================================================================================================================
 	public boolean isFirstPieceTypeAllowed(PieceType pieceType)
 	{//=========================================================================================================================
-		if(pieceType.disallowAsFirstPiece) return false;
+		for(int i=0;i<disallowedFirstPieceTypes.size();i++)
+		{
+			if(pieceType==disallowedFirstPieceTypes.get(i))return false;
+		}
 		return true;
 	}
+
+
+
+
 
 
 	//=========================================================================================================================
 	public void addNormalBlockType(BlockType blockClass)
 	{//=========================================================================================================================
-        blockClass.useInNormalPieces = true;
-		if(!blockTypes.contains(blockClass)) blockTypes.add(blockClass);
+
+		normalBlockTypes.add(blockClass);
 	}
 
 	//=========================================================================================================================
 	public void addPlayingFieldBlockType(BlockType blockClass)
 	{//=========================================================================================================================
-        blockClass.useAsPlayingFieldFiller = true;
-		if(!blockTypes.contains(blockClass)) blockTypes.add(blockClass);
+
+		playingFieldBlockTypes.add(blockClass);
 	}
 	//=========================================================================================================================
 	public void addGarbageBlockType(BlockType blockClass)
 	{//=========================================================================================================================
-        blockClass.useAsGarbage = true;
-		if(!blockTypes.contains(blockClass)) blockTypes.add(blockClass);
+
+		garbageBlockTypes.add(blockClass);
 	}
 
 //	//=========================================================================================================================
@@ -606,7 +530,7 @@ public String name = "My New Game Type";
 
 
 	// =========================================================================================================================
-	public void tetrid()
+	public void tetrid(GameLogic game)
 	{// =========================================================================================================================
 
 
@@ -833,7 +757,7 @@ public String name = "My New Game Type";
 
 
 	// =========================================================================================================================
-	public void tetsosumi()
+	public void tetsosumi(GameLogic game)
 	{// =========================================================================================================================
 
 
@@ -1659,7 +1583,7 @@ All of opponent's block becomes "[ ]" blocks
 
 
 	// =========================================================================================================================
-	public void cascademode()
+	public void cascademode(GameLogic game)
 	{// =========================================================================================================================
 
 		//quadra
@@ -1755,7 +1679,7 @@ All of opponent's block becomes "[ ]" blocks
 
 
 	// =========================================================================================================================
-	public void mrbob()
+	public void mrbob(GameLogic game)
 	{// =========================================================================================================================
 
 
@@ -1834,9 +1758,9 @@ All of opponent's block becomes "[ ]" blocks
 		addGarbageBlockType(roundedSquareWithColors);
 
 
-		virusBlockWithColors.ignoreWhenMovingDownBlocks = true;
-		circleWithColors.chainConnectionsMustContainAtLeastOneBlockWithThisTrue = true;
-		roundedSquareWithColors.chainConnectionsMustContainAtLeastOneBlockWithThisTrue = true;
+		blockTypesToIgnoreWhenMovingDownBlocks.add(virusBlockWithColors);
+		blockTypesMustContainWhenCheckingChainConnections.add(circleWithColors);
+		blockTypesMustContainWhenCheckingChainConnections.add(roundedSquareWithColors);
 
 
 
@@ -1881,7 +1805,7 @@ All of opponent's block becomes "[ ]" blocks
 
 
 	// =========================================================================================================================
-	public void boblob()
+	public void boblob(GameLogic game)
 	{// =========================================================================================================================
 
 
@@ -1980,14 +1904,14 @@ All of opponent's block becomes "[ ]" blocks
 
 		BlockType grayBlob = new BlockType(BobsGame.blobName,null,BobColor.gray);
 		grayBlob.addToChainIfConnectedUpDownLeftRightToExplodingChainBlocks=true;
-		grayBlob.ignoreWhenCheckingChainConnections = true;
+		blockTypesToIgnoreWhenCheckingChainConnections.add(grayBlob);
 
 		//Hard Puyos, when they land on the field, are harder to erase than Standard Garbage or Point Puyos, and are often referred to as Steelies
 		// Once they're erased a first time, the square shell disappears, leaving a standard ojama left to erase.
 		//Because they are in the shape of a square, if you have one or two groups of puyos that touch two or more of the sides of a Hard Puyo, then it will completely disappear, leaving nothing as a result.
 		BlockType steelie = new BlockType(BobsGame.squareGemName,null,BobColor.darkerGray,2,0);
 		steelie.ifConnectedUpDownLeftRightToExplodingBlockChangeIntoThisType = grayBlob;
-		steelie.ignoreWhenCheckingChainConnections = true;
+		blockTypesToIgnoreWhenCheckingChainConnections.add(steelie);
 
 		addPlayingFieldBlockType(blobWithColors);
 		addPlayingFieldBlockType(grayBlob);
@@ -2060,7 +1984,7 @@ All of opponent's block becomes "[ ]" blocks
 
 
 	// =========================================================================================================================
-	public void jewels()
+	public void jewels(GameLogic game)
 	{// =========================================================================================================================
 
 
@@ -2215,7 +2139,7 @@ All of opponent's block becomes "[ ]" blocks
 
 
 	// =========================================================================================================================
-	public void pop()
+	public void pop(GameLogic game)
 	{// =========================================================================================================================
 
 
@@ -2330,7 +2254,7 @@ All of opponent's block becomes "[ ]" blocks
 
 		BlockType boxBlock = new BlockType(BobsGame.ballJarName,colors,2,0);
 		boxBlock.ifConnectedUpDownLeftRightToExplodingBlockChangeIntoThisType = normalBlock;
-		boxBlock.ignoreWhenCheckingChainConnections = true;
+		blockTypesToIgnoreWhenCheckingChainConnections.add(boxBlock);
 		addNormalBlockType(boxBlock);
 
 
@@ -2339,7 +2263,7 @@ All of opponent's block becomes "[ ]" blocks
 		BlockType pacmanBlock = new BlockType(BobsGame.pacBallName,null,BobColor.pink);
 		pacmanBlock.pacmanType = true;
 		pacmanJarBlock.ifConnectedUpDownLeftRightToExplodingBlockChangeIntoThisType = pacmanBlock;
-		pacmanJarBlock.ignoreWhenCheckingChainConnections = true;
+		blockTypesToIgnoreWhenCheckingChainConnections.add(pacmanJarBlock);
 		pacmanJarBlock.flashingSpecialType = true;
 		addNormalBlockType(pacmanJarBlock);
 
@@ -2417,7 +2341,7 @@ All of opponent's block becomes "[ ]" blocks
 
 
 	// =========================================================================================================================
-	public void popswap()
+	public void popswap(GameLogic game)
 	{// =========================================================================================================================
 
 
@@ -2497,7 +2421,7 @@ All of opponent's block becomes "[ ]" blocks
 
 
 		boxBlock.ifConnectedUpDownLeftRightToExplodingBlockChangeIntoThisType = normalBlock;
-		boxBlock.ignoreWhenCheckingChainConnections = true;
+		blockTypesToIgnoreWhenCheckingChainConnections.add(boxBlock);
 
 
 		//PieceType damaPiece = new PieceType("DAMA",1,0);
@@ -2589,7 +2513,7 @@ All of opponent's block becomes "[ ]" blocks
 
 
 	// =========================================================================================================================
-	public void panelswap()
+	public void panelswap(GameLogic game)
 	{// =========================================================================================================================
 
 
@@ -2849,7 +2773,7 @@ All of opponent's block becomes "[ ]" blocks
 
 
 	// =========================================================================================================================
-	public void gemfight()
+	public void gemfight(GameLogic game)
 	{// =========================================================================================================================
 
 
@@ -2945,8 +2869,8 @@ All of opponent's block becomes "[ ]" blocks
 
 
 
-		crashGemBlock.chainConnectionsMustContainAtLeastOneBlockWithThisTrue = true;
-		counterGemBlock.ignoreWhenCheckingChainConnections = true;
+		blockTypesMustContainWhenCheckingChainConnections.add(crashGemBlock);
+		blockTypesToIgnoreWhenCheckingChainConnections.add(counterGemBlock);
 
 
 
@@ -2983,7 +2907,7 @@ All of opponent's block becomes "[ ]" blocks
 
 
 	// =========================================================================================================================
-	public void gemfight_columns()
+	public void gemfight_columns(GameLogic game)
 	{// =========================================================================================================================
 
 
@@ -3054,7 +2978,7 @@ All of opponent's block becomes "[ ]" blocks
 		addPlayingFieldBlockType(counterGemBlock);
 		addGarbageBlockType(counterGemBlock);
 
-		counterGemBlock.ignoreWhenCheckingChainConnections = true;
+		blockTypesToIgnoreWhenCheckingChainConnections.add(counterGemBlock);
 
 
 		PieceType fighterPiece = new PieceType(2,Piece.get2PieceRotateAround00RotationSet());
@@ -3088,7 +3012,7 @@ All of opponent's block becomes "[ ]" blocks
 
 
 	// =========================================================================================================================
-	public void gemfight_swap()
+	public void gemfight_swap(GameLogic game)
 	{// =========================================================================================================================
 
 
@@ -3162,8 +3086,8 @@ All of opponent's block becomes "[ ]" blocks
 		addGarbageBlockType(counterGemBlock);
 
 
-		crashGemBlock.chainConnectionsMustContainAtLeastOneBlockWithThisTrue = true;
-		counterGemBlock.ignoreWhenCheckingChainConnections = true;
+		blockTypesMustContainWhenCheckingChainConnections.add(crashGemBlock);
+		blockTypesToIgnoreWhenCheckingChainConnections.add(counterGemBlock);
 
 
 

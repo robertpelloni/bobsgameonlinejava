@@ -2,7 +2,7 @@ package com.bobsgame.net;
 
 
 
-import io.netty.channel.Channel;
+import org.jboss.netty.channel.Channel;
 
 public class BobsGameServer
 {
