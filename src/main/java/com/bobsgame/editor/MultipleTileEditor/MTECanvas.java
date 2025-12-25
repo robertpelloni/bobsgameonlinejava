@@ -847,6 +847,14 @@ public class MTECanvas extends JComponent implements MouseListener, MouseWheelLi
 		{
 			redo();
 		}
+		else if(ke.getKeyCode() == KeyEvent.VK_A && ke.isControlDown())
+		{
+			getSelectionBox().setLocation(0, 0);
+			getSelectionBox().setSize(MTE.widthTiles * 8, MTE.heightTiles * 8);
+			getSelectionBox().isShowing = true;
+			setText("MTECanvas: Selected All");
+			repaint();
+		}
 		else if(ke.getKeyCode() == KeyEvent.VK_MINUS)
 		{
 			zoomOut();

@@ -817,6 +817,15 @@ public class SECanvas extends MTECanvas
 
 		}
 		else
+		if(ke.getKeyCode() == KeyEvent.VK_A && (ke.getModifiersEx() & InputEvent.CTRL_DOWN_MASK) != 0)
+		{
+			getSelectionBox().setLocation(0, 0);
+			getSelectionBox().setSize(getSprite().wP(), getSprite().hP());
+			getSelectionBox().isShowing = true;
+			setText("Sprite Editor: Selected All");
+			repaint();
+		}
+		else
 		if(ke.getKeyCode() == KeyEvent.VK_A)
 		{
 			if(getSprite().selectedFrameIndex>0)
