@@ -1,0 +1,26 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+dependencies {
+    implementation project(':shared')
+    implementation 'com.zaxxer:HikariCP:5.0.1'
+    implementation 'com.mysql:mysql-connector-j:8.3.0'
+    implementation 'at.favre.lib:bcrypt:0.10.2'
+    implementation 'org.apache.commons:commons-email:1.5'
+    implementation 'com.restfb:restfb:2022.10.0'
+    implementation 'com.maxmind.geoip2:geoip2:3.0.2'
+    implementation 'org.jasypt:jasypt:1.9.3'
+}
+
+application {
+    mainClass = 'com.bobsgame.ServerMain'
+}
+
+tasks.register('stunServerStartScripts', CreateStartScripts) {
+    mainClass = 'com.bobsgame.STUNServerMain'
+    applicationName = 'bobsgame-stun-server'
+    outputDir = tasks.startScripts.outputDir
+    classpath = tasks.startScripts.classpath
+}

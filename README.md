@@ -1,15 +1,57 @@
-# bob's game
+# Bob's Game Modernization
 
-https://youtu.be/IAD7phjdMQo
+This repository contains the modernized source code for "Bob's Game" (2012), updated to run on modern Java 21 infrastructure.
 
-https://youtu.be/EBC1QKso3II
+## Architecture
 
-## Setup
+The project is split into three Gradle modules:
 
-Open project in IntelliJ or Eclipse.
+- **`:client`**: The game client (LWJGL 3, OpenGL, OpenAL).
+- **`:server`**: The backend infrastructure (Game Server, Index Server, STUN Server).
+- **`:shared`**: Shared logic, networking packets, and utilities.
 
-Run STUN Server, Index Server, Server, and then Client.
+## Prerequisites
 
-Or, run Editor, then open bobsgame_v8830.zip. Export data to create local cache server. (to be detailed further)
+- JDK 21
+- Docker (optional, for server deployment)
 
-discussion here: <https://discord.gg/FfDxFc4JuS>
+## Building
+
+To build all modules:
+
+```bash
+./gradlew build
+```
+
+## Running the Client
+
+```bash
+./gradlew :client:run
+```
+
+## Running the Server
+
+You can run the server locally or via Docker.
+
+### Local
+
+```bash
+./gradlew :server:run
+```
+
+### Docker
+
+Build and start the full stack (Game Server, STUN Server, MySQL Database):
+
+```bash
+docker-compose up --build
+```
+
+Configuration is handled via Environment Variables (see `docker-compose.yml`) or a `server.properties` file in the working directory.
+
+## Features
+
+- **Modern Tech Stack**: Java 21, Gradle 8.5, LWJGL 3, Netty 4, HikariCP.
+- **Security**: BCrypt password hashing with automatic legacy migration.
+- **Containerization**: Full Docker support.
+- **CI/CD**: GitHub Actions workflow included.

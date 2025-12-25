@@ -1,0 +1,69 @@
+import org.gradle.internal.os.OperatingSystem
+
+plugins {
+    id 'java'
+    id 'application'
+}
+
+project.ext.lwjglVersion = "3.3.3"
+
+switch (OperatingSystem.current()) {
+    case OperatingSystem.LINUX:
+        project.ext.lwjglNatives = "natives-linux"
+        break
+    case OperatingSystem.MAC_OS:
+        project.ext.lwjglNatives = "natives-macos"
+        break
+    case OperatingSystem.WINDOWS:
+        project.ext.lwjglNatives = "natives-windows"
+        break
+}
+
+dependencies {
+    implementation project(':shared')
+    implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
+
+    implementation "org.lwjgl:lwjgl"
+    implementation "org.lwjgl:lwjgl-glfw"
+    implementation "org.lwjgl:lwjgl-opengl"
+    implementation "org.lwjgl:lwjgl-openal"
+    implementation "org.lwjgl:lwjgl-stb"
+    implementation "org.lwjgl:lwjgl-jemalloc"
+
+    runtimeOnly "org.lwjgl:lwjgl::$lwjglNatives"
+    runtimeOnly "org.lwjgl:lwjgl-glfw::$lwjglNatives"
+    runtimeOnly "org.lwjgl:lwjgl-opengl::$lwjglNatives"
+    runtimeOnly "org.lwjgl:lwjgl-openal::$lwjglNatives"
+    runtimeOnly "org.lwjgl:lwjgl-stb::$lwjglNatives"
+    runtimeOnly "org.lwjgl:lwjgl-jemalloc::$lwjglNatives"
+
+    implementation files('../libs/TWL.jar')
+    implementation files('../libs/TWLEffects.jar')
+    implementation files('../libs/ibxm77.jar')
+
+    implementation 'com.googlecode.soundlibs:jorbis:0.0.17.4'
+    implementation 'org.apache.httpcomponents.client5:httpclient5:5.1.3'
+    implementation 'net.java.jinput:jinput:2.0.9'
+    implementation 'commons-net:commons-net:3.8.0'
+    implementation 'com.restfb:restfb:2022.10.0'
+    implementation 'xpp3:xpp3:1.1.4c'
+
+    // Editor dependencies were here but removed/excluded
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src/main/java', '../libs/twl-lwjgl3/src']
+            exclude 'com/bobsgame/editor/**'
+            exclude 'com/bobsgame/EditorMain.java'
+        }
+        resources {
+            srcDirs = ['src/main/resources', '../res']
+        }
+    }
+}
+
+application {
+    mainClass = 'com.bobsgame.ClientMain'
+}

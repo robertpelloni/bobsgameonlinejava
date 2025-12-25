@@ -1,0 +1,14 @@
+plugins {
+    id 'java-library'
+}
+
+dependencies {
+    api 'com.google.code.gson:gson:2.10'
+    api 'org.slf4j:slf4j-api:2.0.3'
+    api 'ch.qos.logback:logback-classic:1.4.4'
+    api 'commons-io:commons-io:2.11.0'
+    api 'org.apache.commons:commons-compress:1.22'
+    api 'commons-codec:commons-codec:1.15'
+    api 'io.netty:netty-all:4.1.86.Final'
+    api 'org.lz4:lz4-java:1.8.0'
+}
