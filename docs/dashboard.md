@@ -1,37 +1,44 @@
 # Project Dashboard
 
-## Project Overview
-**BobsGameOnline** is a Java-based game project utilizing LWJGL 3 for graphics and input, with various other libraries for compression, networking, and data handling.
+## Overview
+**Project**: BobsGameOnline
+**Version**: 0.1.1 (See [VERSION.md](../VERSION.md))
+**Build System**: Gradle 8.8
+**Java Version**: 21
 
 ## Directory Structure
 
-*   **`src/`**: Main source code directory. Contains the Java source files and resources.
-*   **`libs/`**: External dependencies managed as git submodules.
-*   **`lua/`**: Lua scripts used for game logic and scripting.
-*   **`res/`**: Game resources such as textures, sounds, and data files.
+*   **`src/main/java`**: Core Java source code.
+    *   `com.bobsgame.client`: Client-side logic, rendering, input.
+    *   `com.bobsgame.server`: Server-side logic.
+    *   `com.bobsgame.shared`: Shared utilities and data structures.
+*   **`src/main/resources`**: Java resources (config, etc.).
+*   **`libs/`**: External dependencies managed as Git submodules.
+*   **`lua/`**: Lua scripts for game logic.
+*   **`res/`**: Game assets (images, sounds, data files).
 *   **`docs/`**: Project documentation.
-*   **`gradle/`**: Gradle wrapper files.
-*   **`target/`**: Build output directory.
+*   **`cpp_repo/`**: C++ native code repository.
 
 ## Submodules Status
 
-| Submodule | Path | Description |
-| :--- | :--- | :--- |
-| **GeoIP2-java** | `libs/GeoIP2-java` | GeoIP2 API for Java. |
-| **lwjgl3** | `libs/lwjgl3` | Lightweight Java Game Library 3. |
-| **lz4-java** | `libs/lz4-java` | LZ4 compression for Java. |
-| **jinput** | `libs/jinput` | Java Game Controller API. |
-| **micromod** | `libs/micromod` | MOD player. |
-| **twl-lwjgl3** | `libs/twl-lwjgl3` | Themable Widget Library for LWJGL 3. |
-| **mysql-connector-j** | `libs/mysql-connector-j` | MySQL JDBC driver. |
-| **xpp3** | `libs/xpp3` | XML Pull Parser. |
-| **xz-java** | `libs/xz-java` | XZ data compression. |
-| **commons-lang** | `libs/commons-lang` | Apache Commons Lang. |
+| Submodule | Path | Version/Commit | Status |
+| :--- | :--- | :--- | :--- |
+| **GeoIP2-java** | `libs/GeoIP2-java` | `10d5699` (v4.3.0+) | Up to date |
+| **commons-lang** | `libs/commons-lang` | `6a4979b` (3.20.0+) | Up to date |
+| **jinput** | `libs/jinput` | `45fe725` (2.0.10+) | Up to date |
+| **lwjgl3** | `libs/lwjgl3` | `50f3b0e` (3.3.6+) | Up to date |
+| **lz4-java** | `libs/lz4-java` | `be9ce57` (1.8.0+) | Up to date |
+| **micromod** | `libs/micromod` | `68f2741` (master) | Up to date |
+| **mysql-connector-j** | `libs/mysql-connector-j` | `a7b3c94` (9.5.0) | Up to date |
+| **twl-lwjgl3** | `libs/twl-lwjgl3` | `647ec34` (master) | Up to date |
+| **xpp3** | `libs/xpp3` | `68498e7` (1.1.4c+) | Up to date |
+| **xz-java** | `libs/xz-java` | `e52d9ad` (v1.11+) | Up to date |
 
-## Build Information
-*   **Build System**: Gradle
-*   **Java Version**: (Check `build.gradle` or `java -version`)
+## Recent Activity
+*   **2025-12-25**: Updated all submodules to latest upstream.
+*   **2025-12-25**: Fixed build issues in `GameSave.java`, `CustomGameEditor.java`, and `GLUtils.java`.
+*   **2025-12-25**: Refactored documentation and instructions.
 
-## Recent Updates
-*   Submodules updated to latest upstream versions.
-*   Feature branches merged into main.
+## Build Status
+*   **Last Build**: Successful (Gradle build & test)
+*   **Date**: 2025-12-25

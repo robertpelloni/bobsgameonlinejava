@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.1] - 2025-12-25
+
+### Fixed
+- Resolved compilation errors in `GameSave.java` by removing duplicate methods and fixing structure.
+- Fixed duplicate field definitions in `CustomGameEditor.java`.
+- Fixed missing method calls in `GLUtils.java` by correcting `BitmapFont` import.
+- Fixed missing variables in `GameLogic.java`.
+
 ## [0.1.0] - 2025-12-25
 
 ### Added

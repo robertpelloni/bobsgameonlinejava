@@ -1,11 +1,11 @@
 # Universal LLM Instructions
 
-This file contains the core instructions for all AI models working on **BobsGameOnline**.
+This file contains the core instructions for all AI models working on **BobsGameOnline**. All models (Claude, Copilot, Gemini, GPT, etc.) must adhere to these protocols.
 
 ## Project Context
-*   **Language**: Java (Modern versions preferred).
-*   **Build System**: Gradle.
-*   **Key Libraries**: LWJGL 3, GeoIP2, LZ4, JInput.
+*   **Language**: Java (Modern versions preferred, currently Java 21).
+*   **Build System**: Gradle 8.8.
+*   **Key Libraries**: LWJGL 3, GeoIP2, LZ4, JInput, TWL.
 *   **Architecture**: Client-Server model with Lua scripting support.
 
 ## Workflow Protocols
@@ -18,9 +18,10 @@ This file contains the core instructions for all AI models working on **BobsGame
 ### 2. Versioning & Changelog
 *   **Source of Truth**: `VERSION.md` contains the current version number (e.g., `0.1.0`).
 *   **Updates**:
-    *   Every significant change or build should increment the version number.
+    *   **Every significant change or build MUST increment the version number.**
     *   Update `CHANGELOG.md` with a new entry under the new version.
     *   Commit message should reference the version bump (e.g., "Bump version to 0.1.1").
+    *   Internal code should reference `VERSION.md` if possible, rather than hardcoding strings.
 
 ### 3. Code Style
 *   Follow standard Java naming conventions.
@@ -30,11 +31,11 @@ This file contains the core instructions for all AI models working on **BobsGame
 
 ### 4. Documentation
 *   Keep `docs/` updated.
-*   Update `docs/dashboard.md` if project structure changes.
+*   Update `docs/dashboard.md` if project structure changes or submodules are updated.
 *   Maintain `ROADMAP.md`.
 
 ## Model-Specific Instructions
-*   **Claude**: Refer to `CLAUDE.md` for specific context.
-*   **Copilot**: Refer to `.github/copilot-instructions.md`.
-*   **Gemini**: Refer to `GEMINI.md`.
-*   **GPT**: Refer to `GPT.md`.
+*   **Claude**: Refer to `CLAUDE.md` (Appends to this file).
+*   **Copilot**: Refer to `.github/copilot-instructions.md` (Appends to this file).
+*   **Gemini**: Refer to `GEMINI.md` (Appends to this file).
+*   **GPT**: Refer to `GPT.md` (Appends to this file).
