@@ -122,6 +122,10 @@ public class SelectionArea {
 		return false;
 	}
 
+	public boolean pastekeysNonZero() {
+		return false;
+	}
+
 	public boolean pasteReverse() {
 		return false;
 	}

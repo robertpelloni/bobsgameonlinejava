@@ -179,6 +179,30 @@ public class MTESelectionArea extends SelectionArea
 	}
 
 	//===============================================================================================
+	public boolean pastekeysNonZero()
+	{//===============================================================================================
+
+		if(isShowing && isCopied2 && copyWidth2 <= getWidth() && copyHeight2 <= getHeight())
+		{
+			for(int y = 0; y < copyHeight2; y++)
+			{
+				for(int x = 0; x < copyWidth2; x++)
+				{
+					if(copy2[x][y][0] != 0)
+					{
+						getEditCanvas().setPixel(x1 + x, y1 + y, copy2[x][y][0]); // Paste pixels within Selected Area
+					}
+				}
+			}
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	//===============================================================================================
 	public boolean pasteReverse()
 	{//===============================================================================================
 		if(isShowing && isCopiedOrCut && copyWidth <= getWidth() && copyHeight <= getHeight())

@@ -522,6 +522,17 @@ public class MTECanvas extends JComponent implements MouseListener, MouseWheelLi
 		}
 	}
 	//===============================================================================================
+	public void pasteSelectionKeysNonZero()
+	{//===============================================================================================
+		if(getSelectionBox().isShowing)
+		{
+			getSelectionBox().pastekeysNonZero();
+			repaintBufferImage();
+			repaint();
+			setText("MTECanvas: Pasted Selection (Non-Zero) from clipboard");
+		}
+	}
+	//===============================================================================================
 	public void reverseSelection()
 	{//===============================================================================================
 		if(getSelectionBox().isShowing)
@@ -832,7 +843,14 @@ public class MTECanvas extends JComponent implements MouseListener, MouseWheelLi
 		else if(ke.getKeyCode() == KeyEvent.VK_V && ke.isControlDown())
 		{
 			fillUndoArray();
-			pasteSelectionKeys();
+			if(ke.isShiftDown())
+			{
+				pasteSelectionKeysNonZero();
+			}
+			else
+			{
+				pasteSelectionKeys();
+			}
 		}
 		else if(ke.getKeyCode() == KeyEvent.VK_C && ke.isControlDown())
 		{
