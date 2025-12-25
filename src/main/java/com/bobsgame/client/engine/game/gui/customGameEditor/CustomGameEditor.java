@@ -56,11 +56,6 @@ public class CustomGameEditor extends MenuPanel {
     private PieceEditorPanel pieceEditorPanel;
     private Button addPieceButton;
     private Button removePieceButton;
-    // Blocks Tab (Placeholder)
-    private DialogLayout blocksPanel;
-
-    // Pieces Tab (Placeholder)
-    private DialogLayout piecesPanel;
 
     private Button saveButton;
     private Button loadButton;

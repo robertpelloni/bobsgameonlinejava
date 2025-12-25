@@ -19,7 +19,7 @@ import org.lwjgl.opengl.GL12;
 import org.lwjgl.opengl.GL14;
 
 import static org.lwjgl.opengl.GL11.*;
-import com.bobsgame.client.engine.text.BobFont.BitmapFont;
+import com.bobsgame.client.BitmapFont;
 
 public class GLUtils {
 	public static Logger log = (Logger) LoggerFactory.getLogger(GLUtils.class);
