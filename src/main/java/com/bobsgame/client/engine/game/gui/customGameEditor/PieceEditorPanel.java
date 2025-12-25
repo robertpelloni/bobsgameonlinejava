@@ -31,6 +31,8 @@ public class PieceEditorPanel extends DialogLayout {
     private SimpleBooleanModel flashingModel;
     private SimpleBooleanModel bombModel;
     private SimpleBooleanModel weightModel;
+    private SimpleBooleanModel pieceShooterModel;
+    private SimpleBooleanModel pieceRemovalShooterModel;
 
     private RotationEditorWidget rotationEditor;
     private ListBox<String> rotationList;
@@ -76,6 +78,12 @@ public class PieceEditorPanel extends DialogLayout {
         weightModel = new SimpleBooleanModel();
         weightModel.addCallback(new Runnable() { public void run() { if(pieceType!=null) pieceType.weightPiece = weightModel.getValue(); } });
 
+        pieceShooterModel = new SimpleBooleanModel();
+        pieceShooterModel.addCallback(new Runnable() { public void run() { if(pieceType!=null) pieceType.pieceShooterPiece = pieceShooterModel.getValue(); } });
+
+        pieceRemovalShooterModel = new SimpleBooleanModel();
+        pieceRemovalShooterModel.addCallback(new Runnable() { public void run() { if(pieceType!=null) pieceType.pieceRemovalShooterPiece = pieceRemovalShooterModel.getValue(); } });
+
         ToggleButton useNormalBtn = new ToggleButton(useNormalModel); useNormalBtn.setText("Normal");
         ToggleButton useGarbageBtn = new ToggleButton(useGarbageModel); useGarbageBtn.setText("Garbage");
         ToggleButton useFillerBtn = new ToggleButton(useFillerModel); useFillerBtn.setText("Filler");
@@ -83,6 +91,8 @@ public class PieceEditorPanel extends DialogLayout {
         ToggleButton flashingBtn = new ToggleButton(flashingModel); flashingBtn.setText("Flashing");
         ToggleButton bombBtn = new ToggleButton(bombModel); bombBtn.setText("Bomb");
         ToggleButton weightBtn = new ToggleButton(weightModel); weightBtn.setText("Weight");
+        ToggleButton shooterBtn = new ToggleButton(pieceShooterModel); shooterBtn.setText("Shooter");
+        ToggleButton removerBtn = new ToggleButton(pieceRemovalShooterModel); removerBtn.setText("Remover");
 
         rotationEditor = new RotationEditorWidget();
         rotationListModel = new SimpleChangableListModel<String>();
@@ -133,6 +143,8 @@ public class PieceEditorPanel extends DialogLayout {
             .addWidget(flashingBtn)
             .addWidget(bombBtn)
             .addWidget(weightBtn)
+            .addWidget(shooterBtn)
+            .addWidget(removerBtn)
             .addGroup(createSequentialGroup()
                 .addGroup(createParallelGroup().addWidget(rotationList).addGroup(createSequentialGroup().addWidget(addRotationButton).addWidget(removeRotationButton)))
                 .addWidget(rotationEditor)
@@ -149,6 +161,8 @@ public class PieceEditorPanel extends DialogLayout {
             .addWidget(flashingBtn)
             .addWidget(bombBtn)
             .addWidget(weightBtn)
+            .addWidget(shooterBtn)
+            .addWidget(removerBtn)
             .addGroup(createParallelGroup()
                 .addGroup(createSequentialGroup().addWidget(rotationList).addGroup(createParallelGroup().addWidget(addRotationButton).addWidget(removeRotationButton)))
                 .addWidget(rotationEditor)
@@ -177,6 +191,8 @@ public class PieceEditorPanel extends DialogLayout {
             flashingModel.setValue(p.flashingSpecialType);
             bombModel.setValue(p.bombPiece);
             weightModel.setValue(p.weightPiece);
+            pieceShooterModel.setValue(p.pieceShooterPiece);
+            pieceRemovalShooterModel.setValue(p.pieceRemovalShooterPiece);
 
             refreshRotationList();
         } else {
