@@ -5,6 +5,10 @@ package com.bobsgame.editor.Project;
 import java.awt.*;
 
 import java.awt.image.*;
+import java.io.File;
+import javax.imageio.ImageIO;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 
 import com.bobsgame.EditorMain;
 import com.bobsgame.editor.Dialogs.NumberDialog;
@@ -1187,6 +1191,112 @@ public class Tileset
 			}
 		}
 		buildTileImages();
+	}
+
+
+	//===============================================================================================
+	public void importImageToTileset(EditorMain E)
+	{//===============================================================================================
+		JFileChooser fileChooser = new JFileChooser();
+		if (EditorMain.fileChooser.getCurrentDirectory() != null) {
+			fileChooser.setCurrentDirectory(EditorMain.fileChooser.getCurrentDirectory());
+		}
+		
+		int result = fileChooser.showOpenDialog(E);
+		if (result == JFileChooser.APPROVE_OPTION) {
+			File selectedFile = fileChooser.getSelectedFile();
+			try {
+				BufferedImage image = ImageIO.read(selectedFile);
+				if (image == null) {
+					EditorMain.infoLabel.setTextError("Could not load image.");
+					return;
+				}
+
+				int width = image.getWidth();
+				int height = image.getHeight();
+
+				int tilesX = width / 8;
+				int tilesY = height / 8;
+				int totalNewTiles = tilesX * tilesY;
+
+				String[] options = {"Append to End", "Overwrite at Selection", "Cancel"};
+				int choice = JOptionPane.showOptionDialog(E, 
+						"Image size: " + width + "x" + height + " (" + totalNewTiles + " tiles).\nHow do you want to import?", 
+						"Import Image", 
+						JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+
+				if (choice == 2 || choice == JOptionPane.CLOSED_OPTION) return;
+
+				int startTileIndex = 0;
+				if (choice == 0) { // Append
+					startTileIndex = num_Tiles;
+					setNumTiles(num_Tiles + totalNewTiles);
+				} else { // Overwrite
+					startTileIndex = EditorMain.tileCanvas.tileSelected;
+					if (startTileIndex + totalNewTiles > num_Tiles) {
+						setNumTiles(startTileIndex + totalNewTiles);
+					}
+				}
+
+				EditorMain.infoLabel.setTextAndConsole("Importing image...");
+
+				TilesetPalette palette = Project.getSelectedPalette();
+
+				for (int ty = 0; ty < tilesY; ty++) {
+					for (int tx = 0; tx < tilesX; tx++) {
+						int currentTile = startTileIndex + (ty * tilesX) + tx;
+						
+						for (int y = 0; y < 8; y++) {
+							for (int x = 0; x < 8; x++) {
+								int rgb = image.getRGB(tx * 8 + x, ty * 8 + y);
+								Color c = new Color(rgb, true);
+								if (c.getAlpha() == 0) {
+									setPixel(currentTile, x, y, 0); // Transparent
+									continue;
+								}
+								
+								int r = c.getRed();
+								int g = c.getGreen();
+								int b = c.getBlue();
+								
+								int colorIndex = palette.getColorIfExistsOrAddColor(r, g, b, 0);
+								
+								if (colorIndex == -1) {
+									// Palette full or not found, find nearest
+									double minDist = Double.MAX_VALUE;
+									int bestIndex = 0;
+									for (int i = 1; i < palette.numColors; i++) { // Skip 0 (transparent/black usually)
+										if (palette.used[i]) {
+											int pr = palette.getRed(i);
+											int pg = palette.getGreen(i);
+											int pb = palette.getBlue(i);
+											double dist = Math.pow(r - pr, 2) + Math.pow(g - pg, 2) + Math.pow(b - pb, 2);
+											if (dist < minDist) {
+												minDist = dist;
+												bestIndex = i;
+											}
+										}
+									}
+									colorIndex = bestIndex;
+								}
+								
+								setPixel(currentTile, x, y, colorIndex);
+							}
+						}
+					}
+				}
+
+				buildTileImages();
+				EditorMain.tileCanvas.setSizedoLayout();
+				EditorMain.tileCanvas.updateAllTiles();
+				EditorMain.tileCanvas.repaint();
+				EditorMain.infoLabel.setTextSuccess("Imported " + totalNewTiles + " tiles.");
+
+			} catch (Exception ex) {
+				ex.printStackTrace();
+				EditorMain.infoLabel.setTextError("Error importing image: " + ex.getMessage());
+			}
+		}
 	}
 
 

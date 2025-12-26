@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.2] - 2025-12-25
+
+### Added
+- **Import Image to Tileset**: New feature in `Tileset Tools` menu allowing users to import BMP/PNG images directly into the tileset. Supports appending or overwriting, and automatically matches or adds colors to the palette.
+- **Pattern Fill**: `MapCanvas` now supports filling a selection with a pattern from the tileset selection (tiling).
+- **Random Sprite Export**: Added "Export Random Sprites" to Sprite Editor to export sprites marked as random.
+- **Grid Layout**: Sprite Editor now displays frames in a responsive grid layout instead of a single line.
+- **Palette Synchronization**: Implemented synchronized sorting and color addition across all tileset palettes to maintain consistency when modifying the master palette.
+
+### Changed
+- **Optimized Redo**: Improved performance of the Redo operation in `MapCanvas`.
+- **Documentation**: Updated `dashboard.md`, `LLM_INSTRUCTIONS.md`, and `ROADMAP.md`.
+- **Versioning**: Project now references `VERSION.md`.
+
+### Fixed
+- Fixed `GameSave.java` compilation errors (previous session).
+- Fixed `SEFrameCanvas` painting logic.
+
 ## [0.1.1] - 2025-12-25
 
 ### Fixed

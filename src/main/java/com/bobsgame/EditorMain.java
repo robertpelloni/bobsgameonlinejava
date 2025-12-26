@@ -82,6 +82,7 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 		insertTilesetRows,
 		findFirstMapWithSelectedTile,
 		listDoorsThatAreBroken,
+		importImageToTileset,
 
 
 
@@ -211,7 +212,7 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 	public EditorMain()
 	{//===============================================================================================
 
-		super("bgEdit 20170623");
+		super("bgEdit v0.1.2");
 
 
 
@@ -597,6 +598,10 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 				listDoorsThatAreBroken.addActionListener(this);
 				listDoorsThatAreBroken.setEnabled(true);
 
+				importImageToTileset = new JMenuItem("Import Image to Tileset...");
+				importImageToTileset.addActionListener(this);
+				importImageToTileset.setEnabled(true);
+
 
 				//tilesetMenu.add(newTileset);
 				//tilesetMenu.add(renameTileset);
@@ -625,6 +630,7 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 				tilesetMenu.add(findFirstMapWithSelectedTile);
 				tilesetMenu.add(setBlankTilesToSelectedColor);
 				tilesetMenu.add(listDoorsThatAreBroken);
+				tilesetMenu.add(importImageToTileset);
 
 
 
@@ -1620,6 +1626,7 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 		mapCanvas.setSizedoLayout();
 
 		mapCanvas.updateAndRepaintAllLayerImagesIntoMapCanvasImageAndRepaintMapCanvas();
+		mapCanvas.fillUndoArray();
 	}
 	//===============================================================================================
 	public void moveMapDown()
@@ -1642,6 +1649,7 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 		mapCanvas.setSizedoLayout();
 
 		mapCanvas.updateAndRepaintAllLayerImagesIntoMapCanvasImageAndRepaintMapCanvas();
+		mapCanvas.fillUndoArray();
 	}
 
 	//===============================================================================================
@@ -1675,6 +1683,7 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 		mapCanvas.setSizedoLayout();
 
 		mapCanvas.updateAndRepaintAllLayerImagesIntoMapCanvasImageAndRepaintMapCanvas();
+		mapCanvas.fillUndoArray();
 	}
 	//===============================================================================================
 	public void moveStateDown()
@@ -1706,6 +1715,7 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 		mapCanvas.setSizedoLayout();
 
 		mapCanvas.updateAndRepaintAllLayerImagesIntoMapCanvasImageAndRepaintMapCanvas();
+		mapCanvas.fillUndoArray();
 	}
 
 	//===============================================================================================
@@ -1729,6 +1739,7 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 		mapCanvas.setSizedoLayout();
 
 		mapCanvas.updateAndRepaintAllLayerImagesIntoMapCanvasImageAndRepaintMapCanvas();
+		mapCanvas.fillUndoArray();
 	}
 
 	//===============================================================================================
@@ -1752,6 +1763,7 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 		mapCanvas.setSizedoLayout();
 
 		mapCanvas.updateAndRepaintAllLayerImagesIntoMapCanvasImageAndRepaintMapCanvas();
+		mapCanvas.fillUndoArray();
 	}
 
 	//===============================================================================================
@@ -1861,6 +1873,7 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 			mapCanvas.zoomOut();
 			mapCanvas.zoomIn();
 			mapCanvas.updateAndRepaintAllLayerImagesIntoMapCanvasImageAndRepaintMapCanvas();
+			mapCanvas.fillUndoArray();
 
 		}
 	}
@@ -1891,6 +1904,7 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 		mapCanvas.setSizedoLayout();
 
 		mapCanvas.updateAndRepaintAllLayerImagesIntoMapCanvasImageAndRepaintMapCanvas();
+		mapCanvas.fillUndoArray();
 
 	}
 
@@ -1917,6 +1931,7 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 		mapCanvas.setSizedoLayout();
 
 		mapCanvas.updateAndRepaintAllLayerImagesIntoMapCanvasImageAndRepaintMapCanvas();
+		mapCanvas.fillUndoArray();
 
 	}
 
@@ -1933,6 +1948,7 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 		tileCanvas.updateAllTiles();
 		tileCanvas.paint();
 		mapCanvas.updateAndRepaintAllLayerImagesIntoMapCanvasImageAndRepaintMapCanvas();
+		mapCanvas.fillUndoArray();
 
 	}
 
@@ -2063,6 +2079,7 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 		mapCanvas.zoomOut();
 		mapCanvas.zoomIn();
 		mapCanvas.updateAndRepaintAllLayerImagesIntoMapCanvasImageAndRepaintMapCanvas();
+		mapCanvas.fillUndoArray();
 
 
 
@@ -2165,6 +2182,7 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 
 			//definitely have to update everything
 			mapCanvas.updateAndRepaintAllLayerImagesIntoMapCanvasImageAndRepaintMapCanvas();
+			mapCanvas.fillUndoArray();
 
 			//start all mapsprite animation timers
 			for(int n=0;n<Project.getSelectedMap().getNumEntities();n++)
@@ -2220,6 +2238,7 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 
 			//definitely have to update everything
 			mapCanvas.updateAndRepaintAllLayerImagesIntoMapCanvasImageAndRepaintMapCanvas();
+			mapCanvas.fillUndoArray();
 
 			//start all mapsprite animation timers
 			for(int n=0;n<Project.getSelectedMap().getNumEntities();n++)
@@ -2249,6 +2268,7 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 
 			//definitely have to update everything
 			mapCanvas.updateAndRepaintAllLayerImagesIntoMapCanvasImageAndRepaintMapCanvas();
+			mapCanvas.fillUndoArray();
 
 		}
 	}
@@ -2302,6 +2322,7 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 
 		else if(ae.getSource() == duplicatePalette)duplicatePalette();
 		else if(ae.getSource() == insertTilesetRows)Project.tileset.insertTilesetRows(this);
+		else if(ae.getSource() == importImageToTileset)Project.tileset.importImageToTileset(this);
 		else if(ae.getSource() == deleteMap)deleteMap();
 		else if(ae.getSource() == deletePalette)deletePalette();
 		else if(ae.getSource() == viewZoomIn)mapCanvas.zoomIn();
@@ -2414,7 +2435,14 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 
 		if(ke.getKeyCode() == KeyEvent.VK_C && ke.isControlDown())
 		{
-			mapCanvas.mapSelectionArea.copy();
+			if(ke.isShiftDown())
+			{
+				mapCanvas.mapSelectionArea.copyEnabledLayers();
+			}
+			else
+			{
+				mapCanvas.mapSelectionArea.copy();
+			}
 		}
 
 

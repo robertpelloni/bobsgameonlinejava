@@ -278,7 +278,24 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 			undolevel = undomax - 1;
 		}
 
-		int percent = 0;
+		int changes = 0;
+		// Pass 1: Count changes
+		for(x = 0; x < xmax; x++)
+		{
+			for(y = 0; y < ymax; y++)
+			{
+				for(int l = 0; l < MapData.layers; l++)
+				{
+					if(MapData.isTileLayer(l))
+					if(undodata[undolevel][l][x][y] != getMap().getTileIndex(l, x, y))
+					{
+						changes++;
+					}
+				}
+			}
+		}
+		
+		boolean fullRepaint = (changes > (xmax * ymax * MapData.layers) / 3);
 
 		for(x = 0; x < xmax; x++)
 		{
@@ -290,19 +307,17 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 					if(undodata[undolevel][l][x][y] != getMap().getTileIndex(l, x, y))
 					{
 						getMap().setTileIndex(l, x, y, undodata[undolevel][l][x][y]);
-						paintTileXY(l, x, y);
-
-						if(percent != ((l * xmax * ymax) + (xmax * y) + x) / (xmax * ymax * MapData.layers) / 5 * 5)
-						{
-							percent = ((l * xmax * ymax) + (xmax * y) + x) / (xmax * ymax * MapData.layers) / 5 * 5;
-							System.out.print("" + percent + "%.");
-						}
+						if(!fullRepaint) paintTileXY(l, x, y);
 					}
 				}
 			}
 		}
-
-		repaint();
+		
+		if(fullRepaint) {
+			updateAndRepaintAllLayerImagesIntoMapCanvasImageAndRepaintMapCanvas();
+		} else {
+			repaint();
+		}
 
 		EditorMain.infoLabel.setTextSuccess("MapCanvas: Done undoing. Undo level is " + undolevel);
 
@@ -332,7 +347,24 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 			ymax = getMap().hT();
 		}
 
-		int percent = 0;
+		int changes = 0;
+		// Pass 1: Count changes
+		for(x = 0; x < xmax; x++)
+		{
+			for(y = 0; y < ymax; y++)
+			{
+				for(int l = 0; l < MapData.layers; l++)
+				{
+					if(MapData.isTileLayer(l))
+					if(undodata[undolevel][l][x][y] != getMap().getTileIndex(l, x, y))
+					{
+						changes++;
+					}
+				}
+			}
+		}
+		
+		boolean fullRepaint = (changes > (xmax * ymax * MapData.layers) / 3);
 
 		for(x = 0; x < xmax; x++)
 		{
@@ -344,19 +376,17 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 					if(undodata[undolevel][l][x][y] != getMap().getTileIndex(l, x, y))
 					{
 						getMap().setTileIndex(l, x, y, undodata[undolevel][l][x][y]);
-						paintTileXY(l, x, y);
-
-						if(percent != ((l * xmax * ymax) + (xmax * y) + x) / (xmax * ymax * MapData.layers) / 5 * 5)
-						{
-							percent = ((l * xmax * ymax) + (xmax * y) + x) / (xmax * ymax * MapData.layers) / 5 * 5;
-							System.out.print("" + percent + "%.");
-
-						}
+						if(!fullRepaint) paintTileXY(l, x, y);
 					}
 				}
 			}
 		}
-		repaint();
+		
+		if(fullRepaint) {
+			updateAndRepaintAllLayerImagesIntoMapCanvasImageAndRepaintMapCanvas();
+		} else {
+			repaint();
+		}
 
 		EditorMain.infoLabel.setTextSuccess("MapCanvas: Done undoing. Redo level is " + undolevel);
 
@@ -1351,29 +1381,22 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 					//if there is a mapSelectionArea on the tile canvas, then fill with that
 					if(EditorMain.tileCanvas.tileSelectionArea.isShowing)
 					{
+						int tilesetSelectionW = (EditorMain.tileCanvas.tileSelectionArea.x2 - EditorMain.tileCanvas.tileSelectionArea.x1) / TileCanvas.TILE_SIZE;
+						int tilesetSelectionH = (EditorMain.tileCanvas.tileSelectionArea.y2 - EditorMain.tileCanvas.tileSelectionArea.y1) / TileCanvas.TILE_SIZE;
+						
+						// Avoid division by zero if selection is weird
+						if(tilesetSelectionW < 1) tilesetSelectionW = 1;
+						if(tilesetSelectionH < 1) tilesetSelectionH = 1;
 
-						getMap().setTileIndex(selectedLayer, xx, yy,
-							(
-								(
-									((EditorMain.tileCanvas.tileSelectionArea.y1/TileCanvas.TILE_SIZE)*TileCanvas.WIDTH_TILES)
-								+
-									(
-										(yy-mapSelectionArea.y1)*TileCanvas.WIDTH_TILES
+						int offsetX = (xx - mapSelectionArea.x1) % tilesetSelectionW;
+						int offsetY = (yy - mapSelectionArea.y1) % tilesetSelectionH;
+						
+						int tileX = (EditorMain.tileCanvas.tileSelectionArea.x1 / TileCanvas.TILE_SIZE) + offsetX;
+						int tileY = (EditorMain.tileCanvas.tileSelectionArea.y1 / TileCanvas.TILE_SIZE) + offsetY;
+						
+						int tileIndex = tileY * TileCanvas.WIDTH_TILES + tileX;
 
-									)
-								)
-								+
-								(
-									(
-										(EditorMain.tileCanvas.tileSelectionArea.x1/TileCanvas.TILE_SIZE)
-										+
-										(
-											xx-mapSelectionArea.x1
-										)
-									)
-								)
-							)
-						);
+						getMap().setTileIndex(selectedLayer, xx, yy, tileIndex);
 						paintTileXY(selectedLayer, xx, yy);
 
 					}

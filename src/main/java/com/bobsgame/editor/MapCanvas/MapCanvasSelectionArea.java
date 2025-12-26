@@ -457,6 +457,168 @@ public class MapCanvasSelectionArea extends SelectionArea
 
 	}
 	//===============================================================================================
+	public void copyObjectsIfEnabled()
+	{//===============================================================================================
+		//make temp linked list of doors, areas, lights, entities under the selection
+		copyEntityList.clear();
+		copyLightList.clear();
+		copyDoorList.clear();
+		copyAreaList.clear();
+
+
+		Map m = MC.getMap();
+
+		m.setSelectedAreaIndex(-1);
+		m.setSelectedDoorIndex(-1);
+		m.setSelectedLightIndex(-1);
+		m.setSelectedEntityIndex(-1);
+
+		copyX = x1;
+		copyY = y1;
+		//used for calculating the offset from the copy position to the paste position
+
+		copiedObjects=true;
+		cutObjects = false;
+
+		copyMap = m;
+
+		//move lights, doors, sprites, actions
+
+
+		if(EditorMain.controlPanel.showLayerCheckbox[MapData.MAP_AREA_LAYER].isSelected())
+		for(int i=0;i<m.getNumAreas();i++)
+		{
+			Area area = m.getArea(i);
+			if(
+					contains(area.xP()/8,area.yP()/8)||
+					contains((area.xP())/8,(area.yP()+area.hP()-1)/8)||
+					contains((area.xP()+area.wP()-1)/8,(area.yP())/8)||
+					contains((area.xP()+area.wP()-1)/8,(area.yP()+area.hP()-1)/8)
+			)
+			{
+				copyAreaList.add(area);
+			}
+
+		}
+
+		if(EditorMain.controlPanel.showLayerCheckbox[MapData.MAP_DOOR_LAYER].isSelected())
+		for(int i=0;i<m.getNumDoors();i++)
+		{
+
+			Door door = m.getDoor(i);
+
+			if(
+					contains(door.xP()/8,door.yP()/8)||
+					contains((door.xP())/8,(door.yP()+door.hP()-1)/8)||
+					contains((door.xP()+door.wP()-1)/8,(door.yP())/8)||
+					contains((door.xP()+door.wP()-1)/8,(door.yP()+door.hP()-1)/8)
+			)
+			{
+				copyDoorList.add(door);
+			}
+
+		}
+
+		if(EditorMain.controlPanel.showLayerCheckbox[MapData.MAP_ENTITY_LAYER].isSelected())
+		for(int i=0;i<m.getNumEntities();i++)
+		{
+			Entity entity = m.getEntity(i);
+
+			if(
+					contains(entity.xP()/8,entity.yP()/8)||
+					contains((entity.xP())/8,(entity.yP()+(int)((entity.hP()-1)))/8)||
+					contains((entity.xP()+(int)((entity.wP()-1)))/8,(entity.yP())/8)||
+					contains((entity.xP()+(int)((entity.wP()-1)))/8,(int)(entity.yP()+((entity.hP()-1)))/8)
+			)
+			{
+				copyEntityList.add(entity);
+			}
+		}
+
+		if(EditorMain.controlPanel.showLayerCheckbox[MapData.MAP_LIGHT_LAYER].isSelected())
+		for(int i=0;i<m.getNumLights();i++)
+		{
+			Light light = m.getLight(i);
+
+			if(
+					contains(light.xP()/8,light.yP()/8)||
+					contains((light.xP())/8,(light.yP()+light.hP()-1)/8)||
+					contains((light.xP()+light.wP()-1)/8,(light.yP())/8)||
+					contains((light.xP()+light.wP()-1)/8,(light.yP()+light.hP()-1)/8)
+			)
+			{
+				copyLightList.add(light);
+			}
+		}
+
+	}
+
+	//===============================================================================================
+	public void copyEnabledLayers()
+	{//===============================================================================================
+
+		if(isShowing)
+		{
+
+				copyWidth = x2 - x1;
+				copyHeight = y2 - y1;
+				copy = new int[copyWidth][copyHeight][MapData.layers];
+
+				isCopiedOrCut = false;
+
+				int notblank = 0;
+
+				//--------------check for not blank
+
+				for(int l = 0; l < MapData.layers; l++)
+				{
+					if(MapData.isTileLayer(l) && EditorMain.controlPanel.showLayerCheckbox[l].isSelected())
+					for(int y = 0; y < copyHeight; y++)
+					{
+						for(int x = 0; x < copyWidth; x++)
+						{
+							if(Project.getSelectedMap().getTileIndex(l, x1 + x, y1 + y) != 0)
+							{
+								y = copyHeight;
+								x = copyWidth;
+								l = MapData.layers;
+								notblank = 1;
+							}
+						}
+					}
+				}
+
+
+				if(notblank == 1)
+				{
+					for(int l = 0; l < MapData.layers; l++)//HYPER LAYER
+					{
+						if(MapData.isTileLayer(l) && EditorMain.controlPanel.showLayerCheckbox[l].isSelected())
+						for(int y = 0; y < copyHeight; y++)
+						{
+							for(int x = 0; x < copyWidth; x++)
+							{
+								copy[x][y][l] = Project.getSelectedMap().getTileIndex(l, x1 + x, y1 + y); // Copy tiles within Selected Area
+							}
+						}
+					}
+					isCopiedOrCut = true;
+					
+					copyObjectsIfEnabled();
+					
+					EditorMain.infoLabel.setTextSuccess("Copied ENABLED LAYERS: " + (x2 - x1) + "x" + (y2 - y1));
+				}
+				else
+				{
+					EditorMain.infoLabel.setTextError("Did not copy: Selection was blank on Enabled Layers");
+				}
+
+		}
+
+
+	}
+
+	//===============================================================================================
 	public void copyTiles()
 	{//===============================================================================================
 

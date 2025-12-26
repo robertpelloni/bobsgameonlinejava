@@ -366,10 +366,16 @@ public class TilesetPalette
 	{//===============================================================================================
 		for(int i = 1; i < numColors; i++)
 		{
-			if(!used[i])
+			boolean open = true;
+			for(int p=0; p<Project.palette.size(); p++)
 			{
-				return i;//||(data[i][0]==0&&data[i][1]==0&&data[i][2]==0)
+				if(Project.palette.get(p).used[i])
+				{
+					open = false;
+					break;
+				}
 			}
+			if(open) return i;
 		}
 		return -1;
 	}
@@ -381,6 +387,18 @@ public class TilesetPalette
 		if(i > -1)
 		{
 			setColorDataFromRGB(i, r, g, b);
+			
+			// Reserve in others
+			for(int p=0; p<Project.palette.size(); p++)
+			{
+				TilesetPalette pal = Project.palette.get(p);
+				if(pal != this)
+				{
+					pal.used[i] = true;
+					pal.setColorDataFromRGB(i, r, g, b);
+				}
+			}
+			
 			return i;
 		}
 		else
@@ -427,6 +445,52 @@ public class TilesetPalette
 
 
 	//===============================================================================================
+	public void swapColorAllPalettes(int i, int i2)
+	{//===============================================================================================
+		for(int p=0; p<Project.palette.size(); p++)
+		{
+			Project.palette.get(p).swapColor(i, i2);
+		}
+	}
+
+	//===============================================================================================
+	public void synchronizePalettes(EditorMain E)
+	{//===============================================================================================
+		
+		//Union of used flags
+		for(int i=0; i<numColors; i++)
+		{
+			boolean usedInAny = false;
+			for(TilesetPalette pal : Project.palette)
+			{
+				if(pal.used[i]) usedInAny = true;
+			}
+			
+			if(usedInAny)
+			{
+				for(TilesetPalette pal : Project.palette)
+				{
+					if(!pal.used[i])
+					{
+						pal.used[i] = true;
+						// Find first palette where it is used and copy that color
+						for(TilesetPalette src : Project.palette)
+						{
+							if(src.used[i]) // This will be true for at least one
+							{
+								pal.setColorDataFromRGB(i, src.getRed(i), src.getGreen(i), src.getBlue(i));
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		EditorMain.infoLabel.setTextSuccess("Synchronized All Palettes");
+	}
+
+	//===============================================================================================
 	public void sortPaletteHSB(EditorMain E)
 	{//===============================================================================================
 
@@ -448,7 +512,7 @@ public class TilesetPalette
 			if(getBlue(c2) == getRed(c2)
 				&& getBlue(c2) == getGreen(c2))
 			{
-				swapColor(c1, c2);
+				swapColorAllPalettes(c1, c2);
 				Project.tileset.swapTileColors(c2, c1);
 				c1++;
 				c2++;
@@ -463,7 +527,7 @@ public class TilesetPalette
 				if(getBlue(c2) > getBlue(c1))
 				{
 
-					swapColor(c1, c2);
+					swapColorAllPalettes(c1, c2);
 					Project.tileset.swapTileColors(c2, c1);
 				}
 			}
@@ -479,7 +543,7 @@ public class TilesetPalette
 				if((hsbi[c2][0] < hsbi[c1][0]))
 				{
 
-					swapColor(c1, c2);
+					swapColorAllPalettes(c1, c2);
 					Project.tileset.swapTileColors(c2, c1);
 				}
 			}
@@ -494,7 +558,7 @@ public class TilesetPalette
 					&& hsbi[c2][0] <= (hsbi[c1][0] + hr)
 					&& hsbi[c2][1] <= hsbi[c1][1])
 				{
-					swapColor(c1, c2);
+					swapColorAllPalettes(c1, c2);
 					Project.tileset.swapTileColors(c2, c1);
 				}
 			}
@@ -511,7 +575,7 @@ public class TilesetPalette
 					&& hsbi[c2][1] <= (hsbi[c1][1] + sr)
 					&& hsbi[c2][2] <= hsbi[c1][2])
 				{
-					swapColor(c1, c2);
+					swapColorAllPalettes(c1, c2);
 					Project.tileset.swapTileColors(c2, c1);
 				}
 			}
@@ -522,7 +586,7 @@ public class TilesetPalette
 		EditorMain.tileCanvas.repaint();
 		EditorMain.controlPanel.repaint();
 		EditorMain.mapCanvas.repaint();
-		EditorMain.infoLabel.setTextSuccess("Sorted Palette By HSB");
+		EditorMain.infoLabel.setTextSuccess("Sorted All Palettes By HSB");
 	}
 
 

@@ -10,17 +10,17 @@ only copy enabled layers a-ctrl-shift-c
 
 fill undo on load map
 
-redo faster 
+redo faster - done
 
-paste into selection from tileset
+paste into selection from tileset - done
 
-sprite editor lay out frames in grid
+sprite editor lay out frames in grid - done
 
-need random sprite output.
+need random sprite output. - done
 
-also need to import bmp to tiles that would be nice
+also need to import bmp to tiles that would be nice - done
 
-palette synchronize for all tilesets (sort add colors.. easy)
+palette synchronize for all tilesets (sort add colors.. easy) - done
 need merge maps/tilesets/palettes into one.
 
 make undo better/not wrap around/skip

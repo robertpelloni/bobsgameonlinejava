@@ -1287,7 +1287,7 @@ public class Project
 			PrintWriter pw;
 			pw = new PrintWriter(new BufferedWriter(new OutputStreamWriter(zos)));
 
-			pw.println("bgEdit v20170623");
+			pw.println("bgEdit v0.1.2");
 			pw.println();
 			pw.println("Tileset");
 			pw.println(Tileset.num_Tiles);

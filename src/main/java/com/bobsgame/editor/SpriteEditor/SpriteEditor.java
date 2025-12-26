@@ -102,6 +102,7 @@ public class SpriteEditor extends JFrame implements ActionListener, ItemListener
 	openSpriteBitmapSplicer,
 	sendSpriteToTiles,
 	saveAllSpritesToPNG,
+	saveRandomSpritesToPNG,
 	saveSelectedSpriteToPNG,
 	saveSelectedSpriteToHQ2XPNG,
 	saveAllSpritesToHQ2XPNG,
@@ -222,6 +223,10 @@ public class SpriteEditor extends JFrame implements ActionListener, ItemListener
 		saveAllSpritesToPNG.addActionListener(this);
 		saveAllSpritesToPNG.setEnabled(true);
 
+		saveRandomSpritesToPNG = new JMenuItem("Export Random Sprites To PNGs");
+		saveRandomSpritesToPNG.addActionListener(this);
+		saveRandomSpritesToPNG.setEnabled(true);
+
 		copySelectedSpriteToHQ2XSprite = new JMenuItem("Duplicate Selected Sprite To HQ2XSprite");
 		copySelectedSpriteToHQ2XSprite.addActionListener(this);
 		copySelectedSpriteToHQ2XSprite.setEnabled(true);
@@ -291,6 +296,7 @@ public class SpriteEditor extends JFrame implements ActionListener, ItemListener
 		spriteMenu.add(saveSelectedSpriteToSpriteSheetPNG);
 		spriteMenu.add(importSpriteSheetPNG);
 		spriteMenu.add(saveAllSpritesToPNG);
+		spriteMenu.add(saveRandomSpritesToPNG);
 		spriteMenu.add(copySelectedSpriteToHQ2XSprite);
 		spriteMenu.add(saveSelectedSpriteToHQ2XPNG);
 		spriteMenu.add(saveAllSpritesToHQ2XPNG);
@@ -858,6 +864,7 @@ public class SpriteEditor extends JFrame implements ActionListener, ItemListener
 		else if(ae.getSource() == saveSelectedSpriteToSpriteSheetPNG)saveSelectedSpriteToSpriteSheetPNG();
 		else if(ae.getSource() == importSpriteSheetPNG)importSpriteSheetPNG();
 		else if(ae.getSource() == saveAllSpritesToPNG)saveAllSpritesToPNG();
+		else if(ae.getSource() == saveRandomSpritesToPNG)saveRandomSpritesToPNG();
 		else if(ae.getSource() == saveSelectedSpriteToHQ2XPNG)saveSelectedSpriteToHQ2XPNG();
 		else if(ae.getSource() == saveAllSpritesToHQ2XPNG)saveAllSpritesToHQ2XPNG();
 
@@ -1374,6 +1381,21 @@ public class SpriteEditor extends JFrame implements ActionListener, ItemListener
 		}
 
 		infoLabel.setTextSuccess("Saved all Sprites To PNG " + EditorMain.getFileDialogDirectoryPath());
+
+	}
+
+	//===============================================================================================
+	public void saveRandomSpritesToPNG()
+	{//===============================================================================================
+		for(int q = 0; q < Project.getNumSprites(); q++)
+		{
+			Sprite s = Project.getSprite(q);
+			if(s.isRandom()) {
+				s.outputPNG(EditorMain.getFileDialogDirectoryPath());
+			}
+		}
+
+		infoLabel.setTextSuccess("Saved Random Sprites To PNG " + EditorMain.getFileDialogDirectoryPath());
 
 	}
 
