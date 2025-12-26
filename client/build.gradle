@@ -55,8 +55,6 @@ sourceSets {
     main {
         java {
             srcDirs = ['src/main/java', '../libs/twl-lwjgl3/src']
-            exclude 'com/bobsgame/editor/**'
-            exclude 'com/bobsgame/EditorMain.java'
         }
         resources {
             srcDirs = ['src/main/resources', '../res']
@@ -66,4 +64,10 @@ sourceSets {
 
 application {
     mainClass = 'com.bobsgame.ClientMain'
+}
+
+tasks.register('runEditor', JavaExec) {
+    mainClass = 'com.bobsgame.EditorMain'
+    classpath = sourceSets.main.runtimeClasspath
+    jvmArgs = ['-Djava.library.path=../libs/natives'] // Might not be needed with LWJGL3
 }
