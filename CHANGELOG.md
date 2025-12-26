@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.3] - 2025-12-26
+
+### Added
+- **Project Merging**: Started implementation of project merging capabilities.
+- **Documentation**: Updated `LLM_INSTRUCTIONS.md` with strict versioning protocols.
+- **Dashboard**: Updated `docs/dashboard.md` with latest submodule status.
+
+### Changed
+- **Submodules**: Updated all submodules to latest upstream versions.
+- **Branches**: Merged all local feature branches into `main`.
+- **Versioning**: Incremented version to 0.1.3.
+
 ## [0.1.2] - 2025-12-25
 
 ### Added

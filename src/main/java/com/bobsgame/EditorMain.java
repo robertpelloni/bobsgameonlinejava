@@ -56,6 +56,7 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 	//FILE MENU
 		newProject,
 		openProject,
+		mergeProject,
 		saveProject,
 		exportProject,
 		exportProjectAsGameData,
@@ -453,6 +454,11 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 
 				//--------------------------------------------------------------
 
+				mergeProject = new JMenuItem("Merge Project...");
+				mergeProject.addActionListener(this);
+
+				//--------------------------------------------------------------
+
 				saveProject = new JMenuItem("Save Project As...");
 				saveProject.addActionListener(this);
 				saveProject.setEnabled(false);
@@ -483,6 +489,7 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 				//fileMenu.add(new JMenuSpacer(""));
 				//--------------------------------------------------------------
 				fileMenu.add(openProject);
+				fileMenu.add(mergeProject);
 				//--------------------------------------------------------------
 				//fileMenu.add(new JMenuSpacer(""));
 				//fileMenu.add(new JMenuSpacer(""));
@@ -2334,6 +2341,7 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 		else if(ae.getSource() == newMap)appendNewMap();
 		else if(ae.getSource() == newPalette)newPalette();
 		else if(ae.getSource() == openProject)openProject(null);
+		else if(ae.getSource() == mergeProject)mergeProject(null);
 		else if(ae.getSource() == saveProject)saveProject();
 
 		else if(ae.getSource() == saveCurrentMapPNGForEachLayer)project.saveCurrentMapPNGForEachLayer();

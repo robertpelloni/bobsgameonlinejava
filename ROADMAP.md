@@ -8,6 +8,7 @@
 - [x] **CI/CD**: Established a robust CI/CD pipeline (GitHub Actions).
 
 ## In Progress
+- [ ] **Project Merging**: Implement feature to merge multiple project files.
 - [ ] **Modernization**: Continue refactoring legacy Java code to modern standards.
 - [ ] **Testing**: Increase unit test coverage.
 - [ ] **Build Environment**: Resolve Gradle incompatibility with Java 25 (Requires Java 21).
@@ -17,7 +18,10 @@
 - [ ] **Networking**: Optimize client-server communication.
 - [ ] **UI**: Upgrade UI components using TWL.
 - [ ] **Performance**: Profile and optimize rendering loop.
+- [ ] **Undo System**: Improve undo functionality (prevent wrapping, skip redundant states).
 
 ## Backlog
 - [ ] Localization support.
 - [ ] Cross-platform packaging improvements.
+- [ ] Random sprite output.
+- [ ] Move map up/down functionality.

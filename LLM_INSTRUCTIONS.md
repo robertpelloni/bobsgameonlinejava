@@ -21,7 +21,8 @@ This file contains the core instructions for all AI models working on **BobsGame
     *   **Every significant change or build MUST increment the version number.**
     *   Update `CHANGELOG.md` with a new entry under the new version.
     *   Commit message should reference the version bump (e.g., "Bump version to 0.1.1").
-    *   Internal code should reference `VERSION.md` if possible, rather than hardcoding strings.
+    *   **Code Integration**: Internal code MUST reference `VERSION.md` (or a generated resource file derived from it) rather than hardcoding version strings.
+    *   **Commit Protocol**: When the version number is updated, perform a git commit and push immediately, ensuring the version bump is explicitly referenced in the commit message.
 
 ### 3. Code Style
 *   Follow standard Java naming conventions.
