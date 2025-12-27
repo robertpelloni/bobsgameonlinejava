@@ -812,6 +812,16 @@ public class MTECanvas extends JComponent implements MouseListener, MouseWheelLi
 	//===============================================================================================
 	public void keyPressed(KeyEvent ke)
 	{//===============================================================================================
+		if(ke.getKeyCode() == KeyEvent.VK_A && ke.isControlDown())
+		{
+			getSelectionBox().isShowing = true;
+			getSelectionBox().setLocation(0, 0);
+			getSelectionBox().setLocation2(MTE.widthTiles * 8, MTE.heightTiles * 8);
+			repaintBufferImage();
+			repaint();
+			setText("MTECanvas: Selected All");
+		}
+		else
 		if(ke.getKeyCode() == KeyEvent.VK_DELETE)
 		{
 			fillUndoArray();

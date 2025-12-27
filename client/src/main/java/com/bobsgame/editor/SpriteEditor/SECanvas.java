@@ -785,8 +785,16 @@ public class SECanvas extends MTECanvas
 	public void keyPressed(KeyEvent ke)
 	{//===============================================================================================
 
-
-
+		if(ke.getKeyCode() == KeyEvent.VK_A && ke.isControlDown())
+		{
+			getSelectionBox().isShowing = true;
+			getSelectionBox().setLocation(0, 0);
+			getSelectionBox().setLocation2(getSprite().wP(), getSprite().hP());
+			repaintBufferImage();
+			repaint();
+			setText("Sprite Editor: Selected All");
+		}
+		else
 		if(ke.getKeyCode() == KeyEvent.VK_U)
 		{
 			//set utility point offset from SelectionBox

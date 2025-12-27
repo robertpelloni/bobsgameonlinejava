@@ -2706,7 +2706,18 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 
 		if(ke.getKeyCode() == KeyEvent.VK_A)
 		{
-
+			if(ke.isControlDown())
+			{
+				if(mapCanvas != null && Project.getSelectedMap() != null)
+				{
+					mapCanvas.mapSelectionArea.isShowing = true;
+					mapCanvas.mapSelectionArea.setLocation(0, 0);
+					mapCanvas.mapSelectionArea.setLocation2(Project.getSelectedMap().wT(), Project.getSelectedMap().hT());
+					mapCanvas.repaint();
+					infoLabel.setTextSuccess("MapCanvas: Selected All");
+				}
+			}
+			else
 			if(MapCanvas.selectedAllLayers==false)
 			{
 				controlPanel.allLayersLabel.setForeground(Color.GREEN);
