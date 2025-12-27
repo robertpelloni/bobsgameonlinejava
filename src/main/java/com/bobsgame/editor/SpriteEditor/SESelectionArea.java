@@ -5,6 +5,7 @@ import java.awt.Color;
 import com.bobsgame.editor.SelectionArea;
 import com.bobsgame.editor.MultipleTileEditor.MTECanvas;
 import com.bobsgame.editor.MultipleTileEditor.MTESelectionArea;
+import com.bobsgame.editor.Undo.*;
 //===============================================================================================
 public class SESelectionArea extends SelectionArea
 {//===============================================================================================
@@ -111,6 +112,14 @@ public class SESelectionArea extends SelectionArea
 	//===============================================================================================
 	public void delete()
 	{//===============================================================================================
+		CompoundEdit edit = new CompoundEdit();
+		delete(edit);
+		edit.end();
+		if(edit.isSignificant()) getEditCanvas().undoManager.addEdit(edit);
+	}
+
+	public void delete(CompoundEdit edit)
+	{//===============================================================================================
 
 
 		if(isShowing)
@@ -120,7 +129,7 @@ public class SESelectionArea extends SelectionArea
 				for(int x = 0; x < getWidth(); x++)
 				{
 
-					getEditCanvas().setPixel(x1 + x, y1 + y, 0); // Delete pixels within Selected Area
+					getEditCanvas().setPixel(x1 + x, y1 + y, 0, edit); // Delete pixels within Selected Area
 
 				}
 			}
@@ -131,6 +140,15 @@ public class SESelectionArea extends SelectionArea
 	//===============================================================================================
 	public boolean paste()
 	{//===============================================================================================
+		CompoundEdit edit = new CompoundEdit();
+		boolean result = paste(edit);
+		edit.end();
+		if(edit.isSignificant()) getEditCanvas().undoManager.addEdit(edit);
+		return result;
+	}
+
+	public boolean paste(CompoundEdit edit)
+	{//===============================================================================================
 
 
 		if(isShowing && isCopiedOrCut && copyWidth <= getWidth() && copyHeight <= getHeight())
@@ -140,7 +158,7 @@ public class SESelectionArea extends SelectionArea
 				for(int x = 0; x < copyWidth; x++)
 				{
 
-					getEditCanvas().setPixel(x1 + x, y1 + y, copy[x][y][0]); // Paste pixels within Selected Area
+					getEditCanvas().setPixel(x1 + x, y1 + y, copy[x][y][0], edit); // Paste pixels within Selected Area
 
 				}
 			}
@@ -156,6 +174,15 @@ public class SESelectionArea extends SelectionArea
 	//===============================================================================================
 	public boolean pastekeys()
 	{//===============================================================================================
+		CompoundEdit edit = new CompoundEdit();
+		boolean result = pastekeys(edit);
+		edit.end();
+		if(edit.isSignificant()) getEditCanvas().undoManager.addEdit(edit);
+		return result;
+	}
+
+	public boolean pastekeys(CompoundEdit edit)
+	{//===============================================================================================
 
 		if(isShowing && isCopied2 && copyWidth2 <= getWidth() && copyHeight2 <= getHeight())
 		{
@@ -163,7 +190,7 @@ public class SESelectionArea extends SelectionArea
 			{
 				for(int x = 0; x < copyWidth2; x++)
 				{
-					getEditCanvas().setPixel(x1 + x, y1 + y, copy2[x][y][0]); // Paste pixels within Selected Area
+					getEditCanvas().setPixel(x1 + x, y1 + y, copy2[x][y][0], edit); // Paste pixels within Selected Area
 				}
 			}
 			return true;
@@ -177,6 +204,15 @@ public class SESelectionArea extends SelectionArea
 	//===============================================================================================
 	public boolean pastekeysNonZero()
 	{//===============================================================================================
+		CompoundEdit edit = new CompoundEdit();
+		boolean result = pastekeysNonZero(edit);
+		edit.end();
+		if(edit.isSignificant()) getEditCanvas().undoManager.addEdit(edit);
+		return result;
+	}
+
+	public boolean pastekeysNonZero(CompoundEdit edit)
+	{//===============================================================================================
 
 		if(isShowing && isCopied2 && copyWidth2 <= getWidth() && copyHeight2 <= getHeight())
 		{
@@ -186,7 +222,7 @@ public class SESelectionArea extends SelectionArea
 				{
 					if(copy2[x][y][0] != 0)
 					{
-						getEditCanvas().setPixel(x1 + x, y1 + y, copy2[x][y][0]); // Paste pixels within Selected Area
+						getEditCanvas().setPixel(x1 + x, y1 + y, copy2[x][y][0], edit); // Paste pixels within Selected Area
 					}
 				}
 			}
@@ -201,6 +237,15 @@ public class SESelectionArea extends SelectionArea
 	//===============================================================================================
 	public boolean pasteReverse()
 	{//===============================================================================================
+		CompoundEdit edit = new CompoundEdit();
+		boolean result = pasteReverse(edit);
+		edit.end();
+		if(edit.isSignificant()) getEditCanvas().undoManager.addEdit(edit);
+		return result;
+	}
+
+	public boolean pasteReverse(CompoundEdit edit)
+	{//===============================================================================================
 		if(isShowing && isCopiedOrCut && copyWidth <= getWidth() && copyHeight <= getHeight())
 		{
 			for(int y = 0; y < copyHeight; y++)
@@ -208,7 +253,7 @@ public class SESelectionArea extends SelectionArea
 				for(int x = 0; x < copyWidth; x++)
 				{
 
-					getEditCanvas().setPixel(x2 - x - 1, y1 + y, copy[x][y][0]); // Paste pixels within Selected Area
+					getEditCanvas().setPixel(x2 - x - 1, y1 + y, copy[x][y][0], edit); // Paste pixels within Selected Area
 
 				}
 			}
@@ -223,6 +268,15 @@ public class SESelectionArea extends SelectionArea
 	//===============================================================================================
 	public boolean pasteFlipped()
 	{//===============================================================================================
+		CompoundEdit edit = new CompoundEdit();
+		boolean result = pasteFlipped(edit);
+		edit.end();
+		if(edit.isSignificant()) getEditCanvas().undoManager.addEdit(edit);
+		return result;
+	}
+
+	public boolean pasteFlipped(CompoundEdit edit)
+	{//===============================================================================================
 		if(isShowing && isCopiedOrCut && copyWidth <= getWidth() && copyHeight <= getHeight())
 		{
 			for(int y = 0; y < copyHeight; y++)
@@ -230,7 +284,7 @@ public class SESelectionArea extends SelectionArea
 				for(int x = 0; x < copyWidth; x++)
 				{
 
-					getEditCanvas().setPixel(x1 + x, y2 - y - 1, copy[x][y][0]); // Paste pixels within Selected Area
+					getEditCanvas().setPixel(x1 + x, y2 - y - 1, copy[x][y][0], edit); // Paste pixels within Selected Area
 
 				}
 			}

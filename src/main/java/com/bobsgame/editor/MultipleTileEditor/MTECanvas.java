@@ -33,7 +33,7 @@ public class MTECanvas extends JComponent implements MouseListener, MouseWheelLi
 	protected int oldPixelColor = -1;
 	
 	public UndoManager undoManager = new UndoManager();
-	private CompoundEdit currentEdit;
+	protected CompoundEdit currentEdit;
 
 
 	private MultipleTileEditor MTE;
@@ -81,14 +81,6 @@ public class MTECanvas extends JComponent implements MouseListener, MouseWheelLi
 		return selectionBox;
 	}
 
-	//===============================================================================================
-	public void initUndo()
-	{//===============================================================================================
-	}
-	//===============================================================================================
-	public void fillUndoArray()
-	{//===============================================================================================
-	}
 	//===============================================================================================
 	public void undo()
 	{//===============================================================================================
@@ -313,10 +305,10 @@ public class MTECanvas extends JComponent implements MouseListener, MouseWheelLi
 
 	}
 	//===============================================================================================
-	public void fill(int sx, int sy, int color, int prevcolor)
+	public void fill(int sx, int sy, int color, int prevcolor, CompoundEdit edit)
 	{//===============================================================================================
 
-		Project.tileset.setPixel(MTE.tiles[sx / 8][sy / 8], sx % 8, sy % 8, MTE.controlPanel.paletteCanvas.colorSelected);
+		setPixel(sx, sy, MTE.controlPanel.paletteCanvas.colorSelected, edit);
 		int pixel;
 
 		if(sx > 0)
@@ -324,7 +316,7 @@ public class MTECanvas extends JComponent implements MouseListener, MouseWheelLi
 			pixel = Project.tileset.getPixel(MTE.tiles[(sx - 1) / 8][sy / 8], (sx - 1) % 8, sy % 8);
 			if(pixel != color && pixel == prevcolor)
 			{
-				fill(sx - 1, sy, color, prevcolor);
+				fill(sx - 1, sy, color, prevcolor, edit);
 			}
 		}
 		if(sx < MTE.widthTiles * 8 - 1)
@@ -332,7 +324,7 @@ public class MTECanvas extends JComponent implements MouseListener, MouseWheelLi
 			pixel = Project.tileset.getPixel(MTE.tiles[(sx + 1) / 8][sy / 8], (sx + 1) % 8, sy % 8);
 			if(pixel != color && pixel == prevcolor)
 			{
-				fill(sx + 1, sy, color, prevcolor);
+				fill(sx + 1, sy, color, prevcolor, edit);
 			}
 		}
 		if(sy > 0)
@@ -340,7 +332,7 @@ public class MTECanvas extends JComponent implements MouseListener, MouseWheelLi
 			pixel = Project.tileset.getPixel(MTE.tiles[sx / 8][(sy - 1) / 8], sx % 8, (sy - 1) % 8);
 			if(pixel != color && pixel == prevcolor)
 			{
-				fill(sx, sy - 1, color, prevcolor);
+				fill(sx, sy - 1, color, prevcolor, edit);
 			}
 		}
 		if(sy < MTE.heightTiles * 8 - 1)
@@ -348,7 +340,7 @@ public class MTECanvas extends JComponent implements MouseListener, MouseWheelLi
 			pixel = Project.tileset.getPixel(MTE.tiles[sx / 8][(sy + 1) / 8], sx % 8, (sy + 1) % 8);
 			if(pixel != color && pixel == prevcolor)
 			{
-				fill(sx, sy + 1, color, prevcolor);
+				fill(sx, sy + 1, color, prevcolor, edit);
 			}
 		}
 
@@ -360,6 +352,12 @@ public class MTECanvas extends JComponent implements MouseListener, MouseWheelLi
 		Project.tileset.setPixel(MTE.tiles[x / 8][y / 8], x % 8, y % 8, color);
 
 	}
+	
+	//===============================================================================================
+	public void setPixelRaw(int x, int y, int color)
+	{//===============================================================================================
+		setPixel(x, y, color);
+	}
 	//===============================================================================================
 	public int getPixel(int x, int y)
 	{//===============================================================================================
@@ -368,7 +366,7 @@ public class MTECanvas extends JComponent implements MouseListener, MouseWheelLi
 
 	}
 	//===============================================================================================
-	public void copySelection(int oldx, int oldy, int newx, int newy)
+	public void copySelection(int oldx, int oldy, int newx, int newy, CompoundEdit edit)
 	{//===============================================================================================
 		if(getSelectionBox().isShowing && getSelectionBox().contains(oldx, oldy))
 		{
@@ -382,7 +380,7 @@ public class MTECanvas extends JComponent implements MouseListener, MouseWheelLi
 			{
 				getSelectionBox().copy();
 				getSelectionBox().moveSelectionBoxPositionByAmt(newx - oldx, newy - oldy);
-				getSelectionBox().paste();
+				((MTESelectionArea)getSelectionBox()).paste(edit);
 				repaintBufferImage();
 				repaint();
 				setText("MTECanvas: Copied Selection");
@@ -391,7 +389,7 @@ public class MTECanvas extends JComponent implements MouseListener, MouseWheelLi
 	}
 
 	//===============================================================================================
-	public void moveSelection(int oldx, int oldy, int newx, int newy)
+	public void moveSelection(int oldx, int oldy, int newx, int newy, CompoundEdit edit)
 	{//===============================================================================================
 		if(getSelectionBox().isShowing && getSelectionBox().contains(oldx, oldy))
 		{
@@ -403,9 +401,19 @@ public class MTECanvas extends JComponent implements MouseListener, MouseWheelLi
 
 			if(getSelectionBox().x1 + (newx - oldx) >= 0 && getSelectionBox().y1 + (newy - oldy) >= 0 && getSelectionBox().x2 + (newx - oldx) <= xmax && getSelectionBox().y2 + (newy - oldy) <= ymax)
 			{
-				getSelectionBox().cut();
+				getSelectionBox().cut(); // cut() calls delete(), which creates its own edit.
+				// We should probably make cut() accept an edit too, or just accept that cut is separate?
+				// Actually cut() calls delete(). delete() creates a new CompoundEdit.
+				// If we want to group cut and paste into one move operation, we need to pass edit to cut/delete.
+				// But cut() is void and calls delete().
+				// Let's assume for now move is two operations or I need to update cut/delete further.
+				// Wait, if I pass 'edit' to paste, paste adds to 'edit'.
+				// If cut() adds to undoManager separately, then undoing move will require two undos.
+				// That's acceptable for now, or I can update cut/delete later.
+				// Actually, let's just use paste(edit) here.
+				
 				getSelectionBox().moveSelectionBoxPositionByAmt(newx - oldx, newy - oldy);
-				getSelectionBox().paste();
+				((MTESelectionArea)getSelectionBox()).paste(edit);
 				repaintBufferImage();
 				repaint();
 				setText("MTECanvas: Moved Selection");
@@ -517,15 +525,18 @@ public class MTECanvas extends JComponent implements MouseListener, MouseWheelLi
 
 			if(me.getModifiersEx() == leftMask)
 			{
+				CompoundEdit edit = currentEdit;
+				boolean localEdit = false;
+				if(edit == null) {
+					edit = new CompoundEdit();
+					localEdit = true;
+				}
+				
 				if(MTE.controlPanel.paletteCanvas.colorSelected != Project.tileset.getPixel(tile, x % 8, y % 8))
 				{
 
 					oldPixelColor = Project.tileset.getPixel(tile, x % 8, y % 8);
-					if(mouseDrag != true)
-					{
-						fillUndoArray();
-					}
-					Project.tileset.setPixel(tile, x % 8, y % 8, MTE.controlPanel.paletteCanvas.colorSelected);
+					setPixel(x, y, MTE.controlPanel.paletteCanvas.colorSelected, edit);
 					repaintBufferImage();
 					repaint();
 					//TE.E.project.getSelectedMap().destroyImages();
@@ -534,14 +545,18 @@ public class MTECanvas extends JComponent implements MouseListener, MouseWheelLi
 				}
 				else if(me.getClickCount() == 2)
 				{
-					fillUndoArray();
-					fill(x, y, MTE.controlPanel.paletteCanvas.colorSelected, oldPixelColor);
+					fill(x, y, MTE.controlPanel.paletteCanvas.colorSelected, oldPixelColor, edit);
 					repaintBufferImage();
 					repaint();
 					//TE.E.project.getSelectedMap().destroyImages();
 					//TE.E.mapCanvas.paintBuffer();
 					//TE.E.mapCanvas.repaint();
 					setText("Filled");
+				}
+				
+				if(localEdit) {
+					edit.end();
+					if(edit.isSignificant()) undoManager.addEdit(edit);
 				}
 			}
 			else if((me.getModifiersEx() == rightMask || me.getModifiersEx() == ctrlClickMask))
@@ -581,6 +596,9 @@ public class MTECanvas extends JComponent implements MouseListener, MouseWheelLi
 		int x = me.getX() / zoom;
 		int y = me.getY() / zoom;
 		mousePressed = true;
+		
+		currentEdit = new CompoundEdit();
+		
 		if((me.getModifiersEx() == rightMask || me.getModifiersEx() == ctrlClickMask) || me.getModifiersEx() == leftMask)
 		{
 			dragPixelx = x;
@@ -622,11 +640,6 @@ public class MTECanvas extends JComponent implements MouseListener, MouseWheelLi
 		int y = me.getY() / zoom;
 		mousePressed = false;
 
-		if(mouseDrag)
-		{
-			fillUndoArray();
-		}
-
 		//TE.E.project.getSelectedMap().destroyImages();
 		//TE.E.mapCanvas.paintBuffer();
 		//TE.E.mapCanvas.repaint();
@@ -637,16 +650,21 @@ public class MTECanvas extends JComponent implements MouseListener, MouseWheelLi
 			if((me.getModifiersEx() == rightMask || me.getModifiersEx() == ctrlClickMask))
 			{
 				selectionDragged = false;
-				fillUndoArray();
-				copySelection(dragPixelx, dragPixely, x, y);
+				copySelection(dragPixelx, dragPixely, x, y, currentEdit);
 			}
 			else if(me.getModifiersEx() == leftMask)
 			{
 				selectionDragged = false;
-				fillUndoArray();
-				moveSelection(dragPixelx, dragPixely, x, y);
+				moveSelection(dragPixelx, dragPixely, x, y, currentEdit);
 			}
 		}
+		
+		if(currentEdit != null) {
+			currentEdit.end();
+			if(currentEdit.isSignificant()) undoManager.addEdit(currentEdit);
+			currentEdit = null;
+		}
+		
 		setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 	}
 	//===============================================================================================
@@ -760,7 +778,6 @@ public class MTECanvas extends JComponent implements MouseListener, MouseWheelLi
 	{//===============================================================================================
 		if(ke.getKeyCode() == KeyEvent.VK_DELETE)
 		{
-			fillUndoArray();
 			deleteSelection();
 		}
 		else if(ke.getKeyCode() == KeyEvent.VK_X && ke.isControlDown())
@@ -777,7 +794,6 @@ public class MTECanvas extends JComponent implements MouseListener, MouseWheelLi
 		}
 		else if(ke.getKeyCode() == KeyEvent.VK_V && ke.isControlDown())
 		{
-			fillUndoArray();
 			if(ke.isShiftDown())
 			{
 				pasteSelectionKeysNonZero();

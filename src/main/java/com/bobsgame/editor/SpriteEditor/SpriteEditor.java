@@ -1020,7 +1020,7 @@ public class SpriteEditor extends JFrame implements ActionListener, ItemListener
 			}
 		}
 		editCanvas.repaintBufferImage();
-		editCanvas.initUndo();
+		//editCanvas.initUndo();
 		editCanvas.repaint();
 	}
 	//===============================================================================================
@@ -1051,7 +1051,7 @@ public class SpriteEditor extends JFrame implements ActionListener, ItemListener
 			}
 		}
 		editCanvas.repaintBufferImage();
-		editCanvas.initUndo();
+		//editCanvas.initUndo();
 		editCanvas.repaint();
 	}
 
@@ -1367,7 +1367,7 @@ public class SpriteEditor extends JFrame implements ActionListener, ItemListener
 		//spriteChoice.validate();
 		updateInfo();
 		editCanvas.repaintBufferImage();
-		editCanvas.initUndo();
+		//editCanvas.initUndo();
 		editCanvas.repaint();
 
 	}
@@ -2010,7 +2010,7 @@ public class SpriteEditor extends JFrame implements ActionListener, ItemListener
 			frameControlPanel.updateSpriteInfo();
 			frameControlPanel.updateFrames();
 			editCanvas.repaintBufferImage();
-			editCanvas.initUndo();
+			//editCanvas.initUndo();
 			editCanvas.repaint();
 
 			setFrameCanvasHeight();

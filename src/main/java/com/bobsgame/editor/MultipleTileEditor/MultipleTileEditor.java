@@ -166,7 +166,6 @@ public class MultipleTileEditor extends JFrame implements WindowListener, KeyLis
 		//so we should do this every time.
 		EditorMain.mapCanvas.updateAndRepaintAllLayerImagesIntoMapCanvasImageAndRepaintMapCanvas();
 
-		editCanvas.undodata = null;
 	}
 
 	//===============================================================================================

@@ -20,7 +20,7 @@ public class PixelChangeEdit extends AbstractUndoableEdit {
     @Override
     public void undo() {
         super.undo();
-        canvas.setPixel(x, y, oldColor);
+        canvas.setPixelRaw(x, y, oldColor);
         canvas.repaintBufferImage();
         canvas.repaint();
     }
@@ -28,7 +28,7 @@ public class PixelChangeEdit extends AbstractUndoableEdit {
     @Override
     public void redo() {
         super.redo();
-        canvas.setPixel(x, y, newColor);
+        canvas.setPixelRaw(x, y, newColor);
         canvas.repaintBufferImage();
         canvas.repaint();
     }

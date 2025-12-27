@@ -19,7 +19,7 @@ import com.bobsgame.editor.MultipleTileEditor.MTECanvas;
 import com.bobsgame.editor.Project.Project;
 import com.bobsgame.editor.Project.Sprite.Sprite;
 import com.bobsgame.shared.SpriteAnimationSequence;
-
+import com.bobsgame.editor.Undo.*;
 
 //===============================================================================================
 public class SECanvas extends MTECanvas
@@ -69,113 +69,18 @@ public class SECanvas extends MTECanvas
 	{//===============================================================================================
 		return SpriteEditor.getSprite();
 	}
-	//===============================================================================================
-	public void initUndo()
-	{//===============================================================================================
-		int xmax, ymax;//, x, y;
 
-		{
-			xmax = getSprite().wP();
-			ymax = getSprite().hP();
-		}
-
-		undodata = new int[undomax][xmax][ymax];
-	}
-	//===============================================================================================
-	public void fillUndoArray()
-	{//===============================================================================================
-
-		int xmax, ymax, x, y;
-
-		{
-			xmax = getSprite().wP();
-			ymax = getSprite().hP();
-		}
-
-		for(x = 0; x < xmax; x++)
-		{
-			for(y = 0; y < ymax; y++)
-			{
-				undodata[undolevel][x][y] = getPixel(x, y);
-			}
-		}
-
-		undolevel++;
-		if(undolevel > undomax - 1)
-		{
-			undolevel = 0;
-		}
-
-	}
 	//===============================================================================================
 	public void undo()
 	{//===============================================================================================
-
-		fillUndoArray();
-
-		//----------------------redo
-		int xmax, ymax, x, y;
-
-		{
-			xmax = getSprite().wP();
-			ymax = getSprite().hP();
-		}
-
-		undolevel--;
-		if(undolevel < 0)
-		{
-			undolevel = undomax - 1;
-		}
-
-		undolevel--;
-		if(undolevel < 0)
-		{
-			undolevel = undomax - 1;
-		}
-
-		for(x = 0; x < xmax; x++)
-		{
-			for(y = 0; y < ymax; y++)
-			{
-				setPixel(x, y, undodata[undolevel][x][y]);
-			}
-		}
-
-		repaintBufferImage();
-		repaint();
-
-		setText("Sprite Editor: Undo");
-
+		super.undo();
+		setText("Sprite Editor: Undid " + undoManager.getUndoPresentationName());
 	}
 	//===============================================================================================
 	public void redo()
 	{//===============================================================================================
-
-		undolevel++;
-		if(undolevel > undomax - 1)
-		{
-			undolevel = 0;
-		}
-
-		int xmax, ymax, x, y;
-
-		{
-			xmax = getSprite().wP();
-			ymax = getSprite().hP();
-		}
-
-		for(x = 0; x < xmax; x++)
-		{
-			for(y = 0; y < ymax; y++)
-			{
-				setPixel(x, y, undodata[undolevel][x][y]);
-			}
-		}
-
-		repaintBufferImage();
-		repaint();
-
-		setText("Sprite Editor: Redo");
+		super.redo();
+		setText("Sprite Editor: Redid " + undoManager.getRedoPresentationName());
 	}
 
 
@@ -419,11 +324,11 @@ public class SECanvas extends MTECanvas
 		}
 	}
 	//===============================================================================================
-	public void fill(int sx, int sy, int color, int prevcolor)
+	public void fill(int sx, int sy, int color, int prevcolor, CompoundEdit edit)
 	{//===============================================================================================
 
 		{
-			setPixel(sx, sy, color);
+			setPixel(sx, sy, color, edit);
 
 
 			int pixel;
@@ -432,7 +337,7 @@ public class SECanvas extends MTECanvas
 				pixel = getPixel(sx - 1, sy);
 				if(pixel != color && pixel == prevcolor)
 				{
-					fill(sx - 1, sy, color, prevcolor);
+					fill(sx - 1, sy, color, prevcolor, edit);
 				}
 			}
 			if(sx < getSprite().wP() - 1)
@@ -440,7 +345,7 @@ public class SECanvas extends MTECanvas
 				pixel = getPixel(sx + 1, sy);
 				if(pixel != color && pixel == prevcolor)
 				{
-					fill(sx + 1, sy, color, prevcolor);
+					fill(sx + 1, sy, color, prevcolor, edit);
 				}
 			}
 			if(sy > 0)
@@ -448,7 +353,7 @@ public class SECanvas extends MTECanvas
 				pixel = getPixel(sx, sy - 1);
 				if(pixel != color && pixel == prevcolor)
 				{
-					fill(sx, sy - 1, color, prevcolor);
+					fill(sx, sy - 1, color, prevcolor, edit);
 				}
 			}
 			if(sy < getSprite().hP() - 1)
@@ -456,11 +361,45 @@ public class SECanvas extends MTECanvas
 				pixel = getPixel(sx, sy + 1);
 				if(pixel != color && pixel == prevcolor)
 				{
-					fill(sx, sy + 1, color, prevcolor);
+					fill(sx, sy + 1, color, prevcolor, edit);
 				}
 			}
 		}
 	}
+	//===============================================================================================
+	public void setPixelRaw(int x, int y, int color)
+	{//===============================================================================================
+		getSprite().setPixel(x, y, color);
+	}
+
+	//===============================================================================================
+	public void setPixel(int x, int y, int color, CompoundEdit edit)
+	{//===============================================================================================
+		int oldColor = getPixel(x, y);
+		if(oldColor != color) {
+			if(edit != null) {
+				edit.addEdit(new PixelChangeEdit(this, x, y, oldColor, color));
+			}
+			setPixelRaw(x, y, color);
+		}
+
+		if(SpriteEditor.mirrorMode.isSelected())
+		{
+			int w = getSprite().wP()-1;
+			int h = getSprite().hP();
+
+			int newX = (w-x);
+			
+			int oldMirrorColor = getPixel(newX, y);
+			if(oldMirrorColor != color) {
+				if(edit != null) {
+					edit.addEdit(new PixelChangeEdit(this, newX, y, oldMirrorColor, color));
+				}
+				setPixelRaw(newX, y, color);
+			}
+		}
+	}
+
 	//===============================================================================================
 	public void setPixel(int x, int y, int color)
 	{//===============================================================================================
@@ -488,7 +427,7 @@ public class SECanvas extends MTECanvas
 
 	}
 	//===============================================================================================
-	public void copySelection(int oldx, int oldy, int newx, int newy)
+	public void copySelection(int oldx, int oldy, int newx, int newy, CompoundEdit edit)
 	{//===============================================================================================
 		if(getSelectionBox().isShowing && getSelectionBox().contains(oldx, oldy))
 		{
@@ -503,7 +442,7 @@ public class SECanvas extends MTECanvas
 			{
 				getSelectionBox().copy();
 				getSelectionBox().moveSelectionBoxPositionByAmt(newx - oldx, newy - oldy);
-				getSelectionBox().paste();
+				((SESelectionArea)getSelectionBox()).paste(edit);
 				repaintBufferImage();
 				repaint();
 				setText("Sprite Editor: Copied Selection");
@@ -511,7 +450,7 @@ public class SECanvas extends MTECanvas
 		}
 	}
 	//===============================================================================================
-	public void moveSelection(int oldx, int oldy, int newx, int newy)
+	public void moveSelection(int oldx, int oldy, int newx, int newy, CompoundEdit edit)
 	{//===============================================================================================
 		if(getSelectionBox().isShowing && getSelectionBox().contains(oldx, oldy))
 		{
@@ -526,7 +465,7 @@ public class SECanvas extends MTECanvas
 			{
 				getSelectionBox().cut();
 				getSelectionBox().moveSelectionBoxPositionByAmt(newx - oldx, newy - oldy);
-				getSelectionBox().paste();
+				((SESelectionArea)getSelectionBox()).paste(edit);
 				repaintBufferImage();
 				repaint();
 				setText("Sprite Editor: Moved Selection");
@@ -564,14 +503,17 @@ public class SECanvas extends MTECanvas
 		{
 			if(me.getModifiersEx() == leftMask)
 			{
+				CompoundEdit edit = currentEdit;
+				boolean localEdit = false;
+				if(edit == null) {
+					edit = new CompoundEdit();
+					localEdit = true;
+				}
+				
 				if(SpriteEditor.controlPanel.paletteCanvas.colorSelected != s.getPixel(x, y))
 				{
 					oldPixelColor = s.getPixel(x, y);
-					if(mouseDrag != true)
-					{
-						fillUndoArray();
-					}
-					setPixel(x, y, SpriteEditor.controlPanel.paletteCanvas.colorSelected);
+					setPixel(x, y, SpriteEditor.controlPanel.paletteCanvas.colorSelected, edit);
 
 
 					repaintBufferImage();
@@ -580,10 +522,15 @@ public class SECanvas extends MTECanvas
 				}
 				else if(me.getClickCount() == 2)
 				{
-					fill(x, y, SpriteEditor.controlPanel.paletteCanvas.colorSelected, oldPixelColor);
+					fill(x, y, SpriteEditor.controlPanel.paletteCanvas.colorSelected, oldPixelColor, edit);
 					repaintBufferImage();
 					repaint();
 					setText("Sprite Editor: Filled");
+				}
+				
+				if(localEdit) {
+					edit.end();
+					if(edit.isSignificant()) undoManager.addEdit(edit);
 				}
 			}
 			else if((me.getModifiersEx() == rightMask || me.getModifiersEx() == ctrlClickMask))
@@ -627,6 +574,8 @@ public class SECanvas extends MTECanvas
 		int x = me.getX() / zoom;
 		int y = me.getY() / zoom;
 		mousePressed = true;
+		
+		currentEdit = new CompoundEdit();
 
 		if((me.getModifiersEx() == rightMask || me.getModifiersEx() == ctrlClickMask) || me.getModifiersEx() == leftMask)
 		{
@@ -673,27 +622,27 @@ public class SECanvas extends MTECanvas
 		int y = (me.getY() / zoom);
 		mousePressed = false;
 
-		if(mouseDrag)
-		{
-			fillUndoArray();
-		}
-
 		if(selectionDragged)
 		{
 			mouseDrag = false;
 			if((me.getModifiersEx() == rightMask || me.getModifiersEx() == ctrlClickMask))
 			{
 				selectionDragged = false;
-				fillUndoArray();
-				copySelection(dragPixelx, dragPixely, x, y);
+				copySelection(dragPixelx, dragPixely, x, y, currentEdit);
 			}
 			else if(me.getModifiersEx() == leftMask)
 			{
 				selectionDragged = false;
-				fillUndoArray();
-				moveSelection(dragPixelx, dragPixely, x, y);
+				moveSelection(dragPixelx, dragPixely, x, y, currentEdit);
 			}
 		}
+		
+		if(currentEdit != null) {
+			currentEdit.end();
+			if(currentEdit.isSignificant()) undoManager.addEdit(currentEdit);
+			currentEdit = null;
+		}
+		
 		setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 	}
 
