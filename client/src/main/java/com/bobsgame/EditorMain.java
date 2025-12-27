@@ -12,6 +12,7 @@ import org.lwjgl.openal.AL;
 
 import com.bobsgame.audio.AudioUtils;
 import com.bobsgame.editor.ControlPanel.ControlPanel;
+import com.bobsgame.editor.Dialogs.NumberDialog;
 import com.bobsgame.editor.Dialogs.RenameWindow;
 import com.bobsgame.editor.Dialogs.YesNoWindow;
 import com.bobsgame.editor.MapCanvas.MapCanvas;
@@ -143,6 +144,7 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 		standardizePaletteRangeHSB,
 		findLeastUsedColor,
 		findFirstTileUsingSelectedColor,
+		replaceColor,
 
 
 
@@ -886,6 +888,10 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 				findFirstTileUsingSelectedColor.addActionListener(this);
 				findFirstTileUsingSelectedColor.setEnabled(true);
 
+				replaceColor = new JMenuItem("Replace Color...");
+				replaceColor.addActionListener(this);
+				replaceColor.setEnabled(true);
+
 				findLeastUsedColor = new JMenuItem("Find Least Used Colors...");
 				findLeastUsedColor.addActionListener(this);
 				findLeastUsedColor.setEnabled(true);
@@ -938,6 +944,7 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 				paletteMenu.add(removeUnusedPaletteColors);
 				paletteMenu.add(mergeDuplicatePaletteColors);
 				paletteMenu.add(findFirstTileUsingSelectedColor);
+				paletteMenu.add(replaceColor);
 				paletteMenu.add(findLeastUsedColor);
 				//--------------------------------------------------------------
 				paletteMenu.add(new JMenuSpacer("---"));
@@ -2274,6 +2281,27 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 		else if(ae.getSource() == countUsedTilesWholeTileset)project.countUsedTilesAllMaps();
 		else if(ae.getSource() == findFirstMapWithSelectedTile)project.findFirstMapWithSelectedTile(this);
 		else if(ae.getSource() == findFirstTileUsingSelectedColor)Project.tileset.findFirstTileUsingSelectedColor(this);
+		else if(ae.getSource() == replaceColor)
+		{
+			NumberDialog nd = new NumberDialog(this, "Replace Color: FROM (Old Color Index)");
+			nd.text.setText(""+controlPanel.paletteCanvas.colorSelected);
+			nd.show();
+			int oldColor = Integer.parseInt(nd.text.getText());
+
+			NumberDialog nd2 = new NumberDialog(this, "Replace Color: TO (New Color Index)");
+			nd2.text.setText("0");
+			nd2.show();
+			int newColor = Integer.parseInt(nd2.text.getText());
+
+			Project.tileset.replaceTileColor(oldColor, newColor);
+
+			tileCanvas.updateAllTiles();
+			tileCanvas.repaint();
+			controlPanel.repaint();
+			mapCanvas.updateAndRepaintAllLayerImagesIntoMapCanvasImageAndRepaintMapCanvas();
+
+			infoLabel.setTextSuccess("Replaced Color "+oldColor+" with "+newColor);
+		}
 		else if(ae.getSource() == listDoorsThatAreBroken)project.listDoorsThatAreBroken();
 		else if(ae.getSource() == findLeastUsedColor)Project.tileset.findLeastUsedColor(this);
 		else if(ae.getSource() == removeUnusedPaletteColors)Project.tileset.removeUnusedPaletteColors(this);

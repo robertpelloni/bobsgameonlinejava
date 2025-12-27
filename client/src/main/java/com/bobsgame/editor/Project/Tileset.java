@@ -1189,6 +1189,25 @@ public class Tileset
 		buildTileImages();
 	}
 
+	//===============================================================================================
+	public void replaceTileColor(int oldColor, int newColor)
+	{//===============================================================================================
+		for(int t = 0; t < num_Tiles; t++)
+		{
+			for(int y = 0; y < 8; y++)
+			{
+				for(int x = 0; x < 8; x++)
+				{
+					if(tilePaletteIndex[t][x][y] == oldColor)
+					{
+						tilePaletteIndex[t][x][y] = (int) newColor;
+					}
+				}
+			}
+		}
+		buildTileImages();
+	}
+
 
 
 
