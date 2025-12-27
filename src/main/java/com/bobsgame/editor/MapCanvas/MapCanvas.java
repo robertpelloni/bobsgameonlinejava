@@ -28,6 +28,7 @@ import com.bobsgame.shared.Utils;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.*;
+import com.bobsgame.editor.Undo.*;
 //===============================================================================================
 public class MapCanvas extends JComponent implements MouseMotionListener, MouseListener, ActionListener, ImageObserver
 {//===============================================================================================
@@ -99,10 +100,9 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 	public int previewMode = 0;
 	public int previewX = 0;
 	public int previewY = 0;
-	public int undodata[][][][];
-	public int undolevel;
-	public int undomax = 10;
-	public int undoinit = 0;
+	
+	public UndoManager undoManager = new UndoManager();
+	public CompoundEdit currentCompoundEdit = null;
 
 
 	public boolean lightBlackMasking=false;
@@ -203,192 +203,31 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 
 
 	//===============================================================================================
-	public void initUndo()
-	{//===============================================================================================
-
-		undoinit = 1;
-
-		int xmax, ymax;//, x, y;
-		{
-			xmax = getMap().wT();
-			ymax = getMap().hT();
-		}
-
-		undodata = new int[undomax][MapData.layers][xmax][ymax];
-	}
-
-	//===============================================================================================
-	public void fillUndoArray()
-	{//===============================================================================================
-
-		if(undoinit == 0)
-		{
-			initUndo();
-		}
-
-		int xmax, ymax, x, y;
-		{
-			xmax = getMap().wT();
-			ymax = getMap().hT();
-		}
-
-		for(x = 0; x < xmax; x++)
-		{
-			for(y = 0; y < ymax; y++)
-			{
-				for(int l = 0; l < MapData.layers; l++)
-				{
-
-					if(MapData.isTileLayer(l))undodata[undolevel][l][x][y] = getMap().getTileIndex(l, x, y);
-				}
-			}
-		}
-
-		undolevel++;
-		if(undolevel > undomax - 1)
-		{
-			undolevel = 0;
-		}
-
-	}
-
-	//===============================================================================================
 	public void undo()
 	{//===============================================================================================
 
-		EditorMain.infoLabel.setTextNoConsole("MapCanvas: Undoing Hold on... Level is " + undolevel);
+		EditorMain.infoLabel.setTextNoConsole("MapCanvas: Undoing...");
 
-		fillUndoArray();
-		//----------------------redo
-		int xmax, ymax, x, y;
-		{
-			xmax = getMap().wT();
-			ymax = getMap().hT();
-		}
-
-		undolevel--;
-		if(undolevel < 0)
-		{
-			undolevel = undomax - 1;
-		}
-
-		undolevel--;
-		if(undolevel < 0)
-		{
-			undolevel = undomax - 1;
-		}
-
-		int changes = 0;
-		// Pass 1: Count changes
-		for(x = 0; x < xmax; x++)
-		{
-			for(y = 0; y < ymax; y++)
-			{
-				for(int l = 0; l < MapData.layers; l++)
-				{
-					if(MapData.isTileLayer(l))
-					if(undodata[undolevel][l][x][y] != getMap().getTileIndex(l, x, y))
-					{
-						changes++;
-					}
-				}
-			}
-		}
-		
-		boolean fullRepaint = (changes > (xmax * ymax * MapData.layers) / 3);
-
-		for(x = 0; x < xmax; x++)
-		{
-			for(y = 0; y < ymax; y++)
-			{
-				for(int l = 0; l < MapData.layers; l++)
-				{
-					if(MapData.isTileLayer(l))
-					if(undodata[undolevel][l][x][y] != getMap().getTileIndex(l, x, y))
-					{
-						getMap().setTileIndex(l, x, y, undodata[undolevel][l][x][y]);
-						if(!fullRepaint) paintTileXY(l, x, y);
-					}
-				}
-			}
-		}
-		
-		if(fullRepaint) {
-			updateAndRepaintAllLayerImagesIntoMapCanvasImageAndRepaintMapCanvas();
+		if(undoManager.canUndo()) {
+			undoManager.undo();
+			EditorMain.infoLabel.setTextSuccess("MapCanvas: Undid " + undoManager.getUndoPresentationName());
 		} else {
-			repaint();
+			EditorMain.infoLabel.setTextError("MapCanvas: Nothing to undo");
 		}
-
-		EditorMain.infoLabel.setTextSuccess("MapCanvas: Done undoing. Undo level is " + undolevel);
-
-
 	}
 
 	//===============================================================================================
 	public void redo()
 	{//===============================================================================================
 
-		EditorMain.infoLabel.setTextNoConsole("MapCanvas: Redoing Hold on... Level is " + undolevel);
+		EditorMain.infoLabel.setTextNoConsole("MapCanvas: Redoing...");
 
-		if(undoinit == 0)
-		{
-			initUndo();
-		}
-
-		undolevel++;
-		if(undolevel > undomax - 1)
-		{
-			undolevel = 0;
-		}
-
-		int xmax, ymax, x, y;
-		{
-			xmax = getMap().wT();
-			ymax = getMap().hT();
-		}
-
-		int changes = 0;
-		// Pass 1: Count changes
-		for(x = 0; x < xmax; x++)
-		{
-			for(y = 0; y < ymax; y++)
-			{
-				for(int l = 0; l < MapData.layers; l++)
-				{
-					if(MapData.isTileLayer(l))
-					if(undodata[undolevel][l][x][y] != getMap().getTileIndex(l, x, y))
-					{
-						changes++;
-					}
-				}
-			}
-		}
-		
-		boolean fullRepaint = (changes > (xmax * ymax * MapData.layers) / 3);
-
-		for(x = 0; x < xmax; x++)
-		{
-			for(y = 0; y < ymax; y++)
-			{
-				for(int l = 0; l < MapData.layers; l++)
-				{
-					if(MapData.isTileLayer(l))
-					if(undodata[undolevel][l][x][y] != getMap().getTileIndex(l, x, y))
-					{
-						getMap().setTileIndex(l, x, y, undodata[undolevel][l][x][y]);
-						if(!fullRepaint) paintTileXY(l, x, y);
-					}
-				}
-			}
-		}
-		
-		if(fullRepaint) {
-			updateAndRepaintAllLayerImagesIntoMapCanvasImageAndRepaintMapCanvas();
+		if(undoManager.canRedo()) {
+			undoManager.redo();
+			EditorMain.infoLabel.setTextSuccess("MapCanvas: Redid " + undoManager.getRedoPresentationName());
 		} else {
-			repaint();
+			EditorMain.infoLabel.setTextError("MapCanvas: Nothing to redo");
 		}
-
-		EditorMain.infoLabel.setTextSuccess("MapCanvas: Done undoing. Redo level is " + undolevel);
 
 	}
 
@@ -418,13 +257,8 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 
 		EditorMain.mapScrollPane.validate();
 
-
-
-
-		undodata = null;
-		undoinit = 0;
-
-
+		//undodata = null;
+		//undoinit = 0;
 	}
 
 	//===============================================================================================
@@ -1332,33 +1166,45 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 
 	//===============================================================================================
 	public void recursiveFill(int l, int sx, int sy, int tile, int prevtile)
+	{
+		CompoundEdit edit = new CompoundEdit();
+		recursiveFill(l, sx, sy, tile, prevtile, edit);
+		edit.end();
+		undoManager.addEdit(edit);
+	}
+
+	public void recursiveFill(int l, int sx, int sy, int tile, int prevtile, CompoundEdit edit)
 	{//===============================================================================================
 
 		if(MapData.isTileLayer(l)==false)return;
 
 
-		getMap().setTileIndex(l, sx, sy, tile);
+		int oldTile = getMap().getTileIndex(l, sx, sy);
+		if(oldTile != tile) {
+			edit.addEdit(new TileChangeEdit(this, l, sx, sy, oldTile, tile));
+			getMap().setTileIndex(l, sx, sy, tile);
+		}
 
 		//paintTileXY(l, sx, sy);//we don't need to do this because the whole map gets redrawn afterwards.
 
 		if(sx > 0 && getMap().getTileIndex(l, sx - 1, sy) != tile && getMap().getTileIndex(l, sx - 1, sy) == prevtile)
 		{
-			recursiveFill(l, sx - 1, sy, tile, prevtile);
+			recursiveFill(l, sx - 1, sy, tile, prevtile, edit);
 		}
 
 		if(sx < getMap().wT() - 1 && getMap().getTileIndex(l, sx + 1, sy) != tile && getMap().getTileIndex(l, sx + 1, sy) == prevtile)
 		{
-			recursiveFill(l, sx + 1, sy, tile, prevtile);
+			recursiveFill(l, sx + 1, sy, tile, prevtile, edit);
 		}
 
 		if(sy > 0 && getMap().getTileIndex(l, sx, sy - 1) != tile && getMap().getTileIndex(l, sx, sy - 1) == prevtile)
 		{
-			recursiveFill(l, sx, sy - 1, tile, prevtile);
+			recursiveFill(l, sx, sy - 1, tile, prevtile, edit);
 		}
 
 		if(sy < getMap().hT() - 1 && getMap().getTileIndex(l, sx, sy + 1) != tile && getMap().getTileIndex(l, sx, sy + 1) == prevtile)
 		{
-			recursiveFill(l, sx, sy + 1, tile, prevtile);
+			recursiveFill(l, sx, sy + 1, tile, prevtile, edit);
 		}
 
 	}
@@ -1370,6 +1216,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 
 		if(MapData.isTileLayer(selectedLayer)==false)return;
 
+		CompoundEdit edit = new CompoundEdit();
 
 		if(mapSelectionArea.isShowing)//this is mapcanvas mapSelectionArea
 		{
@@ -1377,6 +1224,8 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 			{
 				for(int xx = mapSelectionArea.x1; xx < mapSelectionArea.x2; xx++)
 				{
+					int oldTile = getMap().getTileIndex(selectedLayer, xx, yy);
+					int newTile;
 
 					//if there is a mapSelectionArea on the tile canvas, then fill with that
 					if(EditorMain.tileCanvas.tileSelectionArea.isShowing)
@@ -1394,21 +1243,25 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 						int tileX = (EditorMain.tileCanvas.tileSelectionArea.x1 / TileCanvas.TILE_SIZE) + offsetX;
 						int tileY = (EditorMain.tileCanvas.tileSelectionArea.y1 / TileCanvas.TILE_SIZE) + offsetY;
 						
-						int tileIndex = tileY * TileCanvas.WIDTH_TILES + tileX;
-
-						getMap().setTileIndex(selectedLayer, xx, yy, tileIndex);
-						paintTileXY(selectedLayer, xx, yy);
-
+						newTile = tileY * TileCanvas.WIDTH_TILES + tileX;
 					}
 					else
 					{
 					//otherwise just fill with the single tile
-						getMap().setTileIndex(selectedLayer, xx, yy, EditorMain.tileCanvas.tileSelected);
+						newTile = EditorMain.tileCanvas.tileSelected;
+					}
+
+					if(oldTile != newTile) {
+						edit.addEdit(new TileChangeEdit(this, selectedLayer, xx, yy, oldTile, newTile));
+						getMap().setTileIndex(selectedLayer, xx, yy, newTile);
 						paintTileXY(selectedLayer, xx, yy);
 					}
 				}
 			}
 		}
+
+		edit.end();
+		if(edit.isSignificant()) undoManager.addEdit(edit);
 
 		repaint();
 	}
@@ -1462,7 +1315,13 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 						if(getMap().getTileIndex(MapData.MAP_HIT_LAYER, clickedTileX, clickedTileY) != val)
 						{
 
-							if(mouseDragged==false)fillUndoArray();
+							//if(mouseDragged==false)fillUndoArray();
+							
+							int oldVal = getMap().getTileIndex(MapData.MAP_HIT_LAYER, clickedTileX, clickedTileY);
+							if(oldVal != val) {
+								UndoableEdit edit = new TileChangeEdit(this, MapData.MAP_HIT_LAYER, clickedTileX, clickedTileY, oldVal, val);
+								undoManager.addEdit(edit);
+							}
 
 							getMap().setTileIndex(MapData.MAP_HIT_LAYER, clickedTileX, clickedTileY, val);
 							paintTileXY(MapData.MAP_HIT_LAYER, clickedTileX, clickedTileY);
@@ -1960,7 +1819,12 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 						{
 							prevtile = getMap().getTileIndex(selectedLayer, clickedTileX, clickedTileY);
 
-							if(mouseDragged==false)fillUndoArray();
+							//if(mouseDragged==false)fillUndoArray();
+							
+							if(prevtile != EditorMain.tileCanvas.tileSelected) {
+								UndoableEdit edit = new TileChangeEdit(this, selectedLayer, clickedTileX, clickedTileY, prevtile, EditorMain.tileCanvas.tileSelected);
+								undoManager.addEdit(edit);
+							}
 
 
 							getMap().setTileIndex(selectedLayer, clickedTileX, clickedTileY, EditorMain.tileCanvas.tileSelected);
@@ -1976,7 +1840,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 
 								//Recursive Flood Fill
 
-								fillUndoArray();
+								//fillUndoArray();
 
 								recursiveFill(selectedLayer, clickedTileX, clickedTileY, EditorMain.tileCanvas.tileSelected, prevtile);
 
@@ -2116,6 +1980,8 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 		//int rightMask = InputEvent.BUTTON3_DOWN_MASK;
 		//int shiftClickMask = InputEvent.BUTTON1_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK;
 
+		currentCompoundEdit = new CompoundEdit();
+
 		mousePressedX = me.getX();
 		mousePressedY = me.getY();
 
@@ -2201,9 +2067,12 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 		int shiftClickMask = InputEvent.BUTTON1_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK;
 		int shiftCtrlClickMask = InputEvent.BUTTON1_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK | InputEvent.CTRL_DOWN_MASK;
 
-		if(mouseDragged == true)
-		{
-			fillUndoArray();
+		if(currentCompoundEdit != null) {
+			currentCompoundEdit.end();
+			if(currentCompoundEdit.isSignificant()) {
+				undoManager.addEdit(currentCompoundEdit);
+			}
+			currentCompoundEdit = null;
 		}
 
 		mouseDragged = false;
@@ -2232,14 +2101,14 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 			if((me.getModifiersEx() == rightMask || me.getModifiersEx() == ctrlClickMask))
 			{
 				selectionDragged = false;
-				fillUndoArray();
+				//fillUndoArray();
 				mapSelectionArea.copyFromTo(releasedTileX, releasedTileY, pressedTileX, pressedTileY);
 			}
 			else
 			if(me.getModifiersEx() == leftMask)
 			{
 				selectionDragged = false;
-				fillUndoArray();
+				//fillUndoArray();
 				mapSelectionArea.swapFromTo(releasedTileX, releasedTileY, pressedTileX, pressedTileY);
 			}
 		}

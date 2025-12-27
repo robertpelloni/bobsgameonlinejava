@@ -52,6 +52,9 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 
 	static public JButton openMapPropertiesEditorButton;
 
+	public JButton moveMapUpButton;
+	public JButton moveMapDownButton;
+
 
 	public TileEditCanvas tileEditCanvas;
 
@@ -417,6 +420,19 @@ public class ControlPanel extends JPanel implements ActionListener, ItemListener
 			miscPanel.add(noteButtonPanel);
 			miscPanel.add(nightTimePreviewPanel);
 
+			JPanel moveMapPanel = new JPanel();
+			moveMapPanel.setBackground(Color.BLACK);
+			moveMapUpButton = new JButton("Move Up");
+			moveMapUpButton.addActionListener(this);
+			moveMapUpButton.setFocusable(false);
+			moveMapDownButton = new JButton("Move Down");
+			moveMapDownButton.addActionListener(this);
+			moveMapDownButton.setFocusable(false);
+			moveMapPanel.add(moveMapUpButton);
+			moveMapPanel.add(moveMapDownButton);
+
+			miscPanel.add(moveMapPanel);
+
 
 
 
@@ -666,6 +682,22 @@ Color unselectedLayerPanelBackground = Color.black;
 		if(ae.getSource() == openMapPropertiesEditorButton)
 		{
 			mapPropertiesWindow.showMapPropertiesWindow();
+		}
+
+		if(ae.getSource() == moveMapUpButton)
+		{
+			if(E.project_loaded && E.mapCanvas.getMap() != null) {
+				E.mapCanvas.getMap().shiftMap(0, -1);
+				E.mapCanvas.repaint();
+			}
+		}
+
+		if(ae.getSource() == moveMapDownButton)
+		{
+			if(E.project_loaded && E.mapCanvas.getMap() != null) {
+				E.mapCanvas.getMap().shiftMap(0, 1);
+				E.mapCanvas.repaint();
+			}
 		}
 
 

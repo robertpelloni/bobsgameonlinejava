@@ -1,45 +1,36 @@
 # Project Dashboard
 
-## Overview
-**Project**: BobsGameOnline
-**Version**: 0.1.3 (See [VERSION.md](../VERSION.md))
-**Build System**: Gradle 8.8
-**Java Version**: 21
+**Last Updated:** 2025-12-27
+**Build Status:** Passing (Java 21)
+**Current Version:** 0.1.3
 
-## Directory Structure
+## Project Structure
 
-*   **`src/main/java`**: Core Java source code.
-    *   `com.bobsgame.client`: Client-side logic, rendering, input.
-    *   `com.bobsgame.server`: Server-side logic.
-    *   `com.bobsgame.shared`: Shared utilities and data structures.
-*   **`src/main/resources`**: Java resources (config, etc.).
-*   **`libs/`**: External dependencies managed as Git submodules.
-*   **`lua/`**: Lua scripts for game logic.
-*   **`res/`**: Game assets (images, sounds, data files).
-*   **`docs/`**: Project documentation.
-*   **`cpp_repo/`**: C++ native code repository.
+The project is organized as follows:
+
+*   `src/main/java`: Main Java source code.
+*   `src/main/resources`: Game assets and resources.
+*   `libs/`: External dependencies managed as git submodules.
+*   `docs/`: Project documentation.
+*   `lua/`: Lua scripts for game logic.
+*   `res/`: Additional resources (GeoIP database, text files).
 
 ## Submodules Status
 
-| Submodule | Path | Version/Commit | Status |
-| :--- | :--- | :--- | :--- |
-| **GeoIP2-java** | `libs/GeoIP2-java` | `94975ab` (v4.3.0+) | Updated |
-| **commons-lang** | `libs/commons-lang` | `6a4979b` (3.20.0+) | Up to date |
-| **jinput** | `libs/jinput` | `45fe725` (2.0.10+) | Up to date |
-| **lwjgl3** | `libs/lwjgl3` | `50f3b0e` (3.3.6+) | Up to date |
-| **lz4-java** | `libs/lz4-java` | `c609c16` (1.8.0+) | Updated |
-| **micromod** | `libs/micromod` | `68f2741` (master) | Up to date |
-| **mysql-connector-j** | `libs/mysql-connector-j` | `a7b3c94` (9.5.0) | Up to date |
-| **twl-lwjgl3** | `libs/twl-lwjgl3` | `647ec34` (master) | Up to date |
-| **xpp3** | `libs/xpp3` | `68498e7` (1.1.4c+) | Up to date |
-| **xz-java** | `libs/xz-java` | `e52d9ad` (v1.11+) | Up to date |
+| Submodule | Path | Version/Commit |
+| :--- | :--- | :--- |
+| **GeoIP2-java** | `libs/GeoIP2-java` | `10d56995` (v4.3.0+) |
+| **commons-lang** | `libs/commons-lang` | `6a4979ba` (rel/commons-lang-3.20.0+) |
+| **jinput** | `libs/jinput` | `45fe7256` (2.0.10+) |
+| **lwjgl3** | `libs/lwjgl3` | `50f3b0e6` (3.3.6+) |
+| **lz4-java** | `libs/lz4-java` | `be9ce575` (1.8.0+) |
+| **micromod** | `libs/micromod` | `68f27411` (master) |
+| **mysql-connector-j** | `libs/mysql-connector-j` | `a7b3c94f` (9.5.0) |
+| **twl-lwjgl3** | `libs/twl-lwjgl3` | `647ec347` (master) |
+| **xpp3** | `libs/xpp3` | `68498e76` (xpp3-1.1.4c.0+) |
+| **xz-java** | `libs/xz-java` | `e52d9ad6` (v1.11+) |
 
 ## Recent Activity
-*   **2025-12-26**: Updated submodules (GeoIP2, lz4-java).
-*   **2025-12-26**: Merged feature branches.
-*   **2025-12-26**: Implemented Palette Synchronization.
-*   **2025-12-26**: Started Project Merge feature.
-
-## Build Status
-*   **Last Build**: Successful (Gradle build & test)
-*   **Date**: 2025-12-26
+*   **Feature**: Implemented "Merge Project" functionality.
+*   **Maintenance**: Updated all submodules to latest upstream.
+*   **Environment**: Standardized on Java 21.

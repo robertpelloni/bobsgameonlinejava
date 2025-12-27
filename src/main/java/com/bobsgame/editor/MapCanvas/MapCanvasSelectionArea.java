@@ -13,6 +13,8 @@ import com.bobsgame.editor.Project.Map.Light;
 import com.bobsgame.editor.Project.Map.Map;
 import com.bobsgame.editor.Project.Map.MapState;
 import com.bobsgame.shared.MapData;
+import com.bobsgame.editor.Undo.*;
+//import javax.swing.undo.*;
 
 //===============================================================================================
 public class MapCanvasSelectionArea extends SelectionArea
@@ -766,22 +768,37 @@ public class MapCanvasSelectionArea extends SelectionArea
 
 
 	//===============================================================================================
-	public void swapTile(int l, int toX, int toY, int fromX, int fromY)
+	public void swapTile(int l, int toX, int toY, int fromX, int fromY, CompoundEdit edit)
 	{//===============================================================================================
 
 		if(MapData.isTileLayer(l)==false)return;
 
-		int temp = MC.getMap().getTileIndex(l, toX, toY);
-		MC.getMap().setTileIndex(l, toX, toY, MC.getMap().getTileIndex(l, fromX, fromY));
-		MC.paintTileXY(l,toX,toY);
-		MC.getMap().setTileIndex(l, fromX, fromY, temp);
-		MC.paintTileXY(l, fromX, fromY);
+		int tile1 = MC.getMap().getTileIndex(l, toX, toY);
+		int tile2 = MC.getMap().getTileIndex(l, fromX, fromY);
+		
+		if(tile1 != tile2) {
+			if(edit != null) {
+				edit.addEdit(new TileChangeEdit(MC, l, toX, toY, tile1, tile2));
+				edit.addEdit(new TileChangeEdit(MC, l, fromX, fromY, tile2, tile1));
+			}
+			
+			MC.getMap().setTileIndex(l, toX, toY, tile2);
+			MC.paintTileXY(l,toX,toY);
+			MC.getMap().setTileIndex(l, fromX, fromY, tile1);
+			MC.paintTileXY(l, fromX, fromY);
+		}
+	}
+	
+	//===============================================================================================
+	public void swapTile(int l, int toX, int toY, int fromX, int fromY)
+	{//===============================================================================================
+		swapTile(l, toX, toY, fromX, fromY, null);
 	}
 	//===============================================================================================
 	public void swapFromTo(int toX, int toY, int fromX, int fromY)
 	{//===============================================================================================
 
-
+		CompoundEdit edit = new CompoundEdit();
 
 		if(MapCanvas.selectedAllLayers && isShowing && contains(fromX, fromY))
 		{
@@ -802,14 +819,14 @@ public class MapCanvasSelectionArea extends SelectionArea
 							{
 								for(int xx = x1; xx < x2; xx++)
 								{
-									swapTile(l, xx + offsetx, yy + offsety, xx, yy);
+									swapTile(l, xx + offsetx, yy + offsety, xx, yy, edit);
 								}
 							}
 							else
 							{
 								for(int xx = x2 - 1; xx >= x1; xx--)
 								{
-									swapTile(l, xx + offsetx, yy + offsety, xx, yy);
+									swapTile(l, xx + offsetx, yy + offsety, xx, yy, edit);
 								}
 							}
 						}
@@ -822,14 +839,14 @@ public class MapCanvasSelectionArea extends SelectionArea
 							{
 								for(int xx = x1; xx < x2; xx++)
 								{
-									swapTile(l, xx + offsetx, yy + offsety, xx, yy);
+									swapTile(l, xx + offsetx, yy + offsety, xx, yy, edit);
 								}
 							}
 							else
 							{
 								for(int xx = x2 - 1; xx >= x1; xx--)
 								{
-									swapTile(l, xx + offsetx, yy + offsety, xx, yy);
+									swapTile(l, xx + offsetx, yy + offsety, xx, yy, edit);
 								}
 							}
 						}
@@ -858,11 +875,17 @@ public class MapCanvasSelectionArea extends SelectionArea
 						contains((area.xP()+area.wP()-1)/8,(area.yP()+area.hP()-1)/8)
 				)
 				{
+					int oldX = area.xP();
+					int oldY = area.yP();
+					int newX = area.xP()+offsetx*8;
+					int newY = area.yP()+offsety*8;
+					
+					edit.addEdit(new MapObjectMoveEdit(area, oldX, oldY, newX, newY));
 
 					//System.out.println("x: "+offsetx);
 					//System.out.println("y: "+offsety);
-					area.setXPixels(area.xP()+offsetx*8);
-					area.setYPixels(area.yP()+offsety*8);
+					area.setXPixels(newX);
+					area.setYPixels(newY);
 					area.setArrivalXPixels(area.arrivalXPixels()+offsetx*8);
 					area.setArrivalYPixels(area.arrivalYPixels()+offsety*8);
 				}
@@ -881,8 +904,15 @@ public class MapCanvasSelectionArea extends SelectionArea
 						contains((door.xP()+door.wP()-1)/8,(door.yP()+door.hP()-1)/8)
 				)
 				{
-					door.setXPixels(door.xP()+offsetx*8);
-					door.setYPixels(door.yP()+offsety*8);
+					int oldX = door.xP();
+					int oldY = door.yP();
+					int newX = door.xP()+offsetx*8;
+					int newY = door.yP()+offsety*8;
+					
+					edit.addEdit(new MapObjectMoveEdit(door, oldX, oldY, newX, newY));
+					
+					door.setXPixels(newX);
+					door.setYPixels(newY);
 					door.setArrivalXPixels(door.arrivalXPixels()+offsetx*8);
 					door.setArrivalYPixels(door.arrivalYPixels()+offsety*8);
 				}
@@ -900,8 +930,15 @@ public class MapCanvasSelectionArea extends SelectionArea
 						contains((entity.xP()+(int)((entity.wP()-1)))/8,(int)(entity.yP()+((entity.hP()-1)))/8)
 				)
 				{
-					entity.setXPixels(entity.xP()+offsetx*8);
-					entity.setYPixels(entity.yP()+offsety*8);
+					int oldX = entity.xP();
+					int oldY = entity.yP();
+					int newX = entity.xP()+offsetx*8;
+					int newY = entity.yP()+offsety*8;
+					
+					edit.addEdit(new MapObjectMoveEdit(entity, oldX, oldY, newX, newY));
+					
+					entity.setXPixels(newX);
+					entity.setYPixels(newY);
 				}
 			}
 
@@ -916,8 +953,15 @@ public class MapCanvasSelectionArea extends SelectionArea
 						contains((light.xP()+light.wP()-1)/8,(light.yP()+light.hP()-1)/8)
 				)
 				{
-					light.setXPixels(light.xP()+offsetx*8);
-					light.setYPixels(light.yP()+offsety*8);
+					int oldX = light.xP();
+					int oldY = light.yP();
+					int newX = light.xP()+offsetx*8;
+					int newY = light.yP()+offsety*8;
+					
+					edit.addEdit(new MapObjectMoveEdit(light, oldX, oldY, newX, newY));
+					
+					light.setXPixels(newX);
+					light.setYPixels(newY);
 					light.setToggleXPixels(light.toggleXPixels1X()+offsetx*8);
 					light.setToggleYPixels(light.toggleYPixels1X()+offsety*8);
 				}
@@ -948,14 +992,14 @@ public class MapCanvasSelectionArea extends SelectionArea
 						{
 							for(int xx = x1; xx < x2; xx++)
 							{
-								swapTile(MapCanvas.selectedLayer, xx + offsetx, yy + offsety, xx, yy);
+								swapTile(MapCanvas.selectedLayer, xx + offsetx, yy + offsety, xx, yy, edit);
 							}
 						}
 						else
 						{
 							for(int xx = x2 - 1; xx >= x1; xx--)
 							{
-								swapTile(MapCanvas.selectedLayer, xx + offsetx, yy + offsety, xx, yy);
+								swapTile(MapCanvas.selectedLayer, xx + offsetx, yy + offsety, xx, yy, edit);
 							}
 						}
 					}
@@ -968,14 +1012,14 @@ public class MapCanvasSelectionArea extends SelectionArea
 						{
 							for(int xx = x1; xx < x2; xx++)
 							{
-								swapTile(MapCanvas.selectedLayer, xx + offsetx, yy + offsety, xx, yy);
+								swapTile(MapCanvas.selectedLayer, xx + offsetx, yy + offsety, xx, yy, edit);
 							}
 						}
 						else
 						{
 							for(int xx = x2 - 1; xx >= x1; xx--)
 							{
-								swapTile(MapCanvas.selectedLayer, xx + offsetx, yy + offsety, xx, yy);
+								swapTile(MapCanvas.selectedLayer, xx + offsetx, yy + offsety, xx, yy, edit);
 							}
 						}
 					}
@@ -985,6 +1029,9 @@ public class MapCanvasSelectionArea extends SelectionArea
 			MC.repaint();
 			EditorMain.infoLabel.setTextSuccess("Swapped Area");
 		}
+		
+		edit.end();
+		if(edit.isSignificant()) MC.undoManager.addEdit(edit);
 	}
 
 

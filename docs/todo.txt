@@ -21,11 +21,11 @@ need random sprite output. - done
 also need to import bmp to tiles that would be nice - done
 
 palette synchronize for all tilesets (sort add colors.. easy) - done
-need merge maps/tilesets/palettes into one.
+need merge maps/tilesets/palettes into one. - done
 
 make undo better/not wrap around/skip
 
-move map up/down
+move map up/down - done
 
 need to change gfx.h output to not use tileset names at all
 this requires me to change the map define output, the pal bin output, the touchmap png output

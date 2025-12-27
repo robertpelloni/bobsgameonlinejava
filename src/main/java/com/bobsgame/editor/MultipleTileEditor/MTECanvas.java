@@ -9,6 +9,7 @@ import javax.swing.JComponent;
 import com.bobsgame.EditorMain;
 import com.bobsgame.editor.SelectionArea;
 import com.bobsgame.editor.Project.Project;
+import com.bobsgame.editor.Undo.*;
 
 //===============================================================================================
 public class MTECanvas extends JComponent implements MouseListener, MouseWheelListener, MouseMotionListener, KeyListener, ImageObserver
@@ -30,9 +31,9 @@ public class MTECanvas extends JComponent implements MouseListener, MouseWheelLi
 	public boolean mousePressed;
 	public int zoom = 8;
 	protected int oldPixelColor = -1;
-	public int undolevel = 0;
-	public int undodata[][][];
-	public int undomax = 20;
+	
+	public UndoManager undoManager = new UndoManager();
+	private CompoundEdit currentEdit;
 
 
 	private MultipleTileEditor MTE;
@@ -83,108 +84,42 @@ public class MTECanvas extends JComponent implements MouseListener, MouseWheelLi
 	//===============================================================================================
 	public void initUndo()
 	{//===============================================================================================
-		int xmax, ymax;//, x, y;
-
-		xmax = MTE.widthTiles * 8;
-		ymax = MTE.heightTiles * 8;
-
-
-
-		undodata = new int[undomax][xmax][ymax];
 	}
 	//===============================================================================================
 	public void fillUndoArray()
 	{//===============================================================================================
-
-		int xmax, ymax, x, y;
-
-		xmax = MTE.widthTiles * 8;
-		ymax = MTE.heightTiles * 8;
-
-
-
-		for(x = 0; x < xmax; x++)
-		{
-			for(y = 0; y < ymax; y++)
-			{
-				undodata[undolevel][x][y] = getPixel(x, y);
-			}
-		}
-
-		undolevel++;
-		if(undolevel > undomax - 1)
-		{
-			undolevel = 0;
-		}
-
 	}
 	//===============================================================================================
 	public void undo()
 	{//===============================================================================================
-
-		fillUndoArray();
-
-		//----------------------redo
-		int xmax, ymax, x, y;
-
-		xmax = MTE.widthTiles * 8;
-		ymax = MTE.heightTiles * 8;
-
-
-		undolevel--;
-		if(undolevel < 0)
-		{
-			undolevel = undomax - 1;
+		if(undoManager.canUndo()) {
+			undoManager.undo();
+			setText("MTECanvas: Undid " + undoManager.getUndoPresentationName());
+		} else {
+			setText("MTECanvas: Nothing to undo");
 		}
-
-		undolevel--;
-		if(undolevel < 0)
-		{
-			undolevel = undomax - 1;
-		}
-
-		for(x = 0; x < xmax; x++)
-		{
-			for(y = 0; y < ymax; y++)
-			{
-				setPixel(x, y, undodata[undolevel][x][y]);
-			}
-		}
-
-		repaintBufferImage();
-		repaint();
-
-		setText("MTECanvas: Undo");
-
 	}
 	//===============================================================================================
 	public void redo()
 	{//===============================================================================================
-
-		undolevel++;
-		if(undolevel > undomax - 1)
-		{
-			undolevel = 0;
+		if(undoManager.canRedo()) {
+			undoManager.redo();
+			setText("MTECanvas: Redid " + undoManager.getRedoPresentationName());
+		} else {
+			setText("MTECanvas: Nothing to redo");
 		}
-
-		int xmax, ymax, x, y;
-
-		xmax = MTE.widthTiles * 8;
-		ymax = MTE.heightTiles * 8;
-
-
-		for(x = 0; x < xmax; x++)
-		{
-			for(y = 0; y < ymax; y++)
-			{
-				setPixel(x, y, undodata[undolevel][x][y]);
+	}
+	
+	//===============================================================================================
+	public void setPixel(int x, int y, int color, CompoundEdit edit)
+	{//===============================================================================================
+		int oldColor = getPixel(x, y);
+		if(oldColor != color) {
+			if(edit != null) {
+				edit.addEdit(new PixelChangeEdit(this, x, y, oldColor, color));
 			}
+			setPixel(x, y, color);
 		}
-
-		repaintBufferImage();
-		repaint();
-
-		setText("MTECanvas: Redo");
 	}
 
 

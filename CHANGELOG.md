@@ -2,10 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4] - 2025-12-27
+
+### Changed
+- **Environment**: Standardized development environment on Java 21 to resolve Gradle 8.8 compatibility issues.
+- **Documentation**: Consolidated and updated `LLM_INSTRUCTIONS.md` to serve as the single source of truth for all AI models.
+- **Documentation**: Updated `docs/dashboard.md` with current submodule hashes and build status.
+
 ## [0.1.3] - 2025-12-26
 
 ### Added
-- **Project Merging**: Started implementation of project merging capabilities.
+- **Project Merging**: Implemented full project merging capabilities. Users can now merge maps, tilesets, palettes, sprites, and other data from another project zip file into the current project.
 - **Documentation**: Updated `LLM_INSTRUCTIONS.md` with strict versioning protocols.
 - **Dashboard**: Updated `docs/dashboard.md` with latest submodule status.
 

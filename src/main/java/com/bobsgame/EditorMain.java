@@ -1633,7 +1633,7 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 		mapCanvas.setSizedoLayout();
 
 		mapCanvas.updateAndRepaintAllLayerImagesIntoMapCanvasImageAndRepaintMapCanvas();
-		mapCanvas.fillUndoArray();
+		//mapCanvas.fillUndoArray();
 	}
 	//===============================================================================================
 	public void moveMapDown()
@@ -1656,7 +1656,7 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 		mapCanvas.setSizedoLayout();
 
 		mapCanvas.updateAndRepaintAllLayerImagesIntoMapCanvasImageAndRepaintMapCanvas();
-		mapCanvas.fillUndoArray();
+		//mapCanvas.fillUndoArray();
 	}
 
 	//===============================================================================================
@@ -1690,7 +1690,7 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 		mapCanvas.setSizedoLayout();
 
 		mapCanvas.updateAndRepaintAllLayerImagesIntoMapCanvasImageAndRepaintMapCanvas();
-		mapCanvas.fillUndoArray();
+		//mapCanvas.fillUndoArray();
 	}
 	//===============================================================================================
 	public void moveStateDown()
@@ -1722,7 +1722,7 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 		mapCanvas.setSizedoLayout();
 
 		mapCanvas.updateAndRepaintAllLayerImagesIntoMapCanvasImageAndRepaintMapCanvas();
-		mapCanvas.fillUndoArray();
+		//mapCanvas.fillUndoArray();
 	}
 
 	//===============================================================================================
@@ -1746,7 +1746,7 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 		mapCanvas.setSizedoLayout();
 
 		mapCanvas.updateAndRepaintAllLayerImagesIntoMapCanvasImageAndRepaintMapCanvas();
-		mapCanvas.fillUndoArray();
+		//mapCanvas.fillUndoArray();
 	}
 
 	//===============================================================================================
@@ -1770,7 +1770,7 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 		mapCanvas.setSizedoLayout();
 
 		mapCanvas.updateAndRepaintAllLayerImagesIntoMapCanvasImageAndRepaintMapCanvas();
-		mapCanvas.fillUndoArray();
+		//mapCanvas.fillUndoArray();
 	}
 
 	//===============================================================================================
@@ -1880,7 +1880,7 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 			mapCanvas.zoomOut();
 			mapCanvas.zoomIn();
 			mapCanvas.updateAndRepaintAllLayerImagesIntoMapCanvasImageAndRepaintMapCanvas();
-			mapCanvas.fillUndoArray();
+			//mapCanvas.fillUndoArray();
 
 		}
 	}
@@ -1911,7 +1911,7 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 		mapCanvas.setSizedoLayout();
 
 		mapCanvas.updateAndRepaintAllLayerImagesIntoMapCanvasImageAndRepaintMapCanvas();
-		mapCanvas.fillUndoArray();
+		//mapCanvas.fillUndoArray();
 
 	}
 
@@ -1938,7 +1938,7 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 		mapCanvas.setSizedoLayout();
 
 		mapCanvas.updateAndRepaintAllLayerImagesIntoMapCanvasImageAndRepaintMapCanvas();
-		mapCanvas.fillUndoArray();
+		//mapCanvas.fillUndoArray();
 
 	}
 
@@ -1955,7 +1955,7 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 		tileCanvas.updateAllTiles();
 		tileCanvas.paint();
 		mapCanvas.updateAndRepaintAllLayerImagesIntoMapCanvasImageAndRepaintMapCanvas();
-		mapCanvas.fillUndoArray();
+		//mapCanvas.fillUndoArray();
 
 	}
 
@@ -2086,11 +2086,75 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 		mapCanvas.zoomOut();
 		mapCanvas.zoomIn();
 		mapCanvas.updateAndRepaintAllLayerImagesIntoMapCanvasImageAndRepaintMapCanvas();
-		mapCanvas.fillUndoArray();
+		//mapCanvas.fillUndoArray();
 
 
 
 
+	}
+
+	//===============================================================================================
+	public void mergeProject(String s)
+	{//===============================================================================================
+		if(s==null)
+		{
+			int val = fileChooser.showOpenDialog(this);
+
+			if(val==JFileChooser.APPROVE_OPTION)
+			{
+				project.merge(getFileDialogFileName(), getFileDialogDirectoryPath());
+			}
+			else
+			{
+				return;
+			}
+		}
+		else
+		{
+			project.merge(s, "./");
+		}
+
+		// Refresh UI after merge
+		paletteChoice.removeAllItems();
+		mapChoice.removeAllItems();
+		stateChoice.removeAllItems();
+
+		for(int i = 0; i < Project.getNumMaps(); i++)
+		{
+			mapChoice.addItem(Project.getMap(i).name());
+		}
+		if(Project.getNumMaps() > 0)
+		{
+			mapChoice.setSelectedIndex(Project.getSelectedMapIndex());
+		}
+
+		if(Project.getSelectedMap() != null) {
+			for(int i = 0; i < Project.getSelectedMap().getNumStates(); i++)
+			{
+				stateChoice.addItem(Project.getSelectedMap().getState(i).name());
+			}
+			if(stateChoice.getItemCount() > 0) stateChoice.setSelectedIndex(Project.getSelectedMap().getSelectedStateIndex());
+		}
+
+		for(int i = 0; i < Project.getNumPalettes(); i++)
+		{
+			paletteChoice.addItem(Project.getPalette(i).name);
+		}
+		if(Project.getNumPalettes() > 0)
+		{
+			paletteChoice.setSelectedIndex(Project.getSelectedPaletteIndex());
+		}
+
+		refreshTopPanelLayout();
+		controlPanel.repaint();
+		tileCanvas.setSizedoLayout();
+		tileCanvas.updateAllTiles();
+		tileCanvas.paint();
+		mapCanvas.setSizedoLayout();
+		mapCanvas.updateAndRepaintAllLayerImagesIntoMapCanvasImageAndRepaintMapCanvas();
+		//mapCanvas.fillUndoArray();
+		
+		infoLabel.setTextSuccess("Merged Project Successfully");
 	}
 
 	//===============================================================================================
@@ -2189,7 +2253,7 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 
 			//definitely have to update everything
 			mapCanvas.updateAndRepaintAllLayerImagesIntoMapCanvasImageAndRepaintMapCanvas();
-			mapCanvas.fillUndoArray();
+			//mapCanvas.fillUndoArray();
 
 			//start all mapsprite animation timers
 			for(int n=0;n<Project.getSelectedMap().getNumEntities();n++)
@@ -2245,7 +2309,7 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 
 			//definitely have to update everything
 			mapCanvas.updateAndRepaintAllLayerImagesIntoMapCanvasImageAndRepaintMapCanvas();
-			mapCanvas.fillUndoArray();
+			//mapCanvas.fillUndoArray();
 
 			//start all mapsprite animation timers
 			for(int n=0;n<Project.getSelectedMap().getNumEntities();n++)
@@ -2275,7 +2339,7 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 
 			//definitely have to update everything
 			mapCanvas.updateAndRepaintAllLayerImagesIntoMapCanvasImageAndRepaintMapCanvas();
-			mapCanvas.fillUndoArray();
+			//mapCanvas.fillUndoArray();
 
 		}
 	}
@@ -2425,7 +2489,7 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 			}
 			else
 			{
-				mapCanvas.fillUndoArray();
+				//mapCanvas.fillUndoArray();
 				mapCanvas.mapSelectionArea.delete();
 			}
 		}
@@ -2437,7 +2501,7 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 
 		if(ke.getKeyCode() == KeyEvent.VK_V && ke.isControlDown())
 		{
-			mapCanvas.fillUndoArray();
+			//mapCanvas.fillUndoArray();
 			mapCanvas.mapSelectionArea.paste();
 		}
 

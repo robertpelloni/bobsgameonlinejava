@@ -3030,6 +3030,28 @@ public class Map implements ImageObserver, GameObject
 		}
 	}
 
+	//===============================================================================================
+	public void shiftTileIndices(int offset)
+	{//===============================================================================================
+		for(int l = 0; l < MapData.layers; l++)
+		{
+			if(MapData.isTileLayer(l))
+			{
+				for(int y = 0; y < hT(); y++)
+				{
+					for(int x = 0; x < wT(); x++)
+					{
+						int tile = layerTileIndex[l][x][y];
+						if(tile > 0)
+						{
+							layerTileIndex[l][x][y] = tile + offset;
+						}
+					}
+				}
+			}
+		}
+	}
+
 
 
 
@@ -4065,6 +4087,62 @@ public class Map implements ImageObserver, GameObject
 
 	public void setPaletteMD5(String s){getData().setPaletteMD5(s);}
 	public void setTilesMD5(String s){getData().setTilesMD5(s);}
+
+	//===============================================================================================
+	public void shiftMap(int dx, int dy)
+	{//===============================================================================================
+		// Shift tiles
+		int w = wT();
+		int h = hT();
+		
+		for(int l = 0; l < MapData.layers; l++) {
+			//if(!MapData.isTileLayer(l)) continue; // Shift all layers including collision/etc
+			
+			int[][] newLayer = new int[w][h];
+			
+			for(int y = 0; y < h; y++) {
+				for(int x = 0; x < w; x++) {
+					int newX = x + dx;
+					int newY = y + dy;
+					
+					if(newX >= 0 && newX < w && newY >= 0 && newY < h) {
+						newLayer[newX][newY] = layerTileIndex[l][x][y];
+					}
+				}
+			}
+			layerTileIndex[l] = newLayer;
+		}
+		
+		// Shift Objects (Doors, Entities, Lights, Areas)
+		
+		for(int i = 0; i < getNumDoors(); i++) {
+			Door d = getDoor(i);
+			d.setXPixels(d.xP() + (dx * 8));
+			d.setYPixels(d.yP() + (dy * 8));
+		}
+		
+		for(int s = 0; s < getNumStates(); s++) {
+			MapState state = getState(s);
+			
+			for(int i = 0; i < state.getNumEntities(); i++) {
+				Entity e = state.getEntity(i);
+				e.setXPixels(e.xP() + (dx * 8));
+				e.setYPixels(e.yP() + (dy * 8));
+			}
+			
+			for(int i = 0; i < state.getNumLights(); i++) {
+				Light l = state.getLight(i);
+				l.setXPixels(l.xP() + (dx * 8));
+				l.setYPixels(l.yP() + (dy * 8));
+			}
+			
+			for(int i = 0; i < state.getNumAreas(); i++) {
+				Area a = state.getArea(i);
+				a.setXPixels(a.xP() + (dx * 8));
+				a.setYPixels(a.yP() + (dy * 8));
+			}
+		}
+	}
 
 
 }

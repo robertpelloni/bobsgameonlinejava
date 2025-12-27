@@ -1158,6 +1158,320 @@ public class Project
 
 	}
 
+	//===============================================================================================
+	public void merge(String fn, String directory)
+	{//===============================================================================================
+		ZipFile zip = null;
+		try
+		{
+			zip=new ZipFile(new File(directory + fn));
+		}
+		catch(IOException e1)
+		{
+			e1.printStackTrace();
+			return;
+		}
+
+		InputStream zin = null;
+		List<String> stringList = null;
+
+		try
+		{
+			ZipArchiveEntry z = zip.getEntry("Project.ini");
+			if(z==null)z = zip.getEntry("_Project.txt");
+			zin=zip.getInputStream(z);
+			stringList = IOUtils.readLines(zin, StandardCharsets.UTF_8);
+		}
+		catch(Exception e1)
+		{
+			e1.printStackTrace();
+			return;
+		}
+
+		try{zin.close();}catch(IOException e){e.printStackTrace();}
+
+		Tileset incomingTileset = null;
+		TilesetPalette incomingPalette = null;
+		int tileOffset = tileset.num_Tiles;
+
+		for(int i=0;i<stringList.size();i++)
+		{
+			String s = stringList.get(i);
+
+			if(s.equals("Tileset"))
+			{
+				s = stringList.get(++i);
+				int tiles = Integer.parseInt(s);
+				incomingTileset = new Tileset(tiles);
+				String zipfilename = "Tiles.bin";
+				int[] bytes = Utils.getIntArrayFromFileInZip(zip,zipfilename);
+				incomingTileset.initializeFromIntArray(bytes);
+			}
+
+			if(s.equals("TilesetPalettes"))
+			{
+				s = stringList.get(++i);
+				boolean firstPalette = true;
+				while(s.length()>1)
+				{
+					String zipfilename = s;
+					byte[] bytes = Utils.getByteArrayFromFileInZip(zip,"TilesetPalette_"+zipfilename+".bin");
+					TilesetPalette p = new TilesetPalette(zipfilename,bytes);
+					
+					if(firstPalette) {
+						incomingPalette = p;
+						firstPalette = false;
+					}
+					
+					addPalette(p);
+					s = stringList.get(++i);
+				}
+				
+				if(incomingTileset != null && incomingPalette != null) {
+					mergeTileset(incomingTileset, incomingPalette);
+				}
+			}
+
+			if(s.equals("SpritePalettes"))
+			{
+				s = stringList.get(++i);
+				while(s.length()>1)
+				{
+					String zipfilename = s;
+					byte[] bytes = Utils.getByteArrayFromFileInZip(zip,"SpritePalette_"+zipfilename+".bin");
+					addSpritePalette(new SpritePalette(zipfilename,bytes));
+					s = stringList.get(++i);
+				}
+			}
+
+			if(s.equals("Sprites"))
+			{
+				s = stringList.get(++i);
+				while(s.length()>1)
+				{
+					s = s.substring(s.indexOf("SPRITE:"));
+					s = s.substring(s.indexOf(":"));//ID
+					s = s.substring(s.indexOf(":"));//name
+					SpriteData data = new SpriteData();
+					data.initFromString(s);
+
+					ZipArchiveEntry z = zip.getEntry("Sprite_"+data.name()+".bin");
+					if(z==null){s = stringList.get(++i);continue;}
+
+					int[] intArray = Utils.getIntArrayFromFileInZip(zip,"Sprite_"+data.name()+".bin");
+					Sprite sprite = new Sprite(data);
+					sprite.initializeFromIntArray(intArray);
+					s = stringList.get(++i);
+				}
+			}
+
+			if(s.equals("Dialogues"))
+			{
+				s = stringList.get(++i);
+				while(s.length()>1)
+				{
+					s = s.substring(s.indexOf("DIALOGUE:"));
+					s = s.substring(s.indexOf(":"));//ID
+					s = s.substring(s.indexOf(":"));//name
+					DialogueData data = new DialogueData();
+					data.initFromString(s);
+					new Dialogue(data);
+					s = stringList.get(++i);
+				}
+			}
+
+			if(s.equals("Flags"))
+			{
+				s = stringList.get(++i);
+				while(s.length()>1)
+				{
+					s = s.substring(s.indexOf("FLAG:"));
+					s = s.substring(s.indexOf(":"));//ID
+					s = s.substring(s.indexOf(":"));//name
+					FlagData data = new FlagData();
+					data.initFromString(s);
+					new Flag(data);
+					s = stringList.get(++i);
+				}
+			}
+
+			if(s.equals("Skills"))
+			{
+				s = stringList.get(++i);
+				while(s.length()>1)
+				{
+					s = s.substring(s.indexOf("SKILL:"));
+					s = s.substring(s.indexOf(":"));//ID
+					s = s.substring(s.indexOf(":"));//name
+					SkillData data = new SkillData();
+					data.initFromString(s);
+					new Skill(data);
+					s = stringList.get(++i);
+				}
+			}
+
+			if(s.equals("GameStrings"))
+			{
+				s = stringList.get(++i);
+				while(s.length()>1)
+				{
+					s = s.substring(s.indexOf("GAMESTRING:"));
+					s = s.substring(s.indexOf(":"));//ID
+					s = s.substring(s.indexOf(":"));//name
+					GameStringData data = new GameStringData();
+					data.initFromString(s);
+					new GameString(data);
+					s = stringList.get(++i);
+				}
+			}
+
+			if(s.equals("Sounds"))
+			{
+				s = stringList.get(++i);
+				while(s.length()>1)
+				{
+					s = s.substring(s.indexOf("SOUND:"));
+					s = s.substring(s.indexOf(":"));//ID
+					s = s.substring(s.indexOf(":"));//name
+					SoundData data = new SoundData();
+					data.initFromString(s);
+					new Sound(data);
+					s = stringList.get(++i);
+				}
+			}
+
+			if(s.equals("Music"))
+			{
+				s = stringList.get(++i);
+				while(s.length()>1)
+				{
+					s = s.substring(s.indexOf("MUSIC:"));
+					s = s.substring(s.indexOf(":"));//ID
+					s = s.substring(s.indexOf(":"));//name
+					MusicData data = new MusicData();
+					data.initFromString(s);
+					new Music(data);
+					s = stringList.get(++i);
+				}
+			}
+
+			if(s.equals("Maps"))
+			{
+				s = stringList.get(++i);
+				while(s.length()>1)
+				{
+					s = s.substring(s.indexOf("MAP:"));
+					s = s.substring(s.indexOf(":"));//ID
+					s = s.substring(s.indexOf(":"));//name
+
+					MapData data = new MapData();
+					data.initFromString(s);
+
+					ZipArchiveEntry z = zip.getEntry("Map_"+data.name()+"_"+"0"+".bin");
+					if(z==null){s = stringList.get(++i);continue;}
+
+					Map m = new Map(data);
+					for(int l=0;l<MapData.layers;l++)
+					{
+						if(MapData.isTileLayer(l))
+						{
+							int[] intArray = Utils.getIntArrayFromFileInZip(zip,"Map_"+data.name()+"_"+l+".bin");
+							m.initializeLayerFromIntArray(l,intArray);
+						}
+					}
+					
+					m.shiftTileIndices(tileOffset);
+
+					s = stringList.get(++i);
+				}
+			}
+
+			if(s.equals("Cutscenes"))
+			{
+				s = stringList.get(++i);
+				while(s.length()>1)
+				{
+					s = s.substring(s.indexOf("CUTSCENEEVENT:"));
+					s = s.substring(s.indexOf(":"));//ID
+					s = s.substring(s.indexOf(":"));//name
+					EventData data = new EventData();
+					data.initFromString(s);
+					cutsceneEventList.add(new Event(data));
+					s = stringList.get(++i);
+				}
+			}
+		}
+
+		try
+		{
+			zip.close();
+		}
+		catch(IOException e)
+		{
+			e.printStackTrace();
+		}
+		
+		// Re-cache entities
+		for(int m=0;m<Project.getNumMaps();m++)
+		{
+			Map map = Project.getMap(m);
+			for(int s=0;s<map.getNumStates();s++)
+			{
+				for(int e=0;e<map.getState(s).getNumEntities();e++)
+				{
+					com.bobsgame.editor.Project.Map.Entity entity = map.getState(s).getEntity(e);
+					if(entity.getSprite()==null && Project.getSpriteByName(entity.spriteName())!=null)
+					{
+							entity.setSprite(Project.getSpriteByName(entity.spriteName()));
+							entity.frameTimer = new Timer(100,EditorMain.mapCanvas);
+							entity.startAnimationTimer = new Timer(100,EditorMain.mapCanvas);
+							entity.getImage();
+					}
+				}
+				for(int d=0;d<map.getNumDoors();d++)
+				{
+					com.bobsgame.editor.Project.Map.Door door = map.getDoor(d);
+					if(door.getSprite()==null && Project.getSpriteByName(door.spriteName())!=null)
+					{
+						door.setSprite(Project.getSpriteByName(door.spriteName()));
+					}
+				}
+			}
+		}
+	}
+
+	public void mergeTileset(Tileset incoming, TilesetPalette incomingPalette) {
+		TilesetPalette currentPalette = getPalette(0);
+		int startTile = tileset.num_Tiles;
+		tileset.setNumTiles(tileset.num_Tiles + incoming.num_Tiles);
+		
+		for(int t = 0; t < incoming.num_Tiles; t++) {
+			if(incoming.isTileBlank(t)) continue;
+			
+			int newTileIndex = startTile + t;
+			
+			for(int y=0; y<8; y++) {
+				for(int x=0; x<8; x++) {
+					int oldColorIndex = incoming.getPixel(t, x, y);
+					if(oldColorIndex == 0) { // Transparent
+						tileset.setPixel(newTileIndex, x, y, 0);
+						continue;
+					}
+					
+					java.awt.Color c = incomingPalette.getColor(oldColorIndex);
+					int newColorIndex = currentPalette.getColorIfExistsOrAddColor(c.getRed(), c.getGreen(), c.getBlue(), 0);
+					
+					if(newColorIndex == -1) {
+						newColorIndex = currentPalette.addColor(c.getRed(), c.getGreen(), c.getBlue());
+					}
+					
+					tileset.setPixel(newTileIndex, x, y, newColorIndex);
+				}
+			}
+		}
+		tileset.buildTileImages();
+	}
+
 
 
 	//===============================================================================================
