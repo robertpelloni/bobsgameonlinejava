@@ -152,6 +152,55 @@ public class SESelectionArea extends SelectionArea
 		}
 	}
 
+	//===============================================================================================
+	public boolean pasteNonZeroKeys()
+	{//===============================================================================================
+
+		if(isShowing && isCopied2 && copyWidth2 <= getWidth() && copyHeight2 <= getHeight())
+		{
+			for(int y = 0; y < copyHeight2; y++)
+			{
+				for(int x = 0; x < copyWidth2; x++)
+				{
+					if(copy2[x][y][0] != 0)
+					{
+						getEditCanvas().setPixel(x1 + x, y1 + y, copy2[x][y][0]); // Paste pixels within Selected Area
+					}
+				}
+			}
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	//===============================================================================================
+	public boolean pasteNonZero()
+	{//===============================================================================================
+
+
+		if(isShowing && isCopiedOrCut && copyWidth <= getWidth() && copyHeight <= getHeight())
+		{
+			for(int y = 0; y < copyHeight; y++)
+			{
+				for(int x = 0; x < copyWidth; x++)
+				{
+					if(copy[x][y][0] != 0)
+					{
+						getEditCanvas().setPixel(x1 + x, y1 + y, copy[x][y][0]); // Paste pixels within Selected Area
+					}
+				}
+			}
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
 
 	//===============================================================================================
 	public boolean pastekeys()

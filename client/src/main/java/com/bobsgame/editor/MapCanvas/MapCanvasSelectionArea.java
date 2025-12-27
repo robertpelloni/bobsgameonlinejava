@@ -97,6 +97,81 @@ public class MapCanvasSelectionArea extends SelectionArea
 
 	}
 
+	//===============================================================================================
+	public boolean pasteNonZero()
+	{//===============================================================================================
+
+
+		if(
+				isShowing &&
+				isCopiedOrCut &&
+				copyWidth <= getWidth() &&
+				copyHeight <= getHeight()
+
+		)
+		{
+			if(MapCanvas.selectedAllLayers)
+			{
+
+
+				for(int l = 0; l < MapData.layers; l++)//HYPER LAYER
+				{
+					if(MapData.isTileLayer(l))
+					for(int y = 0; y < copyHeight; y++)
+					{
+						for(int x = 0; x < copyWidth; x++)
+						{
+							if(copy[x][y][l] != 0)
+							{
+								Project.getSelectedMap().setTileIndex(l, x1 + x, y1 + y, copy[x][y][l]); // Paste tiles within Selected Area
+								MC.paintTileXY(l, x1 + x, y1 + y);
+							}
+						}
+					}
+				}
+
+
+				pasteObjects();
+
+				MC.repaint();
+				EditorMain.infoLabel.setTextError("Pasted Non-Zero Tiles for ALL LAYERS");
+				return true;
+			}
+			else
+			if(MapData.isTileLayer(MapCanvas.selectedLayer))
+			{
+
+				for(int y = 0; y < copyHeight; y++)
+				{
+					for(int x = 0; x < copyWidth; x++)
+					{
+						if(copy[x][y][0] != 0)
+						{
+							Project.getSelectedMap().setTileIndex(MapCanvas.selectedLayer, x1 + x, y1 + y, copy[x][y][0]); // Paste tiles within Selected Area
+							MC.paintTileXY(MapCanvas.selectedLayer, x1 + x, y1 + y);
+						}
+					}
+				}
+				MC.repaint();
+				EditorMain.infoLabel.setTextSuccess("Pasted Non-Zero Tiles");
+				return true;
+			}
+			else
+			{
+				EditorMain.infoLabel.setTextError("Cannot paste into a non-tile layer");
+				return false;
+			}
+		}
+		else
+		{
+			if(!isShowing)EditorMain.infoLabel.setTextError("Cannot paste, there is no selection to paste into");
+			if(!isCopiedOrCut)EditorMain.infoLabel.setTextError("Cannot paste, there is nothing copied");
+			if(!(copyWidth <= getWidth())||!(copyHeight <= getHeight()))EditorMain.infoLabel.setTextError("Cannot paste, the selection is too small to paste into");
+			return false;
+		}
+
+	}
+
 
 	//===============================================================================================
 	public void setSizeLock(int x, int y)
