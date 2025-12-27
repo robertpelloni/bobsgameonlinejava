@@ -29,6 +29,18 @@ To build all modules:
 ./gradlew :client:run
 ```
 
+## Running the Editor
+
+To run the legacy Swing-based Level Editor:
+
+```bash
+./gradlew :client:runEditor
+```
+
+**New Editor Features:**
+- **Select All (Ctrl+A)**: Selects the entire map, sprite, or tileset in the respective editors.
+- **Replace Color**: New menu item in "Palette Tools" to swap a color index globally across the tileset.
+
 ## Running the Server
 
 You can run the server locally or via Docker.
