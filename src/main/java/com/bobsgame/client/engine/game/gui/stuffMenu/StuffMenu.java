@@ -24,6 +24,7 @@ public class StuffMenu extends MenuPanel
 	public LogsPanel logsPanel;
 	public ControlsPanel controlsPanel;
 	public SettingsPanel settingsPanel;
+	public GameEditorPanel gameEditorPanel;
 
 
 	public ToggleButton[] stuffMenuTabs;
@@ -53,9 +54,10 @@ public class StuffMenu extends MenuPanel
 		controlsPanel = new ControlsPanel();
 		settingsPanel = new SettingsPanel();
 		debugInfoPanel = new DebugInfoPanel();
+		gameEditorPanel = new GameEditorPanel();
 
 
-		stuffMenuTabs = new ToggleButton[8];
+		stuffMenuTabs = new ToggleButton[9];
 		SimpleIntegerModel startMenuTabsIntModel = new SimpleIntegerModel(1, stuffMenuTabs.length, 0);
 
 		for(int i=0 ; i<stuffMenuTabs.length; i++)
@@ -74,6 +76,7 @@ public class StuffMenu extends MenuPanel
 		stuffMenuTabs[5].setText("Controls");
 		stuffMenuTabs[6].setText("Settings");
 		stuffMenuTabs[7].setText("Debug Info");
+		stuffMenuTabs[8].setText("Game Editor");
 
 
 		//---------------------------------------------------------
@@ -171,28 +174,40 @@ public class StuffMenu extends MenuPanel
 			}
 		});
 
+		//---------------------------------------------------------
+		//game editor
+		//---------------------------------------------------------
+		stuffMenuTabs[8].addCallback(new Runnable()
+		{
+			public void run()
+			{
+				setAllInvisible();
+				gameEditorPanel.setVisible(true);
+			}
+		});
+
 
 
 
 		insideScrollPaneLayout.setHorizontalGroup
 		(
 				insideScrollPaneLayout.createParallelGroup()
-				.addGroup(insideScrollPaneLayout.createSequentialGroup().addGap().addWidgets(stuffMenuTabs[0],stuffMenuTabs[5],stuffMenuTabs[7]).addGap())
+				.addGroup(insideScrollPaneLayout.createSequentialGroup().addGap().addWidgets(stuffMenuTabs[0],stuffMenuTabs[5],stuffMenuTabs[7],stuffMenuTabs[8]).addGap())
 				//.addGroup(insideScrollPaneLayout.createSequentialGroup().addGap().addWidgets(stuffMenuTabs[0],stuffMenuTabs[1],stuffMenuTabs[2],stuffMenuTabs[3]).addGap())
 				//.addGroup(insideScrollPaneLayout.createSequentialGroup().addGap().addWidgets(stuffMenuTabs[4],stuffMenuTabs[5],stuffMenuTabs[6],stuffMenuTabs[7]).addGap())
 
-				.addGroup(insideScrollPaneLayout.createParallelGroup(debugInfoPanel,settingsPanel,controlsPanel,messagesPanel,itemsPanel,logsPanel,statusPanel,friendsPanel))
+				.addGroup(insideScrollPaneLayout.createParallelGroup(debugInfoPanel,settingsPanel,controlsPanel,messagesPanel,itemsPanel,logsPanel,statusPanel,friendsPanel,gameEditorPanel))
 
 		);
 
 		insideScrollPaneLayout.setVerticalGroup
 		(
 				insideScrollPaneLayout.createSequentialGroup()
-				.addGroup(insideScrollPaneLayout.createParallelGroup(stuffMenuTabs[0],stuffMenuTabs[5],stuffMenuTabs[7]))
+				.addGroup(insideScrollPaneLayout.createParallelGroup(stuffMenuTabs[0],stuffMenuTabs[5],stuffMenuTabs[7],stuffMenuTabs[8]))
 				//.addGroup(insideScrollPaneLayout.createParallelGroup(stuffMenuTabs[0],stuffMenuTabs[1],stuffMenuTabs[2],stuffMenuTabs[3]))
 				//.addGroup(insideScrollPaneLayout.createParallelGroup(stuffMenuTabs[4],stuffMenuTabs[5],stuffMenuTabs[6],stuffMenuTabs[7]))
 
-				.addGroup(insideScrollPaneLayout.createParallelGroup(debugInfoPanel,settingsPanel,controlsPanel,messagesPanel,itemsPanel,logsPanel,statusPanel,friendsPanel))
+				.addGroup(insideScrollPaneLayout.createParallelGroup(debugInfoPanel,settingsPanel,controlsPanel,messagesPanel,itemsPanel,logsPanel,statusPanel,friendsPanel,gameEditorPanel))
 
 		);
 
@@ -259,6 +274,7 @@ public class StuffMenu extends MenuPanel
 		friendsPanel.setVisible(false);
 		logsPanel.setVisible(false);
 		itemsPanel.setVisible(false);
+		gameEditorPanel.setVisible(false);
 	}
 
 	//=========================================================================================================================
@@ -282,6 +298,7 @@ public class StuffMenu extends MenuPanel
 		friendsPanel.init();
 		logsPanel.init();
 		itemsPanel.init();
+		gameEditorPanel.init();
 	}
 
 	//=========================================================================================================================
@@ -299,6 +316,7 @@ public class StuffMenu extends MenuPanel
 		if(friendsPanel.isVisible())friendsPanel.update();
 		if(logsPanel.isVisible())logsPanel.update();
 		if(itemsPanel.isVisible())itemsPanel.update();
+		if(gameEditorPanel.isVisible())gameEditorPanel.update();
 	}
 
 
@@ -319,6 +337,7 @@ public class StuffMenu extends MenuPanel
 		if(friendsPanel.isVisible())friendsPanel.render();
 		if(logsPanel.isVisible())logsPanel.render();
 		if(itemsPanel.isVisible())itemsPanel.render();
+		if(gameEditorPanel.isVisible())gameEditorPanel.render();
 
 	}
 
@@ -344,6 +363,7 @@ public class StuffMenu extends MenuPanel
 		if(friendsPanel.isVisible())friendsPanel.layout();
 		if(logsPanel.isVisible())logsPanel.layout();
 		if(itemsPanel.isVisible())itemsPanel.layout();
+		if(gameEditorPanel.isVisible())gameEditorPanel.layout();
 
 		insideScrollPaneLayout.setMinSize((int)(mainPanelLayout.getWidth()*0.80f), (int)(mainPanelLayout.getHeight()*0.80f));
 		insideScrollPaneLayout.setSize((int)(mainPanelLayout.getWidth()*0.80f), (int)(mainPanelLayout.getHeight()*0.80f));
