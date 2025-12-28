@@ -20,8 +20,9 @@ These features are essential for any usable editor and are currently missing or 
     *   **Status:** Implemented. `Brush` interface created with `PixelBrush`, `EraserBrush`, `FillBrush`. Added `SEToolsPanel`.
     *   **Requirements:** `Brush` interface, `PixelBrush`, `ShapeBrush`, `PatternBrush`. Support for "Custom Brushes" (using a selection as a brush).
 
-4.  **File Format Support (Interoperability)**
+4.  **File Format Support (Interoperability)** [COMPLETED]
     *   **Description:** Interoperability with standard tools.
+    *   **Status:** Implemented `AsepriteImporter` and `AsepriteParser`. Can import `.ase`/`.aseprite` files (Indexed Mode).
     *   **Goal:** Import `.ase` / `.aseprite` (Aseprite) files. This allows users to create art in Aseprite and bring it into the engine.
 
 ## Phase 2: Workflow Enhancements
@@ -54,9 +55,9 @@ Differentiation features that provide unique value.
 
 ## Execution Plan (Next Steps)
 
-With the core foundations (Layers, Persistence, Brushes) complete, the next high-value target is **Interoperability**.
+With the core foundations complete, focus shifts to **Workflow Enhancements**.
 
-**Plan for File Format Support (Aseprite Import):**
-1.  Add a library or implement a parser for `.ase` / `.aseprite` files.
-2.  Implement `Import Aseprite...` menu item.
-3.  Map Aseprite frames/layers to `Sprite` frames/layers.
+**Plan for Selection Tools:**
+1.  Refactor `SelectionArea` to support non-rectangular shapes (Polygon/Mask).
+2.  Implement `MagicWandTool` (Flood fill selection).
+3.  Add UI for selection modes (Add, Subtract, Intersect).

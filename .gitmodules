@@ -121,3 +121,6 @@
 [submodule "references/PyxleOS"]
 	path = references/PyxleOS
 	url = https://github.com/Dakkra/PyxleOS
+[submodule "libs/aseprite-file"]
+	path = libs/aseprite-file
+	url = https://github.com/elgopher/aseprite-file

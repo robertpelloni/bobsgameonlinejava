@@ -81,7 +81,7 @@ test {
 sourceSets {
     main {
         java {
-            srcDirs = ['src/main/java', 'libs/twl-lwjgl3/src']
+            srcDirs = ['src/main/java', 'libs/twl-lwjgl3/src', 'libs/aseprite-file/src/main/java']
         }
         resources {
             srcDirs = ['src/main/resources', 'res']

@@ -92,6 +92,7 @@ public class SpriteEditor extends JFrame implements ActionListener, ItemListener
 	public JMenuItem
 	saveProject,
 	loadProject,
+	importAseprite,
 	nextSpriteHelpMenu,
 	nextFrameHelpMenu,
 	removeUnusedSpritePalCols,
@@ -167,6 +168,10 @@ public class SpriteEditor extends JFrame implements ActionListener, ItemListener
 		loadProject.addActionListener(this);
 		fileMenu.add(saveProject);
 		fileMenu.add(loadProject);
+
+		importAseprite = new JMenuItem("Import Aseprite (.ase)...");
+		importAseprite.addActionListener(this);
+		fileMenu.add(importAseprite);
 
 		spriteMenu = new JMenu("Sprite Tools");
 		spacerMenu = new JMenu("");
@@ -874,6 +879,7 @@ public class SpriteEditor extends JFrame implements ActionListener, ItemListener
 
 		else if(ae.getSource() == saveProject)saveProjectAction();
 		else if(ae.getSource() == loadProject)loadProjectAction();
+		else if(ae.getSource() == importAseprite)importAsepriteAction();
 
 		else if(ae.getSource() == moveSpriteUp)moveSpriteUp();
 		else if(ae.getSource() == moveSpriteDown)moveSpriteDown();
@@ -2084,6 +2090,28 @@ public class SpriteEditor extends JFrame implements ActionListener, ItemListener
 			} catch (Exception e) {
 				e.printStackTrace();
 				infoLabel.setText("Error loading project: " + e.getMessage());
+			}
+		}
+	}
+
+	//===============================================================================================
+	public void importAsepriteAction() {
+		JFileChooser chooser = new JFileChooser(EditorMain.getFileDialogDirectoryPath());
+		chooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Aseprite Files (*.ase, *.aseprite)", "ase", "aseprite"));
+		int returnVal = chooser.showOpenDialog(this);
+		if(returnVal == JFileChooser.APPROVE_OPTION) {
+			try {
+				Sprite s = com.bobsgame.editor.Project.Sprite.AsepriteImporter.importSprite(chooser.getSelectedFile());
+
+				spriteListModel.addElement(s);
+				spriteList.setSelectedValue(s, true);
+
+				updateInfo();
+				infoLabel.setTextSuccess("Imported Aseprite file: " + chooser.getSelectedFile().getName());
+
+			} catch (Exception e) {
+				e.printStackTrace();
+				infoLabel.setText("Error importing Aseprite file: " + e.getMessage());
 			}
 		}
 	}
