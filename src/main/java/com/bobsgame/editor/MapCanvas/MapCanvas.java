@@ -257,7 +257,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 
 		EditorMain.mapScrollPane.validate();
 
-		//undodata = null;
+
 		//undoinit = 0;
 	}
 
@@ -1516,6 +1516,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 										{
 											//add new door at xy
 											getMap().createDoor(doorSelectionDialog.spriteList.getSelectedValue(),clickedTileX*8,clickedTileY*8);
+											undoManager.addEdit(new MapObjectAddEdit(getMap(), getMap().getSelectedDoor()));
 											//entityPopup.setVisible(false);
 											//buffered:
 											//here i only need to refresh the map sprite layer buffer
@@ -1607,8 +1608,10 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 									spriteSelectionDialog.show("");
 
 									//add new sprite at xy
-									if(spriteSelectionDialog.spriteList.getSelectedValue() != null)
-									getMap().createEntity(spriteSelectionDialog.spriteList.getSelectedValue(),clickedTileX*8,clickedTileY*8);
+									if(spriteSelectionDialog.spriteList.getSelectedValue() != null) {
+										getMap().createEntity(spriteSelectionDialog.spriteList.getSelectedValue(),clickedTileX*8,clickedTileY*8);
+										undoManager.addEdit(new MapObjectAddEdit(getMap(), getMap().getSelectedEntity()));
+									}
 
 
 									//buffered:
@@ -1707,6 +1710,11 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 									EditorMain.infoLabel.setTextNoConsole("MapCanvas: Created New Light");
 									//******* NOTICE this is using pixel precision here for the mapselectionarea!
 									lightWindow.showLightWindow(mapSelectionArea.x1, mapSelectionArea.y1, mapSelectionArea.getWidth(),mapSelectionArea.getHeight());
+									
+									// Check if a light was actually created (selected index changed)
+									if(getMap().getSelectedLightIndex() != -1) {
+										undoManager.addEdit(new MapObjectAddEdit(getMap(), getMap().getSelectedLight()));
+									}
 								}
 								else
 								{
@@ -1786,6 +1794,11 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 
 									//add new action
 									areaWindow.showAreaWindow(mapSelectionArea.x1*8, mapSelectionArea.y1*8, mapSelectionArea.getWidth()*8,mapSelectionArea.getHeight()*8);
+									
+									// Check if an area was actually created
+									if(getMap().getSelectedAreaIndex() != -1) {
+										undoManager.addEdit(new MapObjectAddEdit(getMap(), getMap().getSelectedArea()));
+									}
 
 								}
 								else
@@ -1970,7 +1983,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 	//===============================================================================================
 	public void mousePressed(MouseEvent me)
 	{//===============================================================================================
-
+		EditorMain.lastActiveCanvas = this;
 
 		me = new MouseEvent((Component) me.getSource(), me.getID(), me.getWhen(), me.getModifiersEx(), me.getX()-drawOffsetX(), me.getY()-drawOffsetY(), me.getXOnScreen(), me.getYOnScreen(), me.getClickCount(), me.isPopupTrigger(), me.getButton());
 
@@ -2628,6 +2641,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 
 
 					getMap().addArea(a);
+					undoManager.addEdit(new MapObjectAddEdit(getMap(), a));
 
 
 

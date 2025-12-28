@@ -3,6 +3,7 @@ package com.bobsgame.editor.TileCanvas;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.*;
+import com.bobsgame.editor.Undo.*;
 
 import javax.swing.JComponent;
 
@@ -32,6 +33,23 @@ public class TileCanvas extends JComponent implements MouseMotionListener, Mouse
 	public TileCanvasSelectionArea tileSelectionArea;
 	private Image tileBufferImage = null;
 	public NumberDialog SW;
+
+	public UndoManager undoManager = new UndoManager();
+	public CompoundEdit currentCompoundEdit = null;
+
+	public void undo() {
+		if (undoManager.canUndo()) {
+			undoManager.undo();
+			EditorMain.infoLabel.setTextNoConsole("TileCanvas: Undid " + undoManager.getUndoPresentationName());
+		}
+	}
+
+	public void redo() {
+		if (undoManager.canRedo()) {
+			undoManager.redo();
+			EditorMain.infoLabel.setTextNoConsole("TileCanvas: Redid " + undoManager.getRedoPresentationName());
+		}
+	}
 
 	public static int WIDTH_TILES = 16;
 	public static int TILE_SIZE = 16;
@@ -235,6 +253,17 @@ public class TileCanvas extends JComponent implements MouseMotionListener, Mouse
 	//===============================================================================================
 	public void copyTile(int tile, int oldtile)
 	{//===============================================================================================
+		copyTile(tile, oldtile, true);
+	}
+
+	public void copyTile(int tile, int oldtile, boolean recordUndo)
+	{//===============================================================================================
+		int[][] oldPixels = null;
+		if (recordUndo) {
+			oldPixels = new int[8][8];
+			for(int y=0; y<8; y++) for(int x=0; x<8; x++) oldPixels[x][y] = Project.tileset.getPixel(tile, x, y);
+		}
+
 		for(int y = 0; y < 8; y++)
 		{
 			for(int x = 0; x < 8; x++)
@@ -242,6 +271,19 @@ public class TileCanvas extends JComponent implements MouseMotionListener, Mouse
 				Project.tileset.setPixel(tile, x, y, Project.tileset.getPixel(oldtile, x, y));
 			}
 		}
+
+		if (recordUndo) {
+			int[][] newPixels = new int[8][8];
+			for(int y=0; y<8; y++) for(int x=0; x<8; x++) newPixels[x][y] = Project.tileset.getPixel(tile, x, y);
+			
+			TilePixelChangeEdit edit = new TilePixelChangeEdit(this, tile, oldPixels, newPixels);
+			if (currentCompoundEdit != null) {
+				currentCompoundEdit.addEdit(edit);
+			} else {
+				undoManager.addEdit(edit);
+			}
+		}
+
 		paint(tile);
 		paint(oldtile);
 		EditorMain.mapCanvas.repaint();
@@ -273,6 +315,20 @@ public class TileCanvas extends JComponent implements MouseMotionListener, Mouse
 	//===============================================================================================
 	public void moveTile(int tile, int oldtile)
 	{//===============================================================================================
+		moveTile(tile, oldtile, true);
+	}
+
+	public void moveTile(int tile, int oldtile, boolean recordUndo)
+	{//===============================================================================================
+		if (recordUndo) {
+			TileMoveEdit edit = new TileMoveEdit(this, tile, oldtile);
+			if (currentCompoundEdit != null) {
+				currentCompoundEdit.addEdit(edit);
+			} else {
+				undoManager.addEdit(edit);
+			}
+		}
+
 		int oldtiledata[][] = new int[8][8];
 		for(int y = 0; y < 8; y++)
 		{
@@ -373,6 +429,7 @@ public class TileCanvas extends JComponent implements MouseMotionListener, Mouse
 	//===============================================================================================
 	public void copySelection(int tile, int oldtile)
 	{//===============================================================================================
+		currentCompoundEdit = new CompoundEdit();
 		if(tileSelectionArea.isShowing
 			&& getTileX(oldtile) >= tileSelectionArea.x1
 			&& getTileY(oldtile) >= tileSelectionArea.y1
@@ -399,12 +456,16 @@ public class TileCanvas extends JComponent implements MouseMotionListener, Mouse
 			copyTile(tile, oldtile);
 			EditorMain.infoLabel.setTextNoConsole("TileCanvas: Copied Tile");
 		}
+		currentCompoundEdit.end();
+		undoManager.addEdit(currentCompoundEdit);
+		currentCompoundEdit = null;
 	}
 
 
 	//===============================================================================================
 	public void moveSelection(int tile, int oldtile)
 	{//===============================================================================================
+		currentCompoundEdit = new CompoundEdit();
 		if(tileSelectionArea.isShowing
 			&& getTileX(oldtile) >= tileSelectionArea.x1
 			&& getTileY(oldtile) >= tileSelectionArea.y1
@@ -461,12 +522,16 @@ public class TileCanvas extends JComponent implements MouseMotionListener, Mouse
 			moveTile(tile, oldtile);
 			EditorMain.infoLabel.setTextNoConsole("TileCanvas: Swapped Tile");
 		}
+		currentCompoundEdit.end();
+		undoManager.addEdit(currentCompoundEdit);
+		currentCompoundEdit = null;
 	}
 
 
 	//===============================================================================================
 	public void copySelectionKeys(int tile, int oldtile)
 	{//===============================================================================================
+		currentCompoundEdit = new CompoundEdit();
 		if(getTileX(oldtile) >= tileSelectionArea.x1Copy && getTileY(oldtile) >= tileSelectionArea.y1Copy && getTileX(oldtile) < tileSelectionArea.x2Copy && getTileY(oldtile) < tileSelectionArea.y2Copy)
 		{
 			int offsetx = getTileX(tile) - getTileX(oldtile);
@@ -484,13 +549,16 @@ public class TileCanvas extends JComponent implements MouseMotionListener, Mouse
 			tileSelectionArea.moveSelectionBoxPositionByAmt(offsetx, offsety);
 			EditorMain.infoLabel.setTextSuccess("TileCanvas: Pasted Copied Tiles From Clipboard");
 		}
-
+		currentCompoundEdit.end();
+		undoManager.addEdit(currentCompoundEdit);
+		currentCompoundEdit = null;
 	}
 
 
 	//===============================================================================================
 	public void moveSelectionKeys(int tile, int oldtile)
 	{//===============================================================================================
+		currentCompoundEdit = new CompoundEdit();
 		if(getTileX(oldtile) >= tileSelectionArea.x1Cut && getTileY(oldtile) >= tileSelectionArea.y1Cut && getTileX(oldtile) < tileSelectionArea.x2Cut && getTileY(oldtile) < tileSelectionArea.y2Cut)
 		{
 			int offsetx = getTileX(tile) - getTileX(oldtile);
@@ -538,7 +606,9 @@ public class TileCanvas extends JComponent implements MouseMotionListener, Mouse
 			tileSelectionArea.moveSelectionBoxPositionByAmt(offsetx, offsety);
 			EditorMain.infoLabel.setTextSuccess("TileCanvas: Swapped Cut Tiles From Clipboard");
 		}
-
+		currentCompoundEdit.end();
+		undoManager.addEdit(currentCompoundEdit);
+		currentCompoundEdit = null;
 	}
 
 
@@ -643,6 +713,7 @@ public class TileCanvas extends JComponent implements MouseMotionListener, Mouse
 	//===============================================================================================
 	public void mousePressed(MouseEvent me)
 	{//===============================================================================================
+		EditorMain.lastActiveCanvas = this;
 		int leftMask = InputEvent.BUTTON1_DOWN_MASK;
 		int middleMask = InputEvent.BUTTON2_DOWN_MASK;
 		int rightMask = InputEvent.BUTTON3_DOWN_MASK;

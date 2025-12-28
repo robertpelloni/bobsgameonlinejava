@@ -183,6 +183,7 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 	public static ControlPanel controlPanel;
 	public static MapCanvas mapCanvas;
 	public static TileCanvas tileCanvas;
+	public static JComponent lastActiveCanvas;
 	public static SpriteEditor spriteEditor;
 	public static MultipleTileEditor multipleTileEditor;
 
@@ -2422,8 +2423,14 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 		else if(ae.getSource() == exportProjectAsGameData)project.exportProjectAsGameDataFile();
 		else if(ae.getSource() == exportProjectToWorkspaceLibGDXAssetsFolderForHTML5)project.exportProjectToWorkspaceLibGDXAssetsFolderForHTML5();
 
-		else if(ae.getSource() == editUndo)mapCanvas.undo();
-		else if(ae.getSource() == editRedo)mapCanvas.redo();
+		else if(ae.getSource() == editUndo) {
+			if (lastActiveCanvas == tileCanvas) tileCanvas.undo();
+			else mapCanvas.undo();
+		}
+		else if(ae.getSource() == editRedo) {
+			if (lastActiveCanvas == tileCanvas) tileCanvas.redo();
+			else mapCanvas.redo();
+		}
 		else if(ae.getSource() == openSpriteEditor)viewSpriteEditor();
 		else if(ae.getSource() == openSoundAndMusicEditor)soundAndMusicEditor.showSoundAndMusicEditor();
 		else if(ae.getSource() == openCutsceneEditor)projectCutsceneEditWindow.showProjectCutsceneEditorWindow();
