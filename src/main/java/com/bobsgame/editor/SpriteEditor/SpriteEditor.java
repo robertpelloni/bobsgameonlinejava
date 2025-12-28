@@ -86,9 +86,11 @@ public class SpriteEditor extends JFrame implements ActionListener, ItemListener
 	public JScrollPane editCanvasScrollPane;
 	public static JScrollPane frameScrollPane;
 	public JMenuBar menuBar;
-	public JMenu spriteMenu, spacerMenu,closeMenu, helpSpriteMenu;
+	public JMenu fileMenu, spriteMenu, spacerMenu,closeMenu, helpSpriteMenu;
 
 	public JMenuItem
+	saveProject,
+	loadProject,
 	nextSpriteHelpMenu,
 	nextFrameHelpMenu,
 	removeUnusedSpritePalCols,
@@ -156,6 +158,15 @@ public class SpriteEditor extends JFrame implements ActionListener, ItemListener
 		E = e;
 
 		menuBar = new JMenuBar();
+
+		fileMenu = new JMenu("File");
+		saveProject = new JMenuItem("Save Project (.sprproj)...");
+		saveProject.addActionListener(this);
+		loadProject = new JMenuItem("Open Project (.sprproj)...");
+		loadProject.addActionListener(this);
+		fileMenu.add(saveProject);
+		fileMenu.add(loadProject);
+
 		spriteMenu = new JMenu("Sprite Tools");
 		spacerMenu = new JMenu("");
 
@@ -167,6 +178,7 @@ public class SpriteEditor extends JFrame implements ActionListener, ItemListener
 		helpSpriteMenu = new JMenu(" ? ");
 
 		menuBar.add(closeMenu);
+		menuBar.add(fileMenu);
 		//menuBar.add(spacerMenu);
 		menuBar.add(spriteMenu);
 		menuBar.add(helpSpriteMenu);
@@ -854,6 +866,9 @@ public class SpriteEditor extends JFrame implements ActionListener, ItemListener
 		else if(ae.getSource() == deletePalette)deletePalette();
 		else if(ae.getSource() == openSpriteBitmapSplicer)bitmapSprite();
 		else if(ae.getSource() == sendSpriteToTiles)sendToTiles();
+
+		else if(ae.getSource() == saveProject)saveProjectAction();
+		else if(ae.getSource() == loadProject)loadProjectAction();
 
 		else if(ae.getSource() == moveSpriteUp)moveSpriteUp();
 		else if(ae.getSource() == moveSpriteDown)moveSpriteDown();
@@ -2022,6 +2037,50 @@ public class SpriteEditor extends JFrame implements ActionListener, ItemListener
 
 		}
 
+	}
+
+	//===============================================================================================
+	public void saveProjectAction()
+	{//===============================================================================================
+		JFileChooser chooser = new JFileChooser(EditorMain.getFileDialogDirectoryPath());
+		chooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Sprite Project (*.sprproj)", "sprproj"));
+		int returnVal = chooser.showSaveDialog(this);
+		if(returnVal == JFileChooser.APPROVE_OPTION) {
+			File file = chooser.getSelectedFile();
+			if(!file.getName().endsWith(".sprproj")) {
+				file = new File(file.getAbsolutePath() + ".sprproj");
+			}
+			try {
+				com.bobsgame.editor.Project.Sprite.SpriteProject.save(getSprite(), file);
+				infoLabel.setTextSuccess("Saved project to " + file.getName());
+			} catch (Exception e) {
+				e.printStackTrace();
+				infoLabel.setText("Error saving project: " + e.getMessage());
+			}
+		}
+	}
+
+	//===============================================================================================
+	public void loadProjectAction()
+	{//===============================================================================================
+		JFileChooser chooser = new JFileChooser(EditorMain.getFileDialogDirectoryPath());
+		chooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Sprite Project (*.sprproj)", "sprproj"));
+		int returnVal = chooser.showOpenDialog(this);
+		if(returnVal == JFileChooser.APPROVE_OPTION) {
+			try {
+				Sprite s = com.bobsgame.editor.Project.Sprite.SpriteProject.load(chooser.getSelectedFile());
+
+				spriteListModel.addElement(s);
+				spriteList.setSelectedValue(s, true);
+
+				updateInfo();
+				infoLabel.setTextSuccess("Loaded project from " + chooser.getSelectedFile().getName());
+
+			} catch (Exception e) {
+				e.printStackTrace();
+				infoLabel.setText("Error loading project: " + e.getMessage());
+			}
+		}
 	}
 
 	//===============================================================================================
