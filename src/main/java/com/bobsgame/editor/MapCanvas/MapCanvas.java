@@ -126,6 +126,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 	public static boolean drawRandomPointOfInterestLines = false;
 
 	public static boolean tileEditMode = false;
+	public static boolean autoTileMode = false;
 
 
 
@@ -1164,6 +1165,36 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 		repaint();
 	}
 
+	public void applyAutoTile(int layer, int x, int y) {
+		int baseIndex = EditorMain.tileCanvas.tileSelected;
+
+		// 1. Set current tile to base (so it counts as "Same Set")
+		getMap().setTileIndex(layer, x, y, baseIndex);
+
+		// 2. Update current tile and neighbors
+		updateAutoTileAt(layer, x, y, baseIndex);
+		updateAutoTileAt(layer, x, y-1, baseIndex); // N
+		updateAutoTileAt(layer, x+1, y, baseIndex); // E
+		updateAutoTileAt(layer, x, y+1, baseIndex); // S
+		updateAutoTileAt(layer, x-1, y, baseIndex); // W
+
+		repaint();
+	}
+
+	private void updateAutoTileAt(int layer, int x, int y, int baseIndex) {
+		if (x < 0 || x >= getMap().wT() || y < 0 || y >= getMap().hT()) return;
+
+		// Only update if it's part of the set
+		int current = getMap().getTileIndex(layer, x, y);
+		if (current >= baseIndex && current <= baseIndex + 15) {
+			int newIndex = com.bobsgame.editor.Project.AutoTiler.getAutoTileIndex(getMap(), layer, x, y, baseIndex);
+			if (current != newIndex) {
+				getMap().setTileIndex(layer, x, y, newIndex);
+				paintTileXY(layer, x, y);
+			}
+		}
+	}
+
 
 
 	//===============================================================================================
@@ -1845,6 +1876,9 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 								repaintTileEverywhereOnMap(tileIndex);
 								EditorMain.tileCanvas.repaint();
 							}
+						}
+						else if (autoTileMode) {
+							applyAutoTile(selectedLayer, clickedTileX, clickedTileY);
 						}
 						else if(getMap().getTileIndex(selectedLayer, clickedTileX, clickedTileY) != EditorMain.tileCanvas.tileSelected)
 						{

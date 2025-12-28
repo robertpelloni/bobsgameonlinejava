@@ -51,17 +51,18 @@ Differentiation features that provide unique value.
     *   **Status:** Implemented `tileEditMode` in `MapCanvas`. Allows drawing pixel-level edits directly on the map.
     *   **Why:** Huge time saver for tilemap creation.
 
-9.  **Auto-tiling (Wang/Blob)**
+9.  **Auto-tiling (Wang/Blob)** [COMPLETED]
     *   **Description:** Automatically selecting the correct tile variation based on neighbors (corners, edges).
+    *   **Status:** Implemented 4-bit (16-tile) Edge Auto-tiling logic in `AutoTiler` and integrated into `MapCanvas` as `autoTileMode`.
 
 10. **Reference Layers**
     *   **Description:** Layers that hold reference images but are excluded from the final export/game data.
 
 ## Execution Plan (Next Steps)
 
-With instancing complete, **Auto-tiling** is the next advanced feature.
+With all major features implemented, the roadmap is nearly complete. **Reference Layers** is the final item.
 
-**Plan for Auto-tiling:**
-1.  Define a data structure for Tile Sets (Blob/Wang sets).
-2.  Implement logic to check neighbors and select tile index.
-3.  Add "Auto-Tile Brush" to `MapCanvas`.
+**Plan for Reference Layers:**
+1.  Add `isReference` boolean to `Sprite.Layer`.
+2.  Update export logic to skip reference layers.
+3.  Add UI checkbox in `SELayerPanel`.
