@@ -35,6 +35,21 @@ public class CustomGameEditor extends Widget {
     private ToggleButton blockUseAsGarbageBtn;
     private BlockType currentEditingBlock = null;
 
+    // Piece Widgets
+    private ListBox<String> pieceListBox;
+    private SimpleChangableListModel<String> pieceListModel;
+    private EditField pieceNameField;
+    private EditField pieceSpriteField;
+    private ToggleButton pieceUseAsNormalBtn;
+    private PieceType currentEditingPiece = null;
+
+    // Difficulty Widgets
+    private ListBox<String> diffListBox;
+    private SimpleChangableListModel<String> diffListModel;
+    private EditField diffNameField;
+    private EditField initialSpeedField;
+    private DifficultyType currentEditingDiff = null;
+
     public CustomGameEditor(PuzzleGameType gameType) {
         this.currentGameType = gameType != null ? gameType : new PuzzleGameType();
 
@@ -49,11 +64,11 @@ public class CustomGameEditor extends Widget {
         tabbedPane.addTab("Block Designer", blockTab);
 
         // Piece Tab
-        Widget pieceTab = new Label("Piece Designer (TODO)");
+        Widget pieceTab = createPieceTab();
         tabbedPane.addTab("Piece Designer", pieceTab);
 
         // Difficulty Tab
-        Widget diffTab = new Label("Difficulty Editor (TODO)");
+        Widget diffTab = createDifficultyTab();
         tabbedPane.addTab("Difficulty Editor", diffTab);
 
         add(tabbedPane);
@@ -138,7 +153,6 @@ public class CustomGameEditor extends Widget {
         blockUseInNormalPiecesBtn = new ToggleButton("Use in Normal Pieces");
         blockUseAsGarbageBtn = new ToggleButton("Use as Garbage");
 
-        // Manual save button (or auto-save on change)
         Button saveBlockBtn = new Button("Save Changes to Block");
         saveBlockBtn.addCallback(new Runnable() {
              public void run() {
@@ -148,10 +162,8 @@ public class CustomGameEditor extends Widget {
                      currentEditingBlock.useInNormalPieces = blockUseInNormalPiecesBtn.isActive();
                      currentEditingBlock.useAsGarbage = blockUseAsGarbageBtn.isActive();
 
-                     // Update list label
                      int idx = currentGameType.blockTypes.indexOf(currentEditingBlock);
                      if (idx != -1) {
-                         // Hacky update
                          blockListModel.removeElement(idx);
                          blockListModel.insertElement(idx, currentEditingBlock.name);
                          blockListBox.setSelected(idx);
@@ -203,6 +215,196 @@ public class CustomGameEditor extends Widget {
         blockSpriteField.setText(b.spriteName);
         blockUseInNormalPiecesBtn.setActive(b.useInNormalPieces);
         blockUseAsGarbageBtn.setActive(b.useAsGarbage);
+    }
+
+    private Widget createPieceTab() {
+        DialogLayout layout = new DialogLayout();
+
+        pieceListModel = new SimpleChangableListModel<>();
+        for (PieceType p : currentGameType.pieceTypes) {
+            pieceListModel.addElement(p.name);
+        }
+
+        pieceListBox = new ListBox<>(pieceListModel);
+        pieceListBox.addCallback(new CallbackWithReason<CallbackReason>() {
+            public void callback(CallbackReason reason) {
+                if (reason == CallbackReason.MOUSE_CLICK || reason == CallbackReason.SET_SELECTED) {
+                    int selected = pieceListBox.getSelected();
+                    if (selected >= 0 && selected < currentGameType.pieceTypes.size()) {
+                        loadPiece(currentGameType.pieceTypes.get(selected));
+                    }
+                }
+            }
+        });
+
+        Button addPieceBtn = new Button("Add Piece");
+        addPieceBtn.addCallback(new Runnable() {
+            public void run() {
+                PieceType newPiece = new PieceType();
+                newPiece.name = "New Piece";
+                newPiece.uuid = UUID.randomUUID().toString();
+                currentGameType.pieceTypes.add(newPiece);
+                pieceListModel.addElement(newPiece.name);
+                pieceListBox.setSelected(pieceListModel.getNumEntries() - 1);
+            }
+        });
+
+        pieceNameField = new EditField();
+        pieceSpriteField = new EditField();
+        pieceUseAsNormalBtn = new ToggleButton("Use as Normal Piece");
+
+        Button savePieceBtn = new Button("Save Changes to Piece");
+        savePieceBtn.addCallback(new Runnable() {
+             public void run() {
+                 if (currentEditingPiece != null) {
+                     currentEditingPiece.name = pieceNameField.getText();
+                     currentEditingPiece.spriteName = pieceSpriteField.getText();
+                     currentEditingPiece.useAsNormalPiece = pieceUseAsNormalBtn.isActive();
+
+                     int idx = currentGameType.pieceTypes.indexOf(currentEditingPiece);
+                     if (idx != -1) {
+                         pieceListModel.removeElement(idx);
+                         pieceListModel.insertElement(idx, currentEditingPiece.name);
+                         pieceListBox.setSelected(idx);
+                     }
+                 }
+             }
+        });
+
+        DialogLayout.Group hGroup = layout.createSequentialGroup()
+            .addGroup(layout.createParallelGroup()
+                .addWidget(new Label("Pieces"))
+                .addWidget(pieceListBox)
+                .addWidget(addPieceBtn))
+            .addGap(20)
+            .addGroup(layout.createParallelGroup()
+                .addWidget(new Label("Name"))
+                .addWidget(pieceNameField)
+                .addWidget(new Label("Sprite"))
+                .addWidget(pieceSpriteField)
+                .addWidget(pieceUseAsNormalBtn)
+                .addWidget(savePieceBtn));
+
+        DialogLayout.Group vGroup = layout.createParallelGroup()
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup()
+                     .addWidget(new Label("Pieces"))
+                     .addWidget(new Label("Name")))
+                .addGroup(layout.createParallelGroup()
+                     .addWidget(pieceListBox)
+                     .addGroup(layout.createSequentialGroup()
+                         .addWidget(pieceNameField)
+                         .addWidget(new Label("Sprite"))
+                         .addWidget(pieceSpriteField)
+                         .addWidget(pieceUseAsNormalBtn)
+                         .addWidget(savePieceBtn)))
+                .addWidget(addPieceBtn));
+
+        layout.setHorizontalGroup(hGroup);
+        layout.setVerticalGroup(vGroup);
+
+        return layout;
+    }
+
+    private void loadPiece(PieceType p) {
+        currentEditingPiece = p;
+        pieceNameField.setText(p.name);
+        pieceSpriteField.setText(p.spriteName);
+        pieceUseAsNormalBtn.setActive(p.useAsNormalPiece);
+    }
+
+    private Widget createDifficultyTab() {
+        DialogLayout layout = new DialogLayout();
+
+        diffListModel = new SimpleChangableListModel<>();
+        for (DifficultyType d : currentGameType.difficultyTypes) {
+            diffListModel.addElement(d.name);
+        }
+
+        diffListBox = new ListBox<>(diffListModel);
+        diffListBox.addCallback(new CallbackWithReason<CallbackReason>() {
+            public void callback(CallbackReason reason) {
+                if (reason == CallbackReason.MOUSE_CLICK || reason == CallbackReason.SET_SELECTED) {
+                    int selected = diffListBox.getSelected();
+                    if (selected >= 0 && selected < currentGameType.difficultyTypes.size()) {
+                        loadDiff(currentGameType.difficultyTypes.get(selected));
+                    }
+                }
+            }
+        });
+
+        Button addDiffBtn = new Button("Add Difficulty");
+        addDiffBtn.addCallback(new Runnable() {
+            public void run() {
+                DifficultyType newDiff = new DifficultyType();
+                newDiff.name = "New Difficulty";
+                currentGameType.difficultyTypes.add(newDiff);
+                diffListModel.addElement(newDiff.name);
+                diffListBox.setSelected(diffListModel.getNumEntries() - 1);
+            }
+        });
+
+        diffNameField = new EditField();
+        initialSpeedField = new EditField();
+
+        Button saveDiffBtn = new Button("Save Changes to Difficulty");
+        saveDiffBtn.addCallback(new Runnable() {
+             public void run() {
+                 if (currentEditingDiff != null) {
+                     currentEditingDiff.name = diffNameField.getText();
+                     try {
+                         currentEditingDiff.initialLineDropSpeedTicks = Integer.parseInt(initialSpeedField.getText());
+                     } catch (NumberFormatException e) {
+                         // Ignore invalid input for now
+                     }
+
+                     int idx = currentGameType.difficultyTypes.indexOf(currentEditingDiff);
+                     if (idx != -1) {
+                         diffListModel.removeElement(idx);
+                         diffListModel.insertElement(idx, currentEditingDiff.name);
+                         diffListBox.setSelected(idx);
+                     }
+                 }
+             }
+        });
+
+        DialogLayout.Group hGroup = layout.createSequentialGroup()
+            .addGroup(layout.createParallelGroup()
+                .addWidget(new Label("Difficulties"))
+                .addWidget(diffListBox)
+                .addWidget(addDiffBtn))
+            .addGap(20)
+            .addGroup(layout.createParallelGroup()
+                .addWidget(new Label("Name"))
+                .addWidget(diffNameField)
+                .addWidget(new Label("Initial Speed (Ticks)"))
+                .addWidget(initialSpeedField)
+                .addWidget(saveDiffBtn));
+
+        DialogLayout.Group vGroup = layout.createParallelGroup()
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup()
+                     .addWidget(new Label("Difficulties"))
+                     .addWidget(new Label("Name")))
+                .addGroup(layout.createParallelGroup()
+                     .addWidget(diffListBox)
+                     .addGroup(layout.createSequentialGroup()
+                         .addWidget(diffNameField)
+                         .addWidget(new Label("Initial Speed (Ticks)"))
+                         .addWidget(initialSpeedField)
+                         .addWidget(saveDiffBtn)))
+                .addWidget(addDiffBtn));
+
+        layout.setHorizontalGroup(hGroup);
+        layout.setVerticalGroup(vGroup);
+
+        return layout;
+    }
+
+    private void loadDiff(DifficultyType d) {
+        currentEditingDiff = d;
+        diffNameField.setText(d.name);
+        initialSpeedField.setText(String.valueOf(d.initialLineDropSpeedTicks));
     }
 
     @Override
