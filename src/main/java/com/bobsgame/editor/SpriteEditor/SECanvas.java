@@ -192,15 +192,27 @@ public class SECanvas extends MTECanvas
 		{
 			G.setColor(Project.getSelectedSpritePalette().getColor(0));
 			G.fillRect(0, 0, getSprite().wP(), getSprite().hP());
-			for(int y = 0; y < getSprite().hP(); y++)
-			{
-				for(int x = 0; x < getSprite().wP(); x++)
+
+			for(Sprite.Layer layer : getSprite().getLayers()) {
+				if(!layer.visible) continue;
+
+				for(int y = 0; y < getSprite().hP(); y++)
 				{
-					G.setColor(Project.getSelectedSpritePalette().getColor(getPixel(x, y)));
-					G.fillRect(x, y, 1, 1);
+					for(int x = 0; x < getSprite().wP(); x++)
+					{
+						int p = layer.pixels[getSprite().selectedFrameIndex][x][y];
+						if(p == 0) continue;
+
+						Color c = Project.getSelectedSpritePalette().getColor(p);
+						if(layer.opacity < 1.0f) {
+							c = new Color(c.getRed(), c.getGreen(), c.getBlue(), (int)(255 * layer.opacity));
+						}
+
+						G.setColor(c);
+						G.fillRect(x, y, 1, 1);
+					}
 				}
 			}
-
 		}
 
 		SpriteEditor.setFrameCanvasHeight();

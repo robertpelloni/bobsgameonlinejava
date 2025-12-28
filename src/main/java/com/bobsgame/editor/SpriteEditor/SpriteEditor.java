@@ -47,6 +47,7 @@ public class SpriteEditor extends JFrame implements ActionListener, ItemListener
 
 
 	public static SEControlPanel controlPanel;
+	public static SELayerPanel layerPanel;
 
 	public static SEFrameControlPanel frameControlPanel;
 
@@ -444,8 +445,11 @@ public class SpriteEditor extends JFrame implements ActionListener, ItemListener
 
 
 		controlPanel = new SEControlPanel(this);
+		layerPanel = new SELayerPanel(this);
+
 		JPanel rightPanel = new JPanel(new BorderLayout());
 		rightPanel.add(controlPanel, BorderLayout.CENTER);
+		rightPanel.add(layerPanel, BorderLayout.SOUTH);
 
 
 		JPanel leftPanel = new JPanel(new BorderLayout());
@@ -797,6 +801,7 @@ public class SpriteEditor extends JFrame implements ActionListener, ItemListener
 			editCanvas.editBufferImage=null;
 			frameControlPanel.updateSpriteInfo();
 			frameControlPanel.updateFrames();
+			layerPanel.updateLayerList();
 			editCanvas.repaintBufferImage();
 			//editCanvas.initUndo();
 			editCanvas.repaint();
