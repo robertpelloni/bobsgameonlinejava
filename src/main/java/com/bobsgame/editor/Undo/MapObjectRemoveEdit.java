@@ -1,9 +1,5 @@
 package com.bobsgame.editor.Undo;
 
-import javax.swing.undo.AbstractUndoableEdit;
-import javax.swing.undo.CannotRedoException;
-import javax.swing.undo.CannotUndoException;
-
 import com.bobsgame.editor.Project.Map.Area;
 import com.bobsgame.editor.Project.Map.Door;
 import com.bobsgame.editor.Project.Map.Entity;
@@ -20,7 +16,7 @@ public class MapObjectRemoveEdit extends AbstractUndoableEdit {
     }
     
     @Override
-    public void undo() throws CannotUndoException {
+    public void undo() {
         super.undo();
         if (object instanceof Entity) map.addEntity((Entity)object);
         else if (object instanceof Door) map.addDoor((Door)object);
@@ -29,7 +25,7 @@ public class MapObjectRemoveEdit extends AbstractUndoableEdit {
     }
     
     @Override
-    public void redo() throws CannotRedoException {
+    public void redo() {
         super.redo();
         if (object instanceof Entity) map.getSelectedState().removeEntity((Entity)object);
         else if (object instanceof Door) map.removeDoor((Door)object);

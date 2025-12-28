@@ -6,12 +6,12 @@
 - [x] **Documentation**: Created Dashboard, Versioning, and LLM Instructions.
 - [x] **Structure**: Clarified project directory structure.
 - [x] **CI/CD**: Established a robust CI/CD pipeline (GitHub Actions).
+- [x] **Project Merging**: Implement feature to merge multiple project files.
+- [x] **Build Environment**: Resolve Gradle incompatibility with Java 25 (Standardized on Java 21).
 
 ## In Progress
-- [ ] **Project Merging**: Implement feature to merge multiple project files.
 - [ ] **Modernization**: Continue refactoring legacy Java code to modern standards.
 - [ ] **Testing**: Increase unit test coverage.
-- [ ] **Build Environment**: Resolve Gradle incompatibility with Java 25 (Requires Java 21).
 
 ## Planned
 - [ ] **Game Logic**: Enhance Lua scripting capabilities.

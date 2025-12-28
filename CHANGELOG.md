@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.5] - 2025-12-27
+
+### Changed
+- **Submodules**: Updated all submodules to latest upstream versions and merged upstream changes.
+- **Dashboard**: Updated `docs/dashboard.md` with latest submodule status and project structure explanation.
+- **Maintenance**: Merged all feature branches into `main` and ensured clean state.
+
 ## [0.1.4] - 2025-12-27
 
 ### Changed
