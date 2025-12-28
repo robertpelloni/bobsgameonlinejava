@@ -139,6 +139,14 @@ public class SECanvas extends MTECanvas
 				G.drawLine(w*zoom/2,0,w*zoom/2,h*zoom);
 			}
 
+			if(SpriteEditor.mirrorYMode.isSelected())
+			{
+				G.setColor(Color.MAGENTA);
+				int w = getSprite().wP();
+				int h = getSprite().hP();
+				G.drawLine(0, h*zoom/2, w*zoom, h*zoom/2);
+			}
+
 			if(SpriteEditor.showHitBox.isSelected())
 			{
 
@@ -201,30 +209,43 @@ public class SECanvas extends MTECanvas
 			G.setColor(Project.getSelectedSpritePalette().getColor(0));
 			G.fillRect(0, 0, getSprite().wP(), getSprite().hP());
 
-			for(Sprite.Layer layer : getSprite().getLayers()) {
-				if(!layer.visible) continue;
+			int f = getSprite().selectedFrameIndex;
 
-				for(int y = 0; y < getSprite().hP(); y++)
-				{
-					for(int x = 0; x < getSprite().wP(); x++)
-					{
-						int p = layer.pixels[getSprite().selectedFrameIndex][x][y];
-						if(p == 0) continue;
-
-						Color c = Project.getSelectedSpritePalette().getColor(p);
-						if(layer.opacity < 1.0f) {
-							c = new Color(c.getRed(), c.getGreen(), c.getBlue(), (int)(255 * layer.opacity));
-						}
-
-						G.setColor(c);
-						G.fillRect(x, y, 1, 1);
-					}
-				}
+			if (SpriteEditor.onionSkinMode.isSelected()) {
+				if (f > 0) drawFrame(G, f - 1, 0.3f);
+				if (f < getSprite().frames() - 1) drawFrame(G, f + 1, 0.3f);
 			}
+
+			drawFrame(G, f, 1.0f);
 		}
 
 		SpriteEditor.setFrameCanvasHeight();
 
+	}
+
+	private void drawFrame(Graphics G, int frameIndex, float alphaMult) {
+		for(Sprite.Layer layer : getSprite().getLayers()) {
+			if(!layer.visible) continue;
+
+			for(int y = 0; y < getSprite().hP(); y++)
+			{
+				for(int x = 0; x < getSprite().wP(); x++)
+				{
+					int p = layer.pixels[frameIndex][x][y];
+					if(p == 0) continue;
+
+					Color c = Project.getSelectedSpritePalette().getColor(p);
+					float finalAlpha = layer.opacity * alphaMult;
+
+					if(finalAlpha < 1.0f) {
+						c = new Color(c.getRed(), c.getGreen(), c.getBlue(), (int)(255 * finalAlpha));
+					}
+
+					G.setColor(c);
+					G.fillRect(x, y, 1, 1);
+				}
+			}
+		}
 	}
 
 	//===============================================================================================
@@ -393,8 +414,7 @@ public class SECanvas extends MTECanvas
 	}
 
 	//===============================================================================================
-	public void setPixel(int x, int y, int color, CompoundEdit edit)
-	{//===============================================================================================
+	private void applyPixel(int x, int y, int color, CompoundEdit edit) {
 		int oldColor = getPixel(x, y);
 		if(oldColor != color) {
 			if(edit != null) {
@@ -402,21 +422,35 @@ public class SECanvas extends MTECanvas
 			}
 			setPixelRaw(x, y, color);
 		}
+	}
 
-		if(SpriteEditor.mirrorMode.isSelected())
+	public void setPixel(int x, int y, int color, CompoundEdit edit)
+	{//===============================================================================================
+		applyPixel(x, y, color, edit);
+
+		boolean mx = SpriteEditor.mirrorMode.isSelected();
+		boolean my = SpriteEditor.mirrorYMode.isSelected();
+
+		int w = getSprite().wP()-1;
+		int h = getSprite().hP()-1;
+
+		if(mx)
 		{
-			int w = getSprite().wP()-1;
-			int h = getSprite().hP();
-
 			int newX = (w-x);
-			
-			int oldMirrorColor = getPixel(newX, y);
-			if(oldMirrorColor != color) {
-				if(edit != null) {
-					edit.addEdit(new PixelChangeEdit(this, newX, y, oldMirrorColor, color));
-				}
-				setPixelRaw(newX, y, color);
-			}
+			applyPixel(newX, y, color, edit);
+		}
+
+		if(my)
+		{
+			int newY = (h-y);
+			applyPixel(x, newY, color, edit);
+		}
+
+		if(mx && my)
+		{
+			int newX = (w-x);
+			int newY = (h-y);
+			applyPixel(newX, newY, color, edit);
 		}
 	}
 
@@ -426,15 +460,29 @@ public class SECanvas extends MTECanvas
 
 		getSprite().setPixel(x, y, color);
 
-		if(SpriteEditor.mirrorMode.isSelected())
+		boolean mx = SpriteEditor.mirrorMode.isSelected();
+		boolean my = SpriteEditor.mirrorYMode.isSelected();
+
+		int w = getSprite().wP()-1;
+		int h = getSprite().hP()-1;
+
+		if(mx)
 		{
-			int w = getSprite().wP()-1;
-			int h = getSprite().hP();
-
-			int newX = x;
-			newX = (w-x);
-
+			int newX = (w-x);
 			getSprite().setPixel(newX, y, color);
+		}
+
+		if(my)
+		{
+			int newY = (h-y);
+			getSprite().setPixel(x, newY, color);
+		}
+
+		if(mx && my)
+		{
+			int newX = (w-x);
+			int newY = (h-y);
+			getSprite().setPixel(newX, newY, color);
 		}
 
 	}

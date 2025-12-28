@@ -33,12 +33,14 @@ Tools that speed up the creation process.
     *   **Status:** Implemented `MagicWandBrush` and mask-based `SelectionArea`.
     *   **Goal:** Magic Wand (Color Select), Polygon Lasso, "Select All of Color".
 
-6.  **Symmetry / Mirror Drawing**
+6.  **Symmetry / Mirror Drawing** [COMPLETED]
     *   **Description:** Real-time mirroring of drawing operations on X and Y axes.
+    *   **Status:** Implemented Y-Axis symmetry (Quad symmetry supported). Updated `SECanvas` rendering and `setPixel` logic.
     *   **Why:** Standard feature in Pyxel Edit, Aseprite, Tiled.
 
-7.  **Onion Skinning**
+7.  **Onion Skinning** [COMPLETED]
     *   **Description:** See previous/next frames faintly while animating.
+    *   **Status:** Implemented via `SECanvas.repaintBufferImage` rendering prev/next frames with alpha blending.
     *   **Requirements:** Animation timeline integration.
 
 ## Phase 3: Advanced Features
@@ -56,16 +58,9 @@ Differentiation features that provide unique value.
 
 ## Execution Plan (Next Steps)
 
-With the workflow enhancements underway, the next target is **Symmetry**.
+With core drawing and animation tools complete, the next phase focuses on **TileMap** efficiency.
 
-**Plan for Symmetry:**
-1.  Add `SymmetryBrush` wrapper or modify `SECanvas.setPixel` to handle symmetry?
-2.  Actually `SECanvas` already has `SpriteEditor.mirrorMode.isSelected()`.
-3.  I should generalize this to X/Y symmetry and integrate it with the `Brush` system.
-4.  Currently `SECanvas.setPixel` checks `mirrorMode`.
-5.  Brushes call `canvas.setPixel`. So brushes support symmetry automatically?
-6.  `PixelBrush` calls `canvas.setPixel`. Yes.
-7.  `FillBrush` calls `canvas.fill` which calls `setPixel`. Yes.
-8.  So "Mirror Mode" already works!
-9.  I just need to add Y-axis symmetry (currently only X-axis?).
-10. Check `SECanvas.setPixel` logic.
+**Plan for Tile Instancing:**
+1.  Analyze `MapCanvas` / `MTECanvas` rendering loop.
+2.  Implement a system where modifying a tile in `TileCanvas` (Tileset) automatically triggers a repaint of `MapCanvas`.
+3.  Ensure `Tileset` modification propagates to all maps using that tileset.

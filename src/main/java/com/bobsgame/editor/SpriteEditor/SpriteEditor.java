@@ -142,7 +142,9 @@ public class SpriteEditor extends JFrame implements ActionListener, ItemListener
 	showGrid,
 	showHitBox,
 	showUtilityPoint,
-	mirrorMode
+	mirrorMode,
+	mirrorYMode,
+	onionSkinMode
 
 	;
 
@@ -210,9 +212,17 @@ public class SpriteEditor extends JFrame implements ActionListener, ItemListener
 		showUtilityPoint.addItemListener(this);
 
 
-		mirrorMode = new JCheckBoxMenuItem("Mirror Mode", false);
+		mirrorMode = new JCheckBoxMenuItem("Mirror Mode (X)", false);
 		mirrorMode.addItemListener(this);
 		mirrorMode.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_M,InputEvent.CTRL_DOWN_MASK));
+
+		mirrorYMode = new JCheckBoxMenuItem("Mirror Mode (Y)", false);
+		mirrorYMode.addItemListener(this);
+		mirrorYMode.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_M,InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK));
+
+		onionSkinMode = new JCheckBoxMenuItem("Onion Skinning", false);
+		onionSkinMode.addItemListener(this);
+		onionSkinMode.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O,InputEvent.CTRL_DOWN_MASK));
 
 		openSpriteBitmapSplicer = new JMenuItem("Load Bitmap Splicer");
 		openSpriteBitmapSplicer.addActionListener(this);
@@ -300,6 +310,8 @@ public class SpriteEditor extends JFrame implements ActionListener, ItemListener
 		spriteMenu.add(showHitBox);
 		spriteMenu.add(showUtilityPoint);
 		spriteMenu.add(mirrorMode);
+		spriteMenu.add(mirrorYMode);
+		spriteMenu.add(onionSkinMode);
 		spriteMenu.addSeparator();
 
 
@@ -1001,6 +1013,17 @@ public class SpriteEditor extends JFrame implements ActionListener, ItemListener
 		else
 		if(ie.getSource() == mirrorMode)
 		{
+			editCanvas.repaint();
+		}
+		else
+		if(ie.getSource() == mirrorYMode)
+		{
+			editCanvas.repaint();
+		}
+		else
+		if(ie.getSource() == onionSkinMode)
+		{
+			editCanvas.repaintBufferImage();
 			editCanvas.repaint();
 		}
 		else
