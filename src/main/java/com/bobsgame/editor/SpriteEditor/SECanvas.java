@@ -20,6 +20,8 @@ import com.bobsgame.editor.Project.Project;
 import com.bobsgame.editor.Project.Sprite.Sprite;
 import com.bobsgame.shared.SpriteAnimationSequence;
 import com.bobsgame.editor.Undo.*;
+import com.bobsgame.editor.SpriteEditor.Tools.Brush;
+import com.bobsgame.editor.SpriteEditor.Tools.PixelBrush;
 
 //===============================================================================================
 public class SECanvas extends MTECanvas
@@ -28,7 +30,13 @@ public class SECanvas extends MTECanvas
 
 	protected SpriteEditor SE;
 
+	public Brush currentBrush = new PixelBrush();
+
 	public SESelectionArea selectionBox;
+
+	public CompoundEdit getCurrentEdit() {
+		return currentEdit;
+	}
 
 
 	private int oldx=0;
@@ -490,78 +498,7 @@ public class SECanvas extends MTECanvas
 	//===============================================================================================
 	public void mouseClicked(MouseEvent me)
 	{//===============================================================================================
-		int leftMask = InputEvent.BUTTON1_DOWN_MASK;
-		int middleMask = InputEvent.BUTTON2_DOWN_MASK;
-		int rightMask = InputEvent.BUTTON3_DOWN_MASK;
-		int shiftClickMask = InputEvent.BUTTON1_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK;
-		int ctrlClickMask = InputEvent.BUTTON1_DOWN_MASK | InputEvent.CTRL_DOWN_MASK;
-
-		int x = me.getX() / zoom;
-		int y = me.getY() / zoom;
-
-
-		Sprite s = getSprite();
-		int w = s.wP();
-		int h = s.hP();
-
-		if(
-				Project.getNumSprites() > 0 &&
-				Project.getNumSpritePalettes() > 0&&
-				x>=0&&
-				y>=0&&
-				x < w &&
-				y < h
-		)
-		{
-			if(me.getModifiersEx() == leftMask)
-			{
-				CompoundEdit edit = currentEdit;
-				boolean localEdit = false;
-				if(edit == null) {
-					edit = new CompoundEdit();
-					localEdit = true;
-				}
-				
-				if(SpriteEditor.controlPanel.paletteCanvas.colorSelected != s.getPixel(x, y))
-				{
-					oldPixelColor = s.getPixel(x, y);
-					setPixel(x, y, SpriteEditor.controlPanel.paletteCanvas.colorSelected, edit);
-
-
-					repaintBufferImage();
-					repaint();
-
-				}
-				else if(me.getClickCount() == 2)
-				{
-					fill(x, y, SpriteEditor.controlPanel.paletteCanvas.colorSelected, oldPixelColor, edit);
-					repaintBufferImage();
-					repaint();
-					setText("Sprite Editor: Filled");
-				}
-				
-				if(localEdit) {
-					edit.end();
-					if(edit.isSignificant()) undoManager.addEdit(edit);
-				}
-			}
-			else if((me.getModifiersEx() == rightMask || me.getModifiersEx() == ctrlClickMask))
-			{
-				if(SpriteEditor.controlPanel.paletteCanvas.colorSelected != s.getPixel(x, y))
-				{
-					SpriteEditor.controlPanel.paletteCanvas.selectColor(s.getPixel(x, y));
-				}
-			}
-			SpriteEditor.frameControlPanel.buildSequence();
-		}
-
-
-		if((me.getModifiersEx() == middleMask || me.getModifiersEx() == shiftClickMask))
-		{
-			getSelectionBox().isShowing=false;
-			setText("Sprite Editor: Deselected Area");
-			repaint();
-		}
+		// Logic moved to mousePressed/Released to support Drag
 	}
 	//===============================================================================================
 	public void mousePressed(MouseEvent me)
@@ -589,10 +526,30 @@ public class SECanvas extends MTECanvas
 		
 		currentEdit = new CompoundEdit();
 
-		if((me.getModifiersEx() == rightMask || me.getModifiersEx() == ctrlClickMask) || me.getModifiersEx() == leftMask)
+		if((me.getModifiersEx() == rightMask || me.getModifiersEx() == ctrlClickMask))
 		{
 			dragPixelx = x;
 			dragPixely = y;
+
+			// Right click color pick
+			if(x>=0 && y>=0 && x < getSprite().wP() && y < getSprite().hP()) {
+				if(SpriteEditor.controlPanel.paletteCanvas.colorSelected != getSprite().getPixel(x, y))
+				{
+					SpriteEditor.controlPanel.paletteCanvas.selectColor(getSprite().getPixel(x, y));
+				}
+			}
+		}
+		else if (me.getModifiersEx() == leftMask)
+		{
+			dragPixelx = x;
+			dragPixely = y;
+
+			if(x>=0 && y>=0 && x < getSprite().wP() && y < getSprite().hP()) {
+				// Use Brush
+				currentBrush.onMousePress(this, x, y, SpriteEditor.controlPanel.paletteCanvas.colorSelected, me.getModifiersEx());
+				repaintBufferImage();
+				repaint();
+			}
 		}
 		else if((me.getModifiersEx() == middleMask || me.getModifiersEx() == shiftClickMask))
 		{
@@ -647,6 +604,11 @@ public class SECanvas extends MTECanvas
 				selectionDragged = false;
 				moveSelection(dragPixelx, dragPixely, x, y, currentEdit);
 			}
+		}
+		else
+		{
+			// Brush Release
+			currentBrush.onMouseRelease(this, x, y, SpriteEditor.controlPanel.paletteCanvas.colorSelected, me.getModifiersEx());
 		}
 		
 		if(currentEdit != null) {
@@ -738,7 +700,15 @@ public class SECanvas extends MTECanvas
 				}
 			}
 
-			mouseClicked(me);
+			// Brush Drag
+			int leftMask = InputEvent.BUTTON1_DOWN_MASK;
+			if ((me.getModifiersEx() & leftMask) == leftMask) {
+				if(x>=0 && y>=0 && x < getSprite().wP() && y < getSprite().hP()) {
+					currentBrush.onMouseDrag(this, x, y, SpriteEditor.controlPanel.paletteCanvas.colorSelected, me.getModifiersEx());
+					repaintBufferImage();
+					repaint();
+				}
+			}
 		}
 	}
 

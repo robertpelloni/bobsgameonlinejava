@@ -15,8 +15,9 @@ These features are essential for any usable editor and are currently missing or 
     *   **Status:** Implemented. Uses `SpriteProject` class with GZIP+Base64 encoding for pixel data.
     *   **Why:** Enables non-destructive editing and resuming work with layers intact.
 
-3.  **Universal Brush System**
+3.  **Universal Brush System** [COMPLETED]
     *   **Description:** Abstract the drawing logic so "Pencil", "Eraser", and "Pattern Stamp" share a common interface.
+    *   **Status:** Implemented. `Brush` interface created with `PixelBrush`, `EraserBrush`, `FillBrush`. Added `SEToolsPanel`.
     *   **Requirements:** `Brush` interface, `PixelBrush`, `ShapeBrush`, `PatternBrush`. Support for "Custom Brushes" (using a selection as a brush).
 
 4.  **File Format Support (Interoperability)**
@@ -53,9 +54,9 @@ Differentiation features that provide unique value.
 
 ## Execution Plan (Next Steps)
 
-With Layers and Persistence complete, the next step is to upgrade the drawing tools.
+With the core foundations (Layers, Persistence, Brushes) complete, the next high-value target is **Interoperability**.
 
-**Plan for Universal Brush System:**
-1.  Define `Brush` interface in `com.bobsgame.editor.Tools`.
-2.  Refactor `SECanvas` mouse handling to delegate to the active `Brush`.
-3.  Implement `PixelBrush` (default 1x1), `EraserBrush` (Transparent color), and `StampBrush` (Clipboard).
+**Plan for File Format Support (Aseprite Import):**
+1.  Add a library or implement a parser for `.ase` / `.aseprite` files.
+2.  Implement `Import Aseprite...` menu item.
+3.  Map Aseprite frames/layers to `Sprite` frames/layers.

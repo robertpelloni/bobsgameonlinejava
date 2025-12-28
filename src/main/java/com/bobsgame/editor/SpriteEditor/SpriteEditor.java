@@ -48,6 +48,7 @@ public class SpriteEditor extends JFrame implements ActionListener, ItemListener
 
 	public static SEControlPanel controlPanel;
 	public static SELayerPanel layerPanel;
+	public static SEToolsPanel toolsPanel;
 
 	public static SEFrameControlPanel frameControlPanel;
 
@@ -411,6 +412,10 @@ public class SpriteEditor extends JFrame implements ActionListener, ItemListener
 
 
 		//topButtonPanel.add(spriteSelectPanel);
+
+		toolsPanel = new SEToolsPanel(this);
+		topButtonPanel.add(toolsPanel);
+
 		topButtonPanel.add(paletteSelectPanel);
 
 		JPanel topPanel = new JPanel(new GridLayout(0,1,0,0));
