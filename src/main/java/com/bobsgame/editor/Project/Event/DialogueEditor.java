@@ -28,19 +28,22 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.WindowConstants;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import com.bobsgame.EditorMain;
 
 
 
 //===============================================================================================
-public class DialogueEditor extends JDialog implements ActionListener, TextListener, ItemListener, ImageObserver, KeyListener
+public class DialogueEditor extends JDialog implements ActionListener, TextListener, ItemListener, ImageObserver, KeyListener, DocumentListener
 {//===============================================================================================
 
 
 
 
 	public JTextArea textArea;
+	public DialoguePreviewPanel previewPanel;
 
 	public JTextField commentTextField, captionTextField;
 
@@ -210,9 +213,13 @@ public class DialogueEditor extends JDialog implements ActionListener, TextListe
 		textArea.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		textArea.setCaretColor(Color.white);
 		textArea.getCaret().setBlinkRate(100);
+		textArea.getDocument().addDocumentListener(this);
 
 
 		everythingPanel.add(textArea,BorderLayout.CENTER);
+
+		previewPanel = new DialoguePreviewPanel();
+		everythingPanel.add(previewPanel, BorderLayout.SOUTH);
 
 
 
@@ -985,6 +992,125 @@ public class DialogueEditor extends JDialog implements ActionListener, TextListe
 	{//===============================================================================================
 
 		return false;
+	}
+
+	@Override
+	public void insertUpdate(DocumentEvent e) {
+		previewPanel.updatePreview(textArea.getText());
+	}
+
+	@Override
+	public void removeUpdate(DocumentEvent e) {
+		previewPanel.updatePreview(textArea.getText());
+	}
+
+	@Override
+	public void changedUpdate(DocumentEvent e) {
+		previewPanel.updatePreview(textArea.getText());
+	}
+
+	//===============================================================================================
+	public class DialoguePreviewPanel extends JPanel
+	{//===============================================================================================
+		private String text = "";
+
+		public DialoguePreviewPanel() {
+			setPreferredSize(new java.awt.Dimension(600, 150));
+			setBackground(Color.BLACK);
+			setBorder(javax.swing.BorderFactory.createLineBorder(Color.WHITE));
+		}
+
+		public void updatePreview(String text) {
+			this.text = text;
+			repaint();
+		}
+
+		@Override
+		protected void paintComponent(java.awt.Graphics g) {
+			super.paintComponent(g);
+
+			g.setColor(Color.WHITE);
+			g.setFont(new Font("Monospaced", Font.PLAIN, 12)); // Simulating game font
+
+			String[] pages = text.split("<\\.>"); // Split by pages
+			String lastPage = pages.length > 0 ? pages[pages.length - 1] : "";
+
+			// Replace newlines with a split token
+			String cleanText = lastPage.replace("<NEWLINE>", "\n");
+			String[] lines = cleanText.split("\n");
+
+			int startY = 20;
+			int startX = 10;
+			int lineHeight = 15;
+
+			int currentY = startY;
+
+			for(String line : lines) {
+				int currentX = startX;
+
+				// Parse color tags per line (simple approach)
+				// Supports <RED>, <BLUE>, <GREEN>, <WHITE>, <BLACK>, <GRAY>, <ORANGE>, <YELLOW>, <PURPLE>, <PINK>
+
+				// Tokenize by '<' and '>'
+				// But we need to keep text between tags.
+				// Regex split keeping delimiters is hard in java split
+
+				// Manual scan
+				Color currentColor = g.getColor(); // Keep previous color across lines? usually resets per box in game logic, but tags persist.
+				// Let's assume it persists.
+
+				int lastIndex = 0;
+				while(lastIndex < line.length()) {
+					int tagStart = line.indexOf("<", lastIndex);
+					if(tagStart != -1) {
+						// Draw text before tag
+						if(tagStart > lastIndex) {
+							String segment = line.substring(lastIndex, tagStart);
+							g.setColor(currentColor);
+							g.drawString(segment, currentX, currentY);
+							currentX += g.getFontMetrics().stringWidth(segment);
+						}
+
+						int tagEnd = line.indexOf(">", tagStart);
+						if(tagEnd != -1) {
+							String tag = line.substring(tagStart, tagEnd + 1);
+							// Check if color tag
+							if(tag.equals("<RED>")) currentColor = Color.RED;
+							else if(tag.equals("<BLUE>")) currentColor = Color.BLUE;
+							else if(tag.equals("<GREEN>")) currentColor = Color.GREEN;
+							else if(tag.equals("<WHITE>")) currentColor = Color.WHITE;
+							else if(tag.equals("<BLACK>")) currentColor = Color.DARK_GRAY; // Black on black bg is bad, use dark gray or fix bg
+							else if(tag.equals("<GRAY>")) currentColor = Color.GRAY;
+							else if(tag.equals("<ORANGE>")) currentColor = Color.ORANGE;
+							else if(tag.equals("<YELLOW>")) currentColor = Color.YELLOW;
+							else if(tag.equals("<PURPLE>")) currentColor = new Color(150,0,255);
+							else if(tag.equals("<PINK>")) currentColor = Color.PINK;
+							// Else ignore (control tag)
+
+							lastIndex = tagEnd + 1;
+						} else {
+							// Malformed tag, just print rest
+							String segment = line.substring(lastIndex);
+							g.setColor(currentColor);
+							g.drawString(segment, currentX, currentY);
+							break;
+						}
+					} else {
+						// No more tags
+						String segment = line.substring(lastIndex);
+						g.setColor(currentColor);
+						g.drawString(segment, currentX, currentY);
+						break;
+					}
+				}
+
+				currentY += lineHeight;
+			}
+
+			g.setColor(Color.GRAY);
+			g.drawRect(0, 0, getWidth()-1, getHeight()-1);
+			g.drawString("Preview (Last Page)", getWidth() - 150, getHeight() - 5);
+		}
 	}
 
 }
