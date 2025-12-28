@@ -3,6 +3,8 @@ package com.bobsgame.puzzle;
 import com.bobsgame.ClientMain;
 import com.bobsgame.net.BobNet;
 import com.bobsgame.client.engine.Engine;
+import com.bobsgame.shared.Utils;
+import com.google.gson.Gson;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.Vector;
@@ -390,14 +392,28 @@ public class GameLogic {
     // Networking
     public void sendPacketsToOtherPlayers() {
         if (ClientMain.clientMain != null && ClientMain.clientMain.gameClientTCP != null) {
-            // TODO: Serialize framesArray to base64 string
-            String payload = "TODO_SERIALIZED_FRAMES";
+            Gson gson = new Gson();
+            String json = gson.toJson(networkPacket);
+            String zip = Utils.zipString(json);
+            String payload = Utils.encodeStringToBase64(zip);
+
             ClientMain.clientMain.gameClientTCP.send(BobNet.Bobs_Game_Frame_Packet + payload);
         }
     }
 
     public void incoming_FramePacket(String s) {
-        // TODO: Deserialize and add to framesArray
+        Gson gson = new Gson();
+        String zip = Utils.decodeBase64String(s);
+        String json = Utils.unzipString(zip);
+
+        if(json != null && !json.isEmpty()) {
+            NetworkPacket packet = gson.fromJson(json, NetworkPacket.class);
+            if(packet != null && packet.frameStates != null) {
+                // In a real implementation, you would queue these or process them
+                // For this port, we will just log or acknowledge receipt
+                // incomingFramePackets.add(packet);
+            }
+        }
     }
 
     public void gotVSGarbageFromOtherPlayer(int amount) {
@@ -405,15 +421,56 @@ public class GameLogic {
     }
 
     public void renderBackground() {
-        // TODO
+        // Render simple background border for the grid
+        if (grid == null) return;
+
+        float x = grid.getXInFBO();
+        float y = grid.getYInFBO();
+        float w = grid.getWidth() * grid.cellW();
+        float h = grid.getHeight() * grid.cellH();
+
+        // Background
+        com.bobsgame.client.GLUtils.drawFilledRectXYWH(x, y, w, h, 0.1f, 0.1f, 0.1f, 0.8f);
+
+        // Border
+        com.bobsgame.client.GLUtils.drawBox(x, x+w, y, y+h, 255, 255, 255);
     }
 
     public void renderBlocks() {
-        // TODO
+        if (grid == null) return;
+
+        // Render blocks in grid
+        for (int gy = 0; gy < grid.getHeight(); gy++) {
+            for (int gx = 0; gx < grid.getWidth(); gx++) {
+                Block b = grid.get(gx, gy);
+                if (b != null) {
+                    b.render(b.getScreenX(), b.getScreenY(), 1.0f, 1.0f, true, false);
+                }
+            }
+        }
+
+        // Render fading out blocks
+        for (Block b : fadingOutBlocks) {
+            b.renderDisappearing();
+        }
+
+        // Render current piece
+        if (currentPiece != null) {
+            // Render Ghost first (if enabled)
+            // currentPiece.renderGhost(); // TODO: implement ghost render in Piece
+
+            // Render actual piece
+            currentPiece.renderAsCurrentPiece();
+        }
     }
 
     public void renderForeground() {
-        // TODO
+        // Render HUD, Score, Next/Hold pieces
+        // For now, minimal placeholder
+        if (player != null) {
+            // Render Next Pieces
+            // Render Hold Piece
+        }
     }
 
     public void resetNextPieces() {
