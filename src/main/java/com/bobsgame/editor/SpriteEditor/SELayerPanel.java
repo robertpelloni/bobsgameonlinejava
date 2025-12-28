@@ -46,6 +46,7 @@ public class SELayerPanel extends JPanel implements ActionListener, ListSelectio
 	private JButton moveDownButton;
 
 	private JCheckBox visibleCheckBox;
+	private JCheckBox referenceCheckBox;
 	private JSlider opacitySlider;
 	private JLabel opacityLabel;
 
@@ -71,10 +72,14 @@ public class SELayerPanel extends JPanel implements ActionListener, ListSelectio
 		JPanel controlsPanel = new JPanel(new BorderLayout());
 
 		// Properties
-		JPanel propsPanel = new JPanel(new GridLayout(2, 1));
+		JPanel propsPanel = new JPanel(new GridLayout(3, 1));
 		visibleCheckBox = new JCheckBox("Visible");
 		visibleCheckBox.addItemListener(this);
 		propsPanel.add(visibleCheckBox);
+
+		referenceCheckBox = new JCheckBox("Reference Layer");
+		referenceCheckBox.addItemListener(this);
+		propsPanel.add(referenceCheckBox);
 
 		JPanel opacityPanel = new JPanel(new BorderLayout());
 		opacityLabel = new JLabel("Op: 100%");
@@ -154,11 +159,14 @@ public class SELayerPanel extends JPanel implements ActionListener, ListSelectio
 		if(l != null) {
 			visibleCheckBox.setEnabled(true);
 			visibleCheckBox.setSelected(l.visible);
+			referenceCheckBox.setEnabled(true);
+			referenceCheckBox.setSelected(l.isReference);
 			opacitySlider.setEnabled(true);
 			opacitySlider.setValue((int)(l.opacity * 100));
 			opacityLabel.setText("Op: " + (int)(l.opacity * 100) + "%");
 		} else {
 			visibleCheckBox.setEnabled(false);
+			referenceCheckBox.setEnabled(false);
 			opacitySlider.setEnabled(false);
 		}
 	}
@@ -241,6 +249,14 @@ public class SELayerPanel extends JPanel implements ActionListener, ListSelectio
 				SE.editCanvas.repaintBufferImage();
 				SE.editCanvas.repaint();
 			}
+		} else if(e.getSource() == referenceCheckBox) {
+			Layer l = layerList.getSelectedValue();
+			if(l != null) {
+				l.isReference = referenceCheckBox.isSelected();
+				layerList.repaint(); // update renderer text
+				SE.editCanvas.repaintBufferImage();
+				SE.editCanvas.repaint();
+			}
 		}
 	}
 
@@ -251,9 +267,11 @@ public class SELayerPanel extends JPanel implements ActionListener, ListSelectio
 			if(value instanceof Layer) {
 				Layer l = (Layer)value;
 				String text = l.name;
+				if(l.isReference) text += " (Ref)";
 				if(!l.visible) text += " (Hidden)";
 				setText(text);
 				if(!l.visible) setForeground(Color.GRAY);
+				else if(l.isReference) setForeground(Color.BLUE);
 				else setForeground(Color.BLACK);
 			}
 			return this;

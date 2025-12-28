@@ -29,6 +29,7 @@ public class Sprite implements GameObject
 		private static final long serialVersionUID = 1L;
 		public String name;
 		public boolean visible = true;
+		public boolean isReference = false;
 		public float opacity = 1.0f;
 		public int pixels[][][]; //[frame][width][height]
 
@@ -40,6 +41,7 @@ public class Sprite implements GameObject
 		public Layer duplicate() {
 			Layer l = new Layer(name + " Copy", pixels.length, pixels[0].length, pixels[0][0].length);
 			l.visible = this.visible;
+			l.isReference = this.isReference;
 			l.opacity = this.opacity;
 			for(int f=0; f<pixels.length; f++) {
 				for(int x=0; x<pixels[0].length; x++) {
@@ -181,7 +183,7 @@ public class Sprite implements GameObject
 					// Composite layers
 					int compositePixel = 0;
 					for(Layer layer : layers) {
-						if(!layer.visible) continue;
+						if(!layer.visible || layer.isReference) continue;
 						int p = layer.pixels[f][x][y];
 						if(p != 0) {
 							compositePixel = p; // Simple overwrite blending for now
@@ -264,7 +266,7 @@ public class Sprite implements GameObject
 					// Composite layers for export
 					int compositePixel = 0;
 					for(Layer layer : layers) {
-						if(!layer.visible) continue;
+						if(!layer.visible || layer.isReference) continue;
 						int p = layer.pixels[f][x][y];
 						if(p != 0) {
 							compositePixel = p;
@@ -1422,7 +1424,7 @@ public class Sprite implements GameObject
 						// Composite layers for shadow
 						int compositePixel = 0;
 						for(Layer layer : layers) {
-							if(!layer.visible) continue;
+						if(!layer.visible || layer.isReference) continue;
 							int p = layer.pixels[f][x][y];
 							if(p != 0) {
 								compositePixel = p;
