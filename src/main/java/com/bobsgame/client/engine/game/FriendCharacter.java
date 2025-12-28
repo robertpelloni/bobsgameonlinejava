@@ -1,9 +1,9 @@
 package com.bobsgame.client.engine.game;
 
-import static org.jboss.netty.channel.Channels.pipeline;
+//import static org.jboss.netty.channel.Channels.pipeline;
 
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.MessageEvent;
+//import org.jboss.netty.channel.ChannelHandlerContext;
+//import org.jboss.netty.channel.MessageEvent;
 import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.classic.Logger;
@@ -130,17 +130,15 @@ public class FriendCharacter extends Character
 	}
 
 	//===============================================================================================
-	public void handleMessage(ChannelHandlerContext ctx, MessageEvent e)
+	public void handleMessage(String s)
 	{//===============================================================================================
 
-		String s = (String) e.getMessage();
+		if(s.startsWith(BobNet.Friend_LocationStatus_Update)){incomingFriendLocationStatusUpdate(s);return;}
+		if(s.startsWith(BobNet.Friend_Data_Request)){incomingFriendDataRequest(s);return;}
+		if(s.startsWith(BobNet.Friend_Data_Response)){incomingFriendDataResponse(s);return;}
+		if(s.startsWith(BobNet.Game_Challenge_Request)){incomingGameChallengeRequest(s);return;}
 
-		if(s.startsWith(BobNet.Friend_LocationStatus_Update)){incomingFriendLocationStatusUpdate(e);return;}
-		if(s.startsWith(BobNet.Friend_Data_Request)){incomingFriendDataRequest(e);return;}
-		if(s.startsWith(BobNet.Friend_Data_Response)){incomingFriendDataResponse(e);return;}
-		if(s.startsWith(BobNet.Game_Challenge_Request)){incomingGameChallengeRequest(e);return;}
-
-		if(game!=null)game.handleMessage(ctx, e);
+		if(game!=null)game.handleMessage(s);
 	}
 
 
@@ -341,7 +339,7 @@ public class FriendCharacter extends Character
 
 
 	//===============================================================================================
-	public void incomingFriendDataRequest(MessageEvent e)
+	public void incomingFriendDataRequest(String s)
 	{//===============================================================================================
 
 		//allowed info depends on type of friend, zip code friends should not get full name, etc.
@@ -353,17 +351,16 @@ public class FriendCharacter extends Character
 		FriendData myFriendData = new FriendData();
 		myFriendData.initWithGameSave(GameSave());
 
-		String s = myFriendData.encode(friendType);
+		String responseData = myFriendData.encode(friendType);
 
-		connection.write(BobNet.Friend_Data_Response+s+BobNet.endline);
+		connection.write(BobNet.Friend_Data_Response+responseData+BobNet.endline);
 	}
 
 
 	//===============================================================================================
-	public void incomingFriendDataResponse(MessageEvent e)
+	public void incomingFriendDataResponse(String s)
 	{//===============================================================================================
 
-		String s = e.getMessage().toString();
 		s = s.substring(s.indexOf(":")+1);
 
 		FriendData f = new FriendData();
@@ -393,11 +390,10 @@ public class FriendCharacter extends Character
 	}
 
 	//===============================================================================================
-	public void incomingFriendLocationStatusUpdate(MessageEvent e)
+	public void incomingFriendLocationStatusUpdate(String s)
 	{//===============================================================================================
 
 		//FriendLocationUpdate:mapName,x,y,status
-		String s = e.getMessage().toString();
 		s = s.substring(s.indexOf(":")+1);
 
 		String mapName = s.substring(0,s.indexOf(","));
@@ -481,12 +477,11 @@ public class FriendCharacter extends Character
 
 
 	//===============================================================================================
-	public void incomingGameChallengeRequest(MessageEvent e)
+	public void incomingGameChallengeRequest(String s)
 	{//===============================================================================================
 
 
 
-		String s = e.getMessage().toString();
 		s = s.substring(s.indexOf(":")+1);
 		String gameName = s;
 

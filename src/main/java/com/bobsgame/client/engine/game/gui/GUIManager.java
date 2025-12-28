@@ -413,4 +413,15 @@ public class GUIManager extends EnginePart
 
 
 
+    public void showMessage(String message) {
+        if(stuffMenu != null) {
+            System.out.println("GUI Message: " + message);
+        }
+    }
+
+    public void addChatMessage(String msg) {
+        if(stuffMenu != null && stuffMenu.messagesPanel != null) {
+            stuffMenu.messagesPanel.addMessage(msg);
+        }
+    }
 }

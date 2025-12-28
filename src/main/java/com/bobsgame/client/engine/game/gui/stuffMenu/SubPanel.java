@@ -14,6 +14,7 @@ import com.bobsgame.client.engine.game.gui.statusbar.StatusBar;
 import com.bobsgame.client.engine.game.nd.ND;
 import com.bobsgame.net.GameSave;
 import com.bobsgame.client.engine.event.EventManager;
+import com.bobsgame.client.network.GameClientTCP;
 
 import de.matthiasmann.twl.DialogLayout;
 import de.matthiasmann.twl.ScrollPane;
@@ -204,6 +205,10 @@ public class SubPanel extends DialogLayout
 	{
 		if(ClientEngine()==null)return null;
 		return ClientEngine().gameSave_S();
+	}
+
+	public static GameClientTCP GameClientTCP() {
+		return ClientMain.clientMain.gameClientTCP;
 	}
 
 }

@@ -53,7 +53,7 @@ dependencies {
     implementation 'org.slf4j:log4j-over-slf4j:2.0.3'
     implementation 'ch.qos.logback:logback-classic:1.4.4'
     implementation 'commons-net:commons-net:3.8.0'
-    implementation 'io.netty:netty:3.10.6.Final'
+    implementation 'io.netty:netty-all:4.1.86.Final'
     implementation 'com.restfb:restfb:2022.10.0'
     implementation 'commons-codec:commons-codec:1.15'
     implementation 'commons-io:commons-io:2.11.0'
@@ -69,6 +69,14 @@ dependencies {
     implementation 'com.maxmind.geoip2:geoip2:3.0.2'
     implementation 'net.java.jinput:jinput:2.0.9'
     implementation 'xpp3:xpp3:1.1.4c'
+    implementation 'at.favre.lib:bcrypt:0.9.0'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.1'
+}
+
+test {
+    useJUnitPlatform()
 }
 
 sourceSets {
@@ -90,4 +98,9 @@ java {
 
 application {
     mainClass = 'com.bobsgame.ClientMain'
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+    options.compilerArgs << "-Xlint:deprecation"
 }

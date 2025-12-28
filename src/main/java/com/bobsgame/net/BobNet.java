@@ -325,7 +325,7 @@ public class BobNet
 	public static final String Client_Location_Response = "Client_Location_Response:";
 
 
-
+	public static final String Bobs_Game_Frame_Packet = "Bobs_Game_Frame_Packet:";
 
 
 

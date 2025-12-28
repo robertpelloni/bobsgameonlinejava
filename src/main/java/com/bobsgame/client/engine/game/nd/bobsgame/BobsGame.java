@@ -15,9 +15,8 @@ import static org.lwjgl.opengl.GL13.*;
 //import static org.lwjgl.opengl.GL33.*;
 //import static org.lwjgl.opengl.GL40.*;
 
-import org.jboss.netty.channel.ChannelFuture;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.MessageEvent;
+import io.netty.channel.ChannelFuture;
+//import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.LoggerFactory;
 
 import com.bobsgame.client.Texture;
@@ -30,10 +29,11 @@ import com.bobsgame.client.engine.entity.Sprite;
 import com.bobsgame.client.engine.entity.SpriteManager;
 import com.bobsgame.client.engine.game.nd.ND;
 import com.bobsgame.client.engine.game.nd.NDGameEngine;
-import com.bobsgame.client.engine.game.nd.bobsgame.game.GameLogic;
-import com.bobsgame.client.engine.game.nd.bobsgame.game.Settings;
-import com.bobsgame.client.engine.game.nd.bobsgame.game.GameLogic.FrameState;
-import com.bobsgame.client.engine.game.nd.bobsgame.game.GameLogic.NetworkPacket;
+import com.bobsgame.puzzle.GameLogic;
+import com.bobsgame.puzzle.GameLogic.NetworkPacket;
+import com.bobsgame.puzzle.PuzzleGameType;
+import com.bobsgame.puzzle.FrameState;
+//import com.bobsgame.client.engine.game.nd.bobsgame.game.GameLogic.NetworkPacket;
 import com.bobsgame.client.engine.text.BobFont;
 import com.bobsgame.client.engine.text.Caption;
 import com.bobsgame.net.BobNet;
@@ -62,7 +62,7 @@ public class BobsGame extends NDGameEngine
 
 	public long randomSeed = -1;
 
-	Settings originalSettings = null;
+	PuzzleGameType originalSettings = null;
 
 
 	long timeRenderBegan = System.currentTimeMillis();
@@ -143,7 +143,7 @@ public class BobsGame extends NDGameEngine
 
 			randomSeed = ME.randomSeed;
 
-			originalSettings = ME.Settings();
+			originalSettings = ME.currentGameType;
 		}
 
 	}
@@ -262,10 +262,10 @@ public class BobsGame extends NDGameEngine
 
 
 	//=========================================================================================================================
-	public void handleMessage(ChannelHandlerContext ctx,MessageEvent e)
+	public void handleMessage(String s)
 	{//=========================================================================================================================
 
-		String s = (String) e.getMessage();
+		//String s = (String) e.getMessage();
 
 		//log.debug(s);
 
@@ -290,7 +290,7 @@ public class BobsGame extends NDGameEngine
 
 		setLastTimeGotIncomingTraffic_S();
 
-		super.handleMessage(ctx,e);
+		super.handleMessage(s);
 
 	}
 
@@ -491,7 +491,7 @@ public class BobsGame extends NDGameEngine
 			String json = Utils.unzipString(zip);
 
 			if(json==null||json.length()==0){log.error("Their settings were invalid!");return;}
-			Settings settings = gson.fromJson(json,Settings.class);
+			PuzzleGameType settings = gson.fromJson(json,PuzzleGameType.class);
 			if(settings==null){log.error("Their settings were null!");return;}
 
 			getTheirSettings(settings);
@@ -696,7 +696,7 @@ public class BobsGame extends NDGameEngine
 
 
 	private long _theirSeed = -1;
-	private Settings _theirSettings = null;
+	private PuzzleGameType _theirSettings = null;
 
 	boolean setSettings = false;
 
@@ -719,7 +719,7 @@ public class BobsGame extends NDGameEngine
 
 	public synchronized long theirSeed(){return _theirSeed;}
 
-	public synchronized Settings theirSettings(){return _theirSettings;}
+	public synchronized PuzzleGameType theirSettings(){return _theirSettings;}
 
 
 	public synchronized void gotReplyToMySeed(boolean gotReplyToMySeed){this._gotReplyToMySeed = gotReplyToMySeed;}
@@ -729,7 +729,7 @@ public class BobsGame extends NDGameEngine
 	public synchronized void gotTheirStart(boolean gotTheirStart){this._gotTheirStart = gotTheirStart;}
 
 	public synchronized void theirSeed(long theirSeed){this._theirSeed = theirSeed;}
-	public synchronized void getTheirSettings(Settings theirSettings){this._theirSettings = theirSettings;}
+	public synchronized void getTheirSettings(PuzzleGameType theirSettings){this._theirSettings = theirSettings;}
 
 
 	public synchronized long getLastTimeGotIncomingTraffic_S(){return _lastIncomingTrafficTime;}
@@ -1008,7 +1008,7 @@ public class BobsGame extends NDGameEngine
 								storePacketsTicksCounter=currentTime;
 
 								NetworkPacket packetToSplit = ME.networkPacket;
-								ME.networkPacket = ME.new NetworkPacket();
+								ME.networkPacket = new GameLogic.NetworkPacket();
 
 
 								int maxFramesInPacket = 20;
@@ -1020,7 +1020,7 @@ public class BobsGame extends NDGameEngine
 									//so we split it into multiple packets.
 									while(packetToSplit.frameStates.size()>0)
 									{
-										NetworkPacket sendPacket = ME.new NetworkPacket();
+										NetworkPacket sendPacket = new GameLogic.NetworkPacket();
 
 
 										int size = packetToSplit.frameStates.size();
