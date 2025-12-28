@@ -798,7 +798,7 @@ public class SpriteEditor extends JFrame implements ActionListener, ItemListener
 			frameControlPanel.updateSpriteInfo();
 			frameControlPanel.updateFrames();
 			editCanvas.repaintBufferImage();
-			editCanvas.initUndo();
+			//editCanvas.initUndo();
 			editCanvas.repaint();
 
 			setFrameCanvasHeight();

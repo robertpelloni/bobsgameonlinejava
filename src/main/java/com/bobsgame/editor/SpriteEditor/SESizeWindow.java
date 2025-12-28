@@ -87,7 +87,7 @@ public class SESizeWindow extends SizeWindow implements KeyListener
 			Project.getSelectedSprite().setSize(Integer.parseInt(xTextField.getText()), Integer.parseInt(yTextField.getText()));
 
 			SpriteEditor.editCanvas.setSize(Project.getSelectedSprite().wP() * SpriteEditor.editCanvas.zoom, Project.getSelectedSprite().hP() * SpriteEditor.editCanvas.zoom);
-			SpriteEditor.editCanvas.initUndo();
+			//SpriteEditor.editCanvas.initUndo();
 			SpriteEditor.editCanvas.editBufferImage=null;
 			SpriteEditor.frameControlPanel.updateSpriteInfo();
 			SpriteEditor.editCanvas.setSizeDoLayout();

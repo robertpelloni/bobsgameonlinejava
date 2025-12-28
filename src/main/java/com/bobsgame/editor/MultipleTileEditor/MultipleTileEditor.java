@@ -104,7 +104,7 @@ public class MultipleTileEditor extends JFrame implements WindowListener, KeyLis
 		this.heightTiles = height;
 		tiles = tls;
 		editCanvas.repaintBufferImage();
-		editCanvas.initUndo();
+		//editCanvas.initUndo();
 		setVisible(true);
 		editCanvas.repaint();
 	}

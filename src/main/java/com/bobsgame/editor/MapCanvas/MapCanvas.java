@@ -2128,9 +2128,17 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 
 			if(me.getModifiersEx() == leftMask)
 			{
+				Door door = getMap().getSelectedDoor();
+				int oldX = door.xP();
+				int oldY = door.yP();
+				int newX = releasedTileX*8;
+				int newY = releasedTileY*8;
+				
+				undoManager.addEdit(new MapObjectMoveEdit(door, oldX, oldY, newX, newY));
+
 				//tile precision (default)
-				getMap().getSelectedDoor().setXPixels(releasedTileX*8);
-				getMap().getSelectedDoor().setYPixels(releasedTileY*8);
+				door.setXPixels(newX);
+				door.setYPixels(newY);
 
 				EditorMain.infoLabel.setText("MapCanvas: Door Moved");
 
@@ -2206,7 +2214,21 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 
 				e.setNameNoRename(getMap().createUniqueEntityName(getMap().getSelectedEntity().name(), -1));
 
+				if(moveEntityByPixel)
+				{
+					//pixel precision
+					e.setXPixels(releasedMapX);
+					e.setYPixels(releasedMapY);
+				}
+				else
+				{
+					//tile precision (default)
+					e.setXPixels(releasedTileX*8);
+					e.setYPixels(releasedTileY*8);
+				}
+
 				getMap().addEntity(e);
+				undoManager.addEdit(new MapObjectAddEdit(getMap(), e));
 
 				getMap().setSelectedEntityIndex(getMap().getNumEntities()-1);
 
@@ -2232,19 +2254,25 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 			if(me.getModifiersEx() == leftMask)
 			{
 				//move sprite
+				Entity entity = getMap().getSelectedEntity();
+				int newX, newY;
 
 				if(moveEntityByPixel)
 				{
 					//pixel precision
-					getMap().getSelectedEntity().setXPixels(releasedMapX);
-					getMap().getSelectedEntity().setYPixels(releasedMapY);
+					newX = releasedMapX;
+					newY = releasedMapY;
 				}
 				else
 				{
 					//tile precision (default)
-					getMap().getSelectedEntity().setXPixels(releasedTileX*8);
-					getMap().getSelectedEntity().setYPixels(releasedTileY*8);
+					newX = releasedTileX*8;
+					newY = releasedTileY*8;
 				}
+				
+				undoManager.addEdit(new MapObjectMoveEdit(entity, oldMapX, oldMapY, newX, newY));
+				entity.setXPixels(newX);
+				entity.setYPixels(newY);
 
 				EditorMain.infoLabel.setText("MapCanvas: Map Sprite Moved");
 			}
@@ -2302,6 +2330,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 				l.setYPixels(releasedMapY);
 
 				getMap().addLight(l);
+				undoManager.addEdit(new MapObjectAddEdit(getMap(), l));
 
 				getMap().setSelectedLightIndex(getMap().getNumLights()-1);
 
@@ -2312,9 +2341,17 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 			else
 			if(me.getModifiersEx() == leftMask)
 			{
+				Light light = getMap().getSelectedLight();
+				int oldX = light.xP();
+				int oldY = light.yP();
+				int newX = releasedMapX;
+				int newY = releasedMapY;
+				
+				undoManager.addEdit(new MapObjectMoveEdit(light, oldX, oldY, newX, newY));
+
 				//pixel precision
-				getMap().getSelectedLight().setXPixels(releasedMapX);
-				getMap().getSelectedLight().setYPixels(releasedMapY);
+				light.setXPixels(newX);
+				light.setYPixels(newY);
 
 				EditorMain.infoLabel.setText("MapCanvas: Map Light Moved");
 			}
@@ -2390,6 +2427,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 
 
 				getMap().addArea(a);
+				undoManager.addEdit(new MapObjectAddEdit(getMap(), a));
 
 				getMap().setSelectedAreaIndex(getMap().getNumAreas()-1);
 
@@ -2400,16 +2438,32 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 			else
 			if(me.getModifiersEx() == shiftClickMask)
 			{
+				Area area = getMap().getSelectedArea();
+				int oldX = area.xP();
+				int oldY = area.yP();
+				int newX = releasedMapX;
+				int newY = releasedMapY;
+				
+				undoManager.addEdit(new MapObjectMoveEdit(area, oldX, oldY, newX, newY));
+
 				//pixel precision
-				getMap().getSelectedArea().setXPixels(releasedMapX);
-				getMap().getSelectedArea().setYPixels(releasedMapY);
+				area.setXPixels(newX);
+				area.setYPixels(newY);
 			}
 			else
 			if(me.getModifiersEx() == leftMask)
 			{
+				Area area = getMap().getSelectedArea();
+				int oldX = area.xP();
+				int oldY = area.yP();
+				int newX = releasedTileX*8;
+				int newY = releasedTileY*8;
+				
+				undoManager.addEdit(new MapObjectMoveEdit(area, oldX, oldY, newX, newY));
+
 				//tile precision (default)
-				getMap().getSelectedArea().setXPixels(releasedTileX*8);
-				getMap().getSelectedArea().setYPixels(releasedTileY*8);
+				area.setXPixels(newX);
+				area.setYPixels(newY);
 			}
 
 
@@ -3950,6 +4004,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 			}
 			else
 			{
+				CompoundEdit edit = new CompoundEdit();
 
 				//if its all empty, move them up
 				for(int ty = 0; ty < mapSelectionArea.getHeight(); ty++)
@@ -3961,12 +4016,21 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 						int maptiley = mapSelectionArea.getY() + ty;
 
 						int tileindex = getMap().getTileIndex(selectedLayer, maptilex, maptiley);
-						getMap().setTileIndex(target_layer, maptilex, maptiley, tileindex);
-						paintTileXY(target_layer, maptilex,maptiley);
-						getMap().setTileIndex(selectedLayer, maptilex, maptiley, 0);
-						paintTileXY(selectedLayer, maptilex,maptiley);
+						
+						if(tileindex != 0) {
+							edit.addEdit(new TileChangeEdit(this, target_layer, maptilex, maptiley, 0, tileindex));
+							getMap().setTileIndex(target_layer, maptilex, maptiley, tileindex);
+							paintTileXY(target_layer, maptilex,maptiley);
+							
+							edit.addEdit(new TileChangeEdit(this, selectedLayer, maptilex, maptiley, tileindex, 0));
+							getMap().setTileIndex(selectedLayer, maptilex, maptiley, 0);
+							paintTileXY(selectedLayer, maptilex,maptiley);
+						}
 					}
 				}
+				
+				edit.end();
+				if(edit.isSignificant()) undoManager.addEdit(edit);
 
 
 				//set the status bar: moved selected tiles up a layer
@@ -4035,6 +4099,7 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 			}
 			else
 			{
+				CompoundEdit edit = new CompoundEdit();
 
 				//if its all empty, move them up
 				for(int ty = 0; ty < mapSelectionArea.getHeight(); ty++)
@@ -4046,14 +4111,21 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 						int maptiley = mapSelectionArea.getY() + ty;
 
 						int tileindex = getMap().getTileIndex(selectedLayer, maptilex, maptiley);
-						getMap().setTileIndex(target_layer, maptilex, maptiley, tileindex);
-						paintTileXY(target_layer, maptilex,maptiley);
-						getMap().setTileIndex(selectedLayer, maptilex, maptiley, 0);
-						paintTileXY(selectedLayer, maptilex,maptiley);
+						
+						if(tileindex != 0) {
+							edit.addEdit(new TileChangeEdit(this, target_layer, maptilex, maptiley, 0, tileindex));
+							getMap().setTileIndex(target_layer, maptilex, maptiley, tileindex);
+							paintTileXY(target_layer, maptilex,maptiley);
+							
+							edit.addEdit(new TileChangeEdit(this, selectedLayer, maptilex, maptiley, tileindex, 0));
+							getMap().setTileIndex(selectedLayer, maptilex, maptiley, 0);
+							paintTileXY(selectedLayer, maptilex,maptiley);
+						}
 					}
 				}
 
-
+				edit.end();
+				if(edit.isSignificant()) undoManager.addEdit(edit);
 
 				EditorMain.infoLabel.setTextSuccess("MapCanvas: Moved selected tiles down to Layer "+target_layer+" ("+EditorMain.controlPanel.layerLabel[target_layer].getText()+")");
 
@@ -4496,6 +4568,8 @@ String colladastring = "<?xml version=\"1.0f\" encoding=\"UTF-8\" standalone=\"n
 	{//===============================================================================================
 		if(getMap().getSelectedAreaIndex()!=-1)
 		{
+			Area area = getMap().getSelectedArea();
+			undoManager.addEdit(new MapObjectRemoveEdit(getMap(), area));
 
 			getMap().removeArea(getMap().getSelectedAreaIndex());
 			getMap().setSelectedAreaIndex(-1);
@@ -4528,6 +4602,8 @@ String colladastring = "<?xml version=\"1.0f\" encoding=\"UTF-8\" standalone=\"n
 			int sh = ((radius*2)+height);
 
 
+			Light light = getMap().getSelectedLight();
+			undoManager.addEdit(new MapObjectRemoveEdit(getMap(), light));
 
 			getMap().removeLight(getMap().getSelectedLightIndex());
 			getMap().setSelectedLightIndex(-1);
@@ -4569,6 +4645,8 @@ String colladastring = "<?xml version=\"1.0f\" encoding=\"UTF-8\" standalone=\"n
 			int sw = getMap().getSelectedDoor().wP()/8;
 			int sh = getMap().getSelectedDoor().hP()/8;
 
+			Door door = getMap().getSelectedDoor();
+			undoManager.addEdit(new MapObjectRemoveEdit(getMap(), door));
 
 			getMap().removeDoor(getMap().getSelectedDoorIndex());
 			getMap().setSelectedDoorIndex(-1);
@@ -4615,6 +4693,8 @@ String colladastring = "<?xml version=\"1.0f\" encoding=\"UTF-8\" standalone=\"n
 			int sw = (getMap().getSelectedEntity().wP()/8)+1;
 			int sh = (getMap().getSelectedEntity().hP()/8)+1;
 
+			Entity entity = getMap().getSelectedEntity();
+			undoManager.addEdit(new MapObjectRemoveEdit(getMap(), entity));
 
 			getMap().removeEntity(getMap().getSelectedEntityIndex());
 			getMap().setSelectedEntityIndex(-1);
