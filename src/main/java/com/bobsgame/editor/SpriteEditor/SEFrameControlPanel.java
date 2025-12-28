@@ -143,6 +143,7 @@ public class SEFrameControlPanel extends JPanel implements ActionListener, Mouse
 
 	protected JLabel frameNumber;
 	public SpriteEventEditor spriteEventEditor;
+	public SETimelinePanel timelinePanel;
 
 
 	//===============================================================================================
@@ -155,6 +156,7 @@ public class SEFrameControlPanel extends JPanel implements ActionListener, Mouse
 		setLayout(new BorderLayout());
 
 		spriteEventEditor = new SpriteEventEditor();
+		timelinePanel = new SETimelinePanel(se);
 
 		JPanel spriteInfoPanel = new JPanel();
 		spriteInfoPanel.setLayout(new BoxLayout(spriteInfoPanel,BoxLayout.Y_AXIS));
@@ -739,6 +741,7 @@ public class SEFrameControlPanel extends JPanel implements ActionListener, Mouse
 
 
 		add(animationPanel, BorderLayout.CENTER);
+		add(timelinePanel, BorderLayout.SOUTH);
 
 
 
@@ -960,6 +963,8 @@ public class SEFrameControlPanel extends JPanel implements ActionListener, Mouse
 	//===============================================================================================
 	public void updateSpriteInfo()
 	{//===============================================================================================
+
+		timelinePanel.updateTimeline();
 
 		//update all the textfields based on the selected sprite
 		displayNameText.setText(getSprite().displayName());
