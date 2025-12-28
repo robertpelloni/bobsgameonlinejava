@@ -10,6 +10,8 @@ The project is split into three Gradle modules:
 - **`:server`**: The backend infrastructure (Game Server, Index Server, STUN Server).
 - **`:shared`**: Shared logic, networking packets, and utilities.
 
+For a detailed breakdown of the project structure and dependencies, see [STRUCTURE.md](STRUCTURE.md).
+
 ## Prerequisites
 
 - JDK 21
@@ -67,3 +69,24 @@ Configuration is handled via Environment Variables (see `docker-compose.yml`) or
 - **Security**: BCrypt password hashing with automatic legacy migration.
 - **Containerization**: Full Docker support.
 - **CI/CD**: GitHub Actions workflow included.
+
+## Changelog
+
+### Modernization Phase (Current)
+- **Migrated to Gradle**: Multi-module project structure.
+- **Updated Java**: Targeted Java 21.
+- **Upgraded LWJGL**: Migrated from 2 to 3 (GLFW, OpenAL, STB).
+- **Upgraded Netty**: Migrated from 3 to 4.
+- **Security**: Added BCrypt password hashing.
+- **Infrastructure**: Added Docker and CI/CD support.
+- **Editor**: Re-enabled legacy Swing Editor, added 'Select All' and 'Replace Color' features.
+
+## Roadmap
+
+- [x] Modernize Build System (Gradle)
+- [x] Upgrade Java to 21
+- [x] Migrate Networking to Netty 4
+- [x] Migrate Graphics to LWJGL 3
+- [x] Re-enable Level Editor
+- [ ] Port Editor to LibGDX / Scene2D (Future)
+- [ ] Implement remaining TODO items
