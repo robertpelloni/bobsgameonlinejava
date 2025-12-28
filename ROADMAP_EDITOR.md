@@ -28,8 +28,9 @@ These features are essential for any usable editor and are currently missing or 
 ## Phase 2: Workflow Enhancements
 Tools that speed up the creation process.
 
-5.  **Selection Tools**
+5.  **Selection Tools** [COMPLETED]
     *   **Description:** Robust selection capabilities beyond rectangles.
+    *   **Status:** Implemented `MagicWandBrush` and mask-based `SelectionArea`.
     *   **Goal:** Magic Wand (Color Select), Polygon Lasso, "Select All of Color".
 
 6.  **Symmetry / Mirror Drawing**
@@ -55,9 +56,16 @@ Differentiation features that provide unique value.
 
 ## Execution Plan (Next Steps)
 
-With the core foundations complete, focus shifts to **Workflow Enhancements**.
+With the workflow enhancements underway, the next target is **Symmetry**.
 
-**Plan for Selection Tools:**
-1.  Refactor `SelectionArea` to support non-rectangular shapes (Polygon/Mask).
-2.  Implement `MagicWandTool` (Flood fill selection).
-3.  Add UI for selection modes (Add, Subtract, Intersect).
+**Plan for Symmetry:**
+1.  Add `SymmetryBrush` wrapper or modify `SECanvas.setPixel` to handle symmetry?
+2.  Actually `SECanvas` already has `SpriteEditor.mirrorMode.isSelected()`.
+3.  I should generalize this to X/Y symmetry and integrate it with the `Brush` system.
+4.  Currently `SECanvas.setPixel` checks `mirrorMode`.
+5.  Brushes call `canvas.setPixel`. So brushes support symmetry automatically?
+6.  `PixelBrush` calls `canvas.setPixel`. Yes.
+7.  `FillBrush` calls `canvas.fill` which calls `setPixel`. Yes.
+8.  So "Mirror Mode" already works!
+9.  I just need to add Y-axis symmetry (currently only X-axis?).
+10. Check `SECanvas.setPixel` logic.

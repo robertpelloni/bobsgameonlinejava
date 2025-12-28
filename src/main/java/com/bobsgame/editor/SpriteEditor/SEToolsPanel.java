@@ -11,6 +11,7 @@ import javax.swing.JToggleButton;
 import com.bobsgame.EditorMain;
 import com.bobsgame.editor.SpriteEditor.Tools.EraserBrush;
 import com.bobsgame.editor.SpriteEditor.Tools.FillBrush;
+import com.bobsgame.editor.SpriteEditor.Tools.MagicWandBrush;
 import com.bobsgame.editor.SpriteEditor.Tools.PixelBrush;
 
 public class SEToolsPanel extends JPanel implements ActionListener {
@@ -21,6 +22,7 @@ public class SEToolsPanel extends JPanel implements ActionListener {
 	private JToggleButton pencilButton;
 	private JToggleButton eraserButton;
 	private JToggleButton fillButton;
+	private JToggleButton magicWandButton;
 	private ButtonGroup toolGroup;
 
 	public SEToolsPanel(SpriteEditor se) {
@@ -45,6 +47,11 @@ public class SEToolsPanel extends JPanel implements ActionListener {
 		fillButton.addActionListener(this);
 		toolGroup.add(fillButton);
 		add(fillButton);
+
+		magicWandButton = new JToggleButton("Wand");
+		magicWandButton.addActionListener(this);
+		toolGroup.add(magicWandButton);
+		add(magicWandButton);
 	}
 
 	@Override
@@ -55,6 +62,8 @@ public class SEToolsPanel extends JPanel implements ActionListener {
 			SE.editCanvas.currentBrush = new EraserBrush();
 		} else if(e.getSource() == fillButton) {
 			SE.editCanvas.currentBrush = new FillBrush();
+		} else if(e.getSource() == magicWandButton) {
+			SE.editCanvas.currentBrush = new MagicWandBrush();
 		}
 	}
 

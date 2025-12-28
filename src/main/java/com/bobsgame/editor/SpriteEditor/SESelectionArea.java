@@ -55,9 +55,11 @@ public class SESelectionArea extends SelectionArea
 				{
 					for(int x = 0; x < copyWidth; x++)
 					{
-
-						copy[x][y][0] = getEditCanvas().getPixel(x1 + x, y1 + y); // Copy pixels within Selected Area
-
+						if (contains(x1 + x, y1 + y)) {
+							copy[x][y][0] = getEditCanvas().getPixel(x1 + x, y1 + y); // Copy pixels within Selected Area
+						} else {
+							copy[x][y][0] = 0; // Transparent if outside mask
+						}
 					}
 				}
 			}
@@ -128,9 +130,9 @@ public class SESelectionArea extends SelectionArea
 			{
 				for(int x = 0; x < getWidth(); x++)
 				{
-
-					getEditCanvas().setPixel(x1 + x, y1 + y, 0, edit); // Delete pixels within Selected Area
-
+					if (contains(x1 + x, y1 + y)) {
+						getEditCanvas().setPixel(x1 + x, y1 + y, 0, edit); // Delete pixels within Selected Area
+					}
 				}
 			}
 		}
@@ -157,9 +159,9 @@ public class SESelectionArea extends SelectionArea
 			{
 				for(int x = 0; x < copyWidth; x++)
 				{
-
-					getEditCanvas().setPixel(x1 + x, y1 + y, copy[x][y][0], edit); // Paste pixels within Selected Area
-
+					if (contains(x1 + x, y1 + y)) {
+						getEditCanvas().setPixel(x1 + x, y1 + y, copy[x][y][0], edit); // Paste pixels within Selected Area
+					}
 				}
 			}
 			return true;
