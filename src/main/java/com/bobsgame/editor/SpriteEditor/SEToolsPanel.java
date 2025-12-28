@@ -23,6 +23,7 @@ public class SEToolsPanel extends JPanel implements ActionListener {
 	private JToggleButton eraserButton;
 	private JToggleButton fillButton;
 	private JToggleButton magicWandButton;
+	private JToggleButton pixelPerfectButton; // Not in group, toggle option
 	private ButtonGroup toolGroup;
 
 	public SEToolsPanel(SpriteEditor se) {
@@ -37,6 +38,10 @@ public class SEToolsPanel extends JPanel implements ActionListener {
 		pencilButton.setSelected(true);
 		toolGroup.add(pencilButton);
 		add(pencilButton);
+
+		pixelPerfectButton = new JToggleButton("Pixel Perfect");
+		pixelPerfectButton.addActionListener(this);
+		add(pixelPerfectButton);
 
 		eraserButton = new JToggleButton("Eraser");
 		eraserButton.addActionListener(this);
@@ -56,9 +61,22 @@ public class SEToolsPanel extends JPanel implements ActionListener {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		if(e.getSource() == pencilButton) {
-			SE.editCanvas.currentBrush = new PixelBrush();
-		} else if(e.getSource() == eraserButton) {
+		if(e.getSource() == pencilButton || e.getSource() == pixelPerfectButton) {
+			if(!pencilButton.isSelected()) {
+				// If we clicked pixel perfect but eraser was selected, switch to pencil?
+				// Or does pixel perfect apply to eraser too? Usually just pencil.
+				// For now, let's keep it simple. If we toggle pixel perfect, we don't necessarily switch tool unless needed.
+				// But we need to update the current brush if it is a PixelBrush.
+			}
+
+			if (pencilButton.isSelected()) {
+				PixelBrush pb = new PixelBrush();
+				pb.setPixelPerfect(pixelPerfectButton.isSelected());
+				SE.editCanvas.currentBrush = pb;
+			}
+		}
+
+		if(e.getSource() == eraserButton) {
 			SE.editCanvas.currentBrush = new EraserBrush();
 		} else if(e.getSource() == fillButton) {
 			SE.editCanvas.currentBrush = new FillBrush();

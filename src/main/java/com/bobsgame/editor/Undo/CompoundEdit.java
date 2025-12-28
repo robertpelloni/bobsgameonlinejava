@@ -13,6 +13,10 @@ public class CompoundEdit extends AbstractUndoableEdit {
         edits = new ArrayList<>();
     }
 
+    public List<UndoableEdit> getEdits() {
+	return edits;
+    }
+
     public void end() {
         inProgress = false;
     }
