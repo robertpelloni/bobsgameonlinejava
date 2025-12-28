@@ -125,6 +125,8 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 	public static boolean alwaysShowAreaOutlines = true;
 	public static boolean drawRandomPointOfInterestLines = false;
 
+	public static boolean tileEditMode = false;
+
 
 
 	//===============================================================================================
@@ -1828,7 +1830,23 @@ public class MapCanvas extends JComponent implements MouseMotionListener, MouseL
 
 					if(me.getModifiersEx() == leftMask)
 					{
-						if(getMap().getTileIndex(selectedLayer, clickedTileX, clickedTileY) != EditorMain.tileCanvas.tileSelected)
+						if (tileEditMode) {
+							int px = clickedMapX;
+							int py = clickedMapY;
+							int tileX = px / 8;
+							int tileY = py / 8;
+							int pixelX = px % 8;
+							int pixelY = py % 8;
+
+							int tileIndex = getMap().getTileIndex(selectedLayer, tileX, tileY);
+							if (tileIndex != 0) {
+								int color = EditorMain.controlPanel.paletteCanvas.colorSelected;
+								Project.tileset.setPixel(tileIndex, pixelX, pixelY, color);
+								repaintTileEverywhereOnMap(tileIndex);
+								EditorMain.tileCanvas.repaint();
+							}
+						}
+						else if(getMap().getTileIndex(selectedLayer, clickedTileX, clickedTileY) != EditorMain.tileCanvas.tileSelected)
 						{
 							prevtile = getMap().getTileIndex(selectedLayer, clickedTileX, clickedTileY);
 

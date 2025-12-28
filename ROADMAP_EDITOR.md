@@ -46,8 +46,9 @@ Tools that speed up the creation process.
 ## Phase 3: Advanced Features
 Differentiation features that provide unique value.
 
-8.  **Tile Instancing (Pyxel Edit Style)**
+8.  **Tile Instancing (Pyxel Edit Style)** [COMPLETED]
     *   **Description:** Editing a tile on the map updates the source tile and all other instances of it instantly.
+    *   **Status:** Implemented `tileEditMode` in `MapCanvas`. Allows drawing pixel-level edits directly on the map.
     *   **Why:** Huge time saver for tilemap creation.
 
 9.  **Auto-tiling (Wang/Blob)**
@@ -58,9 +59,9 @@ Differentiation features that provide unique value.
 
 ## Execution Plan (Next Steps)
 
-With core drawing and animation tools complete, the next phase focuses on **TileMap** efficiency.
+With instancing complete, **Auto-tiling** is the next advanced feature.
 
-**Plan for Tile Instancing:**
-1.  Analyze `MapCanvas` / `MTECanvas` rendering loop.
-2.  Implement a system where modifying a tile in `TileCanvas` (Tileset) automatically triggers a repaint of `MapCanvas`.
-3.  Ensure `Tileset` modification propagates to all maps using that tileset.
+**Plan for Auto-tiling:**
+1.  Define a data structure for Tile Sets (Blob/Wang sets).
+2.  Implement logic to check neighbors and select tile index.
+3.  Add "Auto-Tile Brush" to `MapCanvas`.
