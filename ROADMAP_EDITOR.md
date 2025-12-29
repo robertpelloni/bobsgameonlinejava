@@ -55,14 +55,17 @@ Differentiation features that provide unique value.
     *   **Description:** Automatically selecting the correct tile variation based on neighbors (corners, edges).
     *   **Status:** Implemented 4-bit (16-tile) Edge Auto-tiling logic in `AutoTiler` and integrated into `MapCanvas` as `autoTileMode`.
 
-10. **Reference Layers**
+10. **Reference Layers** [COMPLETED]
     *   **Description:** Layers that hold reference images but are excluded from the final export/game data.
+    *   **Status:** Implemented `isReference` boolean in `Sprite.Layer`. Updated export methods (`getAsIntArray`, `outputPNG`, etc.) to skip these layers. Added UI toggle in `SELayerPanel`.
 
 ## Execution Plan (Next Steps)
 
-With all major features implemented, the roadmap is nearly complete. **Reference Layers** is the final item.
+All major features from the roadmap have been implemented.
 
-**Plan for Reference Layers:**
-1.  Add `isReference` boolean to `Sprite.Layer`.
-2.  Update export logic to skip reference layers.
-3.  Add UI checkbox in `SELayerPanel`.
+1.  **Refine & Polish:**
+    *   Ensure all new features (Timeline, Animation List, History) work smoothly together.
+    *   Verify Undo logic with the new `UndoManager` features.
+2.  **Maintenance:**
+    *   Keep submodules updated.
+    *   Monitor for regressions in legacy game functionality.
