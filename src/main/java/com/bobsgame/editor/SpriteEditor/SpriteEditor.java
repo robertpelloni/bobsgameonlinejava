@@ -49,6 +49,7 @@ public class SpriteEditor extends JFrame implements ActionListener, ItemListener
 	public static SEControlPanel controlPanel;
 	public static SELayerPanel layerPanel;
 	public static SEToolsPanel toolsPanel;
+	public static SEHistoryPanel historyPanel;
 
 	public static SEFrameControlPanel frameControlPanel;
 
@@ -480,10 +481,15 @@ public class SpriteEditor extends JFrame implements ActionListener, ItemListener
 
 		controlPanel = new SEControlPanel(this);
 		layerPanel = new SELayerPanel(this);
+		historyPanel = new SEHistoryPanel(this);
+
+		JTabbedPane layerHistoryTabs = new JTabbedPane();
+		layerHistoryTabs.addTab("Layers", layerPanel);
+		layerHistoryTabs.addTab("History", historyPanel);
 
 		JPanel rightPanel = new JPanel(new BorderLayout());
 		rightPanel.add(controlPanel, BorderLayout.CENTER);
-		rightPanel.add(layerPanel, BorderLayout.SOUTH);
+		rightPanel.add(layerHistoryTabs, BorderLayout.SOUTH);
 
 
 		JPanel leftPanel = new JPanel(new BorderLayout());

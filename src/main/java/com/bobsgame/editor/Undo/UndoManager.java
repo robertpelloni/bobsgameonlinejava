@@ -7,8 +7,35 @@ public class UndoManager extends AbstractUndoableEdit {
     protected UndoableEdit nextEdit = null;
     protected int limit = 100;
 
+    // For Listener support
+    private java.util.List<javax.swing.event.ChangeListener> listeners = new java.util.ArrayList<>();
+
     public UndoManager() {
         super();
+    }
+
+    public void addChangeListener(javax.swing.event.ChangeListener l) {
+	listeners.add(l);
+    }
+
+    public void removeChangeListener(javax.swing.event.ChangeListener l) {
+	listeners.remove(l);
+    }
+
+    protected void fireStateChanged() {
+	javax.swing.event.ChangeEvent e = new javax.swing.event.ChangeEvent(this);
+	for(javax.swing.event.ChangeListener l : listeners) {
+		l.stateChanged(e);
+	}
+    }
+
+    public java.util.List<UndoableEdit> getEdits() {
+	return java.util.Collections.unmodifiableList(edits);
+    }
+
+    public int getNextEditIndex() {
+	if (nextEdit == null) return edits.size();
+	return edits.indexOf(nextEdit);
     }
 
     public void setLimit(int l) {
@@ -33,6 +60,7 @@ public class UndoManager extends AbstractUndoableEdit {
         }
         edits.clear();
         nextEdit = null;
+        fireStateChanged();
     }
 
     protected void trimForAdd() {
@@ -55,6 +83,7 @@ public class UndoManager extends AbstractUndoableEdit {
         trimForAdd();
         edits.push(anEdit);
         trimEdits();
+        fireStateChanged();
         return true;
     }
 
@@ -92,6 +121,7 @@ public class UndoManager extends AbstractUndoableEdit {
 
         edit.undo();
         nextEdit = edit;
+        fireStateChanged();
     }
 
     @Override
@@ -109,6 +139,40 @@ public class UndoManager extends AbstractUndoableEdit {
         } else {
             nextEdit = null;
         }
+        fireStateChanged();
+    }
+
+    public synchronized void undoTo(UndoableEdit edit) {
+	int index = edits.indexOf(edit);
+	if (index == -1) return;
+
+	while(canUndo()) {
+		// Check if we are already at the state BEFORE this edit?
+		// If we want to undo TO 'edit', does that mean 'edit' is the last done thing?
+		// Or we undo UNTIL 'edit' is undone?
+		// Usually clicking history means "Go back to this state".
+		// If list is: [Draw A, Draw B, Draw C]. Current is end.
+		// Click "Draw A". We want to undo C, then undo B. State is "After Draw A".
+
+		// Current index (nextEditIndex) is size (3).
+		// Draw A is index 0.
+		// We want nextEditIndex to be 1 (pointing to Draw B).
+
+		int current = getNextEditIndex();
+		if (current <= index + 1) break;
+		undo();
+	}
+    }
+
+    public synchronized void redoTo(UndoableEdit edit) {
+	int index = edits.indexOf(edit);
+	if (index == -1) return;
+
+	while(canRedo()) {
+		int current = getNextEditIndex(); // points to next edit to REDO
+		if (current > index) break; // We have redone it
+		redo();
+	}
     }
     
     public synchronized String getUndoPresentationName() {
