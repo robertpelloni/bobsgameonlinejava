@@ -2,11 +2,6 @@ package com.bobsgame.client.network;
 
 import java.net.InetSocketAddress;
 
-import io.netty.channel.ChannelHandlerContext;
-import org.slf4j.LoggerFactory;
-
-import ch.qos.logback.classic.Logger;
-
 import com.bobsgame.ClientMain;
 import com.bobsgame.client.engine.Engine;
 import com.bobsgame.client.engine.game.FriendCharacter;
@@ -32,26 +27,28 @@ public class FriendUDPConnection extends UDPConnection implements UDPInterface
 
 	//===============================================================================================
 	@Override
-	public void handleMessage(ChannelHandlerContext ctx, String s, InetSocketAddress sender)
+	public void handleMessage(String s)
 	{//===============================================================================================
 
-		if(s.startsWith(BobNet.STUN_Response)){incomingSTUNReply(s, sender);return;}
+		if(s.startsWith(BobNet.STUN_Response)){incomingSTUNReply(s);return;}
 
-        InetSocketAddress peer = getPeerSocketAddress_S();
-		if(peer == null || sender.toString().equals(peer.toString())==false)
-		{
-            if (peer != null)
-			    log.error("Peer IP address didn't match on handleMessage. Expected: " + peer + " Got: " + sender);
-            else
-                log.error("Peer address is null on handleMessage. Got: " + sender);
-			return;
-		}
+
+		//if(e.getRemoteAddress().toString().equals(getPeerSocketAddress_S().toString())==false)
+		//{
+		//	log.error("Peer IP address didn't match on handleMessage");
+		//	return;
+		//}
+
+
 
 		if(s.startsWith(BobNet.Friend_Connect_Request)){sendPeerConnectResponse();return;}
 		if(s.startsWith(BobNet.Friend_Connect_Response)){incomingPeerConnectResponse(s);return;}
 
-		if(friend!=null)friend.handleMessage(ctx,s,sender);
+		if(friend!=null)friend.handleMessage(s);
 	}
+
+
+
 
 
 	//===============================================================================================
@@ -70,19 +67,18 @@ public class FriendUDPConnection extends UDPConnection implements UDPInterface
 
 
 	//===============================================================================================
-	public void incomingSTUNReply(String s, InetSocketAddress sender)
+	public void incomingSTUNReply(String s)
 	{//===============================================================================================
 
 
 		//make sure it is from the correct IP
-		if(sender.toString().equals(stunServerAddress.toString())==false)
-		{
-			log.error("STUN IP address didn't match stunServerAddress");
-			return;
-		}
+		//if(e.getRemoteAddress().toString().equals(stunServerAddress.toString())==false)
+		//{
+		//	log.error("STUN IP address didn't match stunServerAddress");
+		//	return;
+		//}
 
 
-		//String s = e.getMessage().toString();
 		String friendIP = "";
 		int friendPort = -1;
 
@@ -108,6 +104,12 @@ public class FriendUDPConnection extends UDPConnection implements UDPInterface
 	}
 
 
+
+
+
+
+
+
 	//===============================================================================================
 	@Override
 	public void sendPeerConnectRequest()
@@ -127,8 +129,6 @@ public class FriendUDPConnection extends UDPConnection implements UDPInterface
 	public void incomingPeerConnectResponse(String s)
 	{//===============================================================================================
 
-		//String s = e.getMessage().toString();
-
 		//FriendConnectResponse:friendUserID
 		s = s.substring(s.indexOf(":")+1);
 		int replyFriendUserID = -1;
@@ -142,6 +142,14 @@ public class FriendUDPConnection extends UDPConnection implements UDPInterface
 
 		setGotPeerConnectResponse_S(true);
 	}
+
+
+
+
+
+
+
+
 
 
 	//===============================================================================================
@@ -193,5 +201,11 @@ public class FriendUDPConnection extends UDPConnection implements UDPInterface
 
 
 	}
+
+
+
+
+
+
 
 }

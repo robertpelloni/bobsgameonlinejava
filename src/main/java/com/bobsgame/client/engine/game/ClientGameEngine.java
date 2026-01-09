@@ -82,6 +82,8 @@ public class ClientGameEngine extends Engine
 	public ND nD = null;
 	public StadiumScreen stadiumScreen = null;
 
+	public com.bobsgame.puzzle.GameLogic gameLogic;
+
 
 
 	public boolean controlsEnabled = true;
