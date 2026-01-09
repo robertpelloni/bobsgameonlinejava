@@ -28,3 +28,6 @@
 [submodule "libs/commons-lang"]
 	path = libs/commons-lang
 	url = https://github.com/apache/commons-lang
+[submodule "bobcoin"]
+	path = bobcoin
+	url = https://github.com/robertpelloni/bobcoin
