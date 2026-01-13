@@ -13,6 +13,7 @@ public class SelectionArea {
 	public Color copycolor;
 
 	public int x1, y1, x2, y2;
+	public boolean[][] mask; // If null, selection is rectangular. If set, mask[x-x1][y-y1] determines selection.
 	protected int[][][] copy;
 
 	protected int copyWidth, copyHeight;
@@ -25,10 +26,23 @@ public class SelectionArea {
 
 	public boolean contains(int x, int y) {
 		if (x >= x1 && x < x2 && y >= y1 && y < y2) {
+			if (mask != null) {
+				// Safety check for mask bounds
+				int mx = x - x1;
+				int my = y - y1;
+				if (mx >= 0 && mx < mask.length && my >= 0 && my < mask[0].length) {
+					return mask[mx][my];
+				}
+				return false;
+			}
 			return true;
 		} else {
 			return false;
 		}
+	}
+
+	public void setMask(boolean[][] mask) {
+		this.mask = mask;
 	}
 
 	public int getWidth() {

@@ -47,6 +47,9 @@ public class SpriteEditor extends JFrame implements ActionListener, ItemListener
 
 
 	public static SEControlPanel controlPanel;
+	public static SELayerPanel layerPanel;
+	public static SEToolsPanel toolsPanel;
+	public static SEHistoryPanel historyPanel;
 
 	public static SEFrameControlPanel frameControlPanel;
 
@@ -85,9 +88,12 @@ public class SpriteEditor extends JFrame implements ActionListener, ItemListener
 	public JScrollPane editCanvasScrollPane;
 	public static JScrollPane frameScrollPane;
 	public JMenuBar menuBar;
-	public JMenu spriteMenu, spacerMenu,closeMenu, helpSpriteMenu;
+	public JMenu fileMenu, spriteMenu, spacerMenu,closeMenu, helpSpriteMenu;
 
 	public JMenuItem
+	saveProject,
+	loadProject,
+	importAseprite,
 	nextSpriteHelpMenu,
 	nextFrameHelpMenu,
 	removeUnusedSpritePalCols,
@@ -137,7 +143,9 @@ public class SpriteEditor extends JFrame implements ActionListener, ItemListener
 	showGrid,
 	showHitBox,
 	showUtilityPoint,
-	mirrorMode
+	mirrorMode,
+	mirrorYMode,
+	onionSkinMode
 
 	;
 
@@ -155,6 +163,19 @@ public class SpriteEditor extends JFrame implements ActionListener, ItemListener
 		E = e;
 
 		menuBar = new JMenuBar();
+
+		fileMenu = new JMenu("File");
+		saveProject = new JMenuItem("Save Project (.sprproj)...");
+		saveProject.addActionListener(this);
+		loadProject = new JMenuItem("Open Project (.sprproj)...");
+		loadProject.addActionListener(this);
+		fileMenu.add(saveProject);
+		fileMenu.add(loadProject);
+
+		importAseprite = new JMenuItem("Import Aseprite (.ase)...");
+		importAseprite.addActionListener(this);
+		fileMenu.add(importAseprite);
+
 		spriteMenu = new JMenu("Sprite Tools");
 		spacerMenu = new JMenu("");
 
@@ -166,6 +187,7 @@ public class SpriteEditor extends JFrame implements ActionListener, ItemListener
 		helpSpriteMenu = new JMenu(" ? ");
 
 		menuBar.add(closeMenu);
+		menuBar.add(fileMenu);
 		//menuBar.add(spacerMenu);
 		menuBar.add(spriteMenu);
 		menuBar.add(helpSpriteMenu);
@@ -191,9 +213,17 @@ public class SpriteEditor extends JFrame implements ActionListener, ItemListener
 		showUtilityPoint.addItemListener(this);
 
 
-		mirrorMode = new JCheckBoxMenuItem("Mirror Mode", false);
+		mirrorMode = new JCheckBoxMenuItem("Mirror Mode (X)", false);
 		mirrorMode.addItemListener(this);
 		mirrorMode.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_M,InputEvent.CTRL_DOWN_MASK));
+
+		mirrorYMode = new JCheckBoxMenuItem("Mirror Mode (Y)", false);
+		mirrorYMode.addItemListener(this);
+		mirrorYMode.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_M,InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK));
+
+		onionSkinMode = new JCheckBoxMenuItem("Onion Skinning", false);
+		onionSkinMode.addItemListener(this);
+		onionSkinMode.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O,InputEvent.CTRL_DOWN_MASK));
 
 		openSpriteBitmapSplicer = new JMenuItem("Load Bitmap Splicer");
 		openSpriteBitmapSplicer.addActionListener(this);
@@ -281,6 +311,8 @@ public class SpriteEditor extends JFrame implements ActionListener, ItemListener
 		spriteMenu.add(showHitBox);
 		spriteMenu.add(showUtilityPoint);
 		spriteMenu.add(mirrorMode);
+		spriteMenu.add(mirrorYMode);
+		spriteMenu.add(onionSkinMode);
 		spriteMenu.addSeparator();
 
 
@@ -398,6 +430,10 @@ public class SpriteEditor extends JFrame implements ActionListener, ItemListener
 
 
 		//topButtonPanel.add(spriteSelectPanel);
+
+		toolsPanel = new SEToolsPanel(this);
+		topButtonPanel.add(toolsPanel);
+
 		topButtonPanel.add(paletteSelectPanel);
 
 		JPanel topPanel = new JPanel(new GridLayout(0,1,0,0));
@@ -444,8 +480,16 @@ public class SpriteEditor extends JFrame implements ActionListener, ItemListener
 
 
 		controlPanel = new SEControlPanel(this);
+		layerPanel = new SELayerPanel(this);
+		historyPanel = new SEHistoryPanel(this);
+
+		JTabbedPane layerHistoryTabs = new JTabbedPane();
+		layerHistoryTabs.addTab("Layers", layerPanel);
+		layerHistoryTabs.addTab("History", historyPanel);
+
 		JPanel rightPanel = new JPanel(new BorderLayout());
 		rightPanel.add(controlPanel, BorderLayout.CENTER);
+		rightPanel.add(layerHistoryTabs, BorderLayout.SOUTH);
 
 
 		JPanel leftPanel = new JPanel(new BorderLayout());
@@ -797,6 +841,7 @@ public class SpriteEditor extends JFrame implements ActionListener, ItemListener
 			editCanvas.editBufferImage=null;
 			frameControlPanel.updateSpriteInfo();
 			frameControlPanel.updateFrames();
+			layerPanel.updateLayerList();
 			editCanvas.repaintBufferImage();
 			//editCanvas.initUndo();
 			editCanvas.repaint();
@@ -849,6 +894,10 @@ public class SpriteEditor extends JFrame implements ActionListener, ItemListener
 		else if(ae.getSource() == deletePalette)deletePalette();
 		else if(ae.getSource() == openSpriteBitmapSplicer)bitmapSprite();
 		else if(ae.getSource() == sendSpriteToTiles)sendToTiles();
+
+		else if(ae.getSource() == saveProject)saveProjectAction();
+		else if(ae.getSource() == loadProject)loadProjectAction();
+		else if(ae.getSource() == importAseprite)importAsepriteAction();
 
 		else if(ae.getSource() == moveSpriteUp)moveSpriteUp();
 		else if(ae.getSource() == moveSpriteDown)moveSpriteDown();
@@ -970,6 +1019,17 @@ public class SpriteEditor extends JFrame implements ActionListener, ItemListener
 		else
 		if(ie.getSource() == mirrorMode)
 		{
+			editCanvas.repaint();
+		}
+		else
+		if(ie.getSource() == mirrorYMode)
+		{
+			editCanvas.repaint();
+		}
+		else
+		if(ie.getSource() == onionSkinMode)
+		{
+			editCanvas.repaintBufferImage();
 			editCanvas.repaint();
 		}
 		else
@@ -2017,6 +2077,72 @@ public class SpriteEditor extends JFrame implements ActionListener, ItemListener
 
 		}
 
+	}
+
+	//===============================================================================================
+	public void saveProjectAction()
+	{//===============================================================================================
+		JFileChooser chooser = new JFileChooser(EditorMain.getFileDialogDirectoryPath());
+		chooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Sprite Project (*.sprproj)", "sprproj"));
+		int returnVal = chooser.showSaveDialog(this);
+		if(returnVal == JFileChooser.APPROVE_OPTION) {
+			File file = chooser.getSelectedFile();
+			if(!file.getName().endsWith(".sprproj")) {
+				file = new File(file.getAbsolutePath() + ".sprproj");
+			}
+			try {
+				com.bobsgame.editor.Project.Sprite.SpriteProject.save(getSprite(), file);
+				infoLabel.setTextSuccess("Saved project to " + file.getName());
+			} catch (Exception e) {
+				e.printStackTrace();
+				infoLabel.setText("Error saving project: " + e.getMessage());
+			}
+		}
+	}
+
+	//===============================================================================================
+	public void loadProjectAction()
+	{//===============================================================================================
+		JFileChooser chooser = new JFileChooser(EditorMain.getFileDialogDirectoryPath());
+		chooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Sprite Project (*.sprproj)", "sprproj"));
+		int returnVal = chooser.showOpenDialog(this);
+		if(returnVal == JFileChooser.APPROVE_OPTION) {
+			try {
+				Sprite s = com.bobsgame.editor.Project.Sprite.SpriteProject.load(chooser.getSelectedFile());
+
+				spriteListModel.addElement(s);
+				spriteList.setSelectedValue(s, true);
+
+				updateInfo();
+				infoLabel.setTextSuccess("Loaded project from " + chooser.getSelectedFile().getName());
+
+			} catch (Exception e) {
+				e.printStackTrace();
+				infoLabel.setText("Error loading project: " + e.getMessage());
+			}
+		}
+	}
+
+	//===============================================================================================
+	public void importAsepriteAction() {
+		JFileChooser chooser = new JFileChooser(EditorMain.getFileDialogDirectoryPath());
+		chooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Aseprite Files (*.ase, *.aseprite)", "ase", "aseprite"));
+		int returnVal = chooser.showOpenDialog(this);
+		if(returnVal == JFileChooser.APPROVE_OPTION) {
+			try {
+				Sprite s = com.bobsgame.editor.Project.Sprite.AsepriteImporter.importSprite(chooser.getSelectedFile());
+
+				spriteListModel.addElement(s);
+				spriteList.setSelectedValue(s, true);
+
+				updateInfo();
+				infoLabel.setTextSuccess("Imported Aseprite file: " + chooser.getSelectedFile().getName());
+
+			} catch (Exception e) {
+				e.printStackTrace();
+				infoLabel.setText("Error importing Aseprite file: " + e.getMessage());
+			}
+		}
 	}
 
 	//===============================================================================================

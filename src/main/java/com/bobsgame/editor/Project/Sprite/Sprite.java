@@ -2,6 +2,7 @@ package com.bobsgame.editor.Project.Sprite;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.List;
 
 import java.awt.*;
 
@@ -19,10 +20,43 @@ import com.bobsgame.shared.EventData;
 import com.bobsgame.shared.SpriteAnimationSequence;
 import com.bobsgame.shared.SpriteData;
 import com.bobsgame.shared.Utils;
+
 //===============================================================================================
 public class Sprite implements GameObject
 {//===============================================================================================
-	private int pixels[][][];
+
+	public class Layer implements Serializable {
+		private static final long serialVersionUID = 1L;
+		public String name;
+		public boolean visible = true;
+		public boolean isReference = false;
+		public float opacity = 1.0f;
+		public int pixels[][][]; //[frame][width][height]
+
+		public Layer(String name, int frames, int width, int height) {
+			this.name = name;
+			this.pixels = new int[frames][width][height];
+		}
+
+		public Layer duplicate() {
+			Layer l = new Layer(name + " Copy", pixels.length, pixels[0].length, pixels[0][0].length);
+			l.visible = this.visible;
+			l.isReference = this.isReference;
+			l.opacity = this.opacity;
+			for(int f=0; f<pixels.length; f++) {
+				for(int x=0; x<pixels[0].length; x++) {
+					for(int y=0; y<pixels[0][0].length; y++) {
+						l.pixels[f][x][y] = this.pixels[f][x][y];
+					}
+				}
+			}
+			return l;
+		}
+	}
+
+	private List<Layer> layers = new ArrayList<>();
+	public int activeLayerIndex = 0;
+
 	public int selectedFrameIndex = 0;
 	private SpriteData data;
 
@@ -33,7 +67,8 @@ public class Sprite implements GameObject
 		int id = getBiggestID();
 		this.data = new SpriteData(id,name,width,height,frames);
 
-		pixels = new int[frames][width][height];
+		// Initialize default layer
+		layers.add(new Layer("Layer 1", frames, width, height));
 
 		data.addAnimation("Frame0",0,0,0,0,0);
 
@@ -47,7 +82,8 @@ public class Sprite implements GameObject
 
 		this.data = s;
 
-		pixels = new int[data.frames()][data.widthPixels1X()][data.heightPixels1X()];
+		// Initialize default layer
+		layers.add(new Layer("Layer 1", data.frames(), data.widthPixels1X(), data.heightPixels1X()));
 
 		if(data.displayName().equals("No Name"))data.setDisplayName("");
 
@@ -63,6 +99,28 @@ public class Sprite implements GameObject
 
 
 		if(eventData()!=null)new Event(eventData());
+	}
+
+	//===============================================================================================
+	public List<Layer> getLayers() {
+		return layers;
+	}
+
+	public Layer getActiveLayer() {
+		if(activeLayerIndex < 0 || activeLayerIndex >= layers.size()) activeLayerIndex = 0;
+		return layers.get(activeLayerIndex);
+	}
+
+	public void addLayer() {
+		layers.add(new Layer("Layer " + (layers.size() + 1), frames(), wP(), hP()));
+		activeLayerIndex = layers.size() - 1;
+	}
+
+	public void removeLayer(int index) {
+		if(layers.size() > 1) {
+			layers.remove(index);
+			if(activeLayerIndex >= layers.size()) activeLayerIndex = layers.size() - 1;
+		}
 	}
 
 	//===============================================================================================
@@ -111,6 +169,8 @@ public class Sprite implements GameObject
 	//===============================================================================================
 	public int[] getAsIntArray()
 	{//===============================================================================================
+		// Flatten layers for export/legacy support
+		// For int array export, we assume index 0 (transparent) allows lower layers to show through.
 
 		int[] intArray = new int[frames()*wP()*hP()];
 
@@ -120,11 +180,18 @@ public class Sprite implements GameObject
 			{
 				for(int x = 0; x < wP(); x++)
 				{
-					int i = pixels[f][x][y];
+					// Composite layers
+					int compositePixel = 0;
+					for(Layer layer : layers) {
+						if(!layer.visible || layer.isReference) continue;
+						int p = layer.pixels[f][x][y];
+						if(p != 0) {
+							compositePixel = p; // Simple overwrite blending for now
+						}
+					}
 
 					int index = (f*hP()*wP())+(y*wP())+(x);
-
-					intArray[index]=i;
+					intArray[index]=compositePixel;
 				}
 			}
 		}
@@ -141,6 +208,11 @@ public class Sprite implements GameObject
 	//===============================================================================================
 	public void initializeFromIntArray(int[] intArray)
 	{//===============================================================================================
+		// When initializing from flat array, we clear layers and put everything on default layer
+		layers.clear();
+		layers.add(new Layer("Layer 1", frames(), wP(), hP()));
+		activeLayerIndex = 0;
+
 		for(int f = 0; f < frames(); f++)
 		{
 			for(int y = 0; y < hP(); y++)
@@ -150,7 +222,6 @@ public class Sprite implements GameObject
 					int index = (f*hP()*wP())+(y*wP())+(x);
 					int i = intArray[index];
 					setPixel(f, x, y, i);
-
 				}
 			}
 		}
@@ -192,7 +263,17 @@ public class Sprite implements GameObject
 			{
 				for(int x = 0; x < wP(); x++)
 				{
-					int oldPalIndex = pixels[f][x][y];
+					// Composite layers for export
+					int compositePixel = 0;
+					for(Layer layer : layers) {
+						if(!layer.visible || layer.isReference) continue;
+						int p = layer.pixels[f][x][y];
+						if(p != 0) {
+							compositePixel = p;
+						}
+					}
+
+					int oldPalIndex = compositePixel;
 					Color c = Project.getSelectedSpritePalette().getColor(oldPalIndex);
 
 					//run through palette and see if color exists
@@ -302,17 +383,12 @@ public class Sprite implements GameObject
 		spriteCopy.setItemGameDescription(""+itemGameDescription());
 
 
-
-		for(int f = 0; f < frames(); f++)
-		{
-			for(int y = 0; y < hP(); y++)
-			{
-				for(int x = 0; x < wP(); x++)
-				{
-					spriteCopy.setPixel(f, x, y, pixels[f][x][y]);
-				}
-			}
+		// Deep copy layers
+		spriteCopy.layers.clear();
+		for(Layer l : layers) {
+			spriteCopy.layers.add(l.duplicate());
 		}
+		spriteCopy.activeLayerIndex = this.activeLayerIndex;
 
 		spriteCopy.animationList().clear();
 		for(int i=0;i<animationList().size();i++)
@@ -371,19 +447,21 @@ public class Sprite implements GameObject
 	//===============================================================================================
 	public void swapSpriteColors(int origCol, int newCol)
 	{//===============================================================================================
-		for(int f = 0; f < frames(); f++)
-		{
-			for(int y = 0; y < hP(); y++)
+		for(Layer layer : layers) {
+			for(int f = 0; f < frames(); f++)
 			{
-				for(int x = 0; x < wP(); x++)
+				for(int y = 0; y < hP(); y++)
 				{
-					if(pixels[f][x][y] == origCol)
+					for(int x = 0; x < wP(); x++)
 					{
-						pixels[f][x][y] = newCol;
-					}
-					else if(pixels[f][x][y] == newCol)
-					{
-						pixels[f][x][y] = origCol;
+						if(layer.pixels[f][x][y] == origCol)
+						{
+							layer.pixels[f][x][y] = newCol;
+						}
+						else if(layer.pixels[f][x][y] == newCol)
+						{
+							layer.pixels[f][x][y] = origCol;
+						}
 					}
 				}
 			}
@@ -398,20 +476,21 @@ public class Sprite implements GameObject
 		while(w%8!=0)w++;
 		while(h%8!=0)h++;
 
-		int d[][][] = new int[frames()][w][h];
+		for(Layer layer : layers) {
+			int d[][][] = new int[frames()][w][h];
 
-		for(int f = 0; f < frames() && f < frames(); f++)
-		{
-			for(int y = 0; y < h && y < hP(); y++)
+			for(int f = 0; f < frames() && f < frames(); f++)
 			{
-				for(int x = 0; x < w && x < wP(); x++)
+				for(int y = 0; y < h && y < hP(); y++)
 				{
-					d[f][x][y] = pixels[f][x][y];
+					for(int x = 0; x < w && x < wP(); x++)
+					{
+						d[f][x][y] = layer.pixels[f][x][y];
+					}
 				}
 			}
+			layer.pixels = d;
 		}
-
-		pixels = d;
 
 		setWidthPixels(w);
 		setHeightPixels(h);
@@ -423,20 +502,21 @@ public class Sprite implements GameObject
 	public void setNumFrames(int newFrames)
 	{//===============================================================================================
 
-		int d[][][] = new int[newFrames][wP()][hP()];
+		for(Layer layer : layers) {
+			int d[][][] = new int[newFrames][wP()][hP()];
 
-		for(int f = 0; f < newFrames && f < frames(); f++)
-		{
-			for(int y = 0; y < hP(); y++)
+			for(int f = 0; f < newFrames && f < frames(); f++)
 			{
-				for(int x = 0; x < wP(); x++)
+				for(int y = 0; y < hP(); y++)
 				{
-					d[f][x][y] = pixels[f][x][y];
+					for(int x = 0; x < wP(); x++)
+					{
+						d[f][x][y] = layer.pixels[f][x][y];
+					}
 				}
 			}
+			layer.pixels = d;
 		}
-
-		pixels = d;
 
 		setFrames(newFrames);
 
@@ -452,17 +532,19 @@ public class Sprite implements GameObject
 	//===============================================================================================
 	public void deleteFrame(int deleteFrame)
 	{//===============================================================================================
-		for(int f = deleteFrame; f < frames() - 1; f++)
-		{
-
-			for(int y = 0; y < hP(); y++)
+		for(Layer layer : layers) {
+			for(int f = deleteFrame; f < frames() - 1; f++)
 			{
-				for(int x = 0; x < wP(); x++)
-				{
-					pixels[f][x][y] = pixels[f + 1][x][y];
-				}
-			}
 
+				for(int y = 0; y < hP(); y++)
+				{
+					for(int x = 0; x < wP(); x++)
+					{
+						layer.pixels[f][x][y] = layer.pixels[f + 1][x][y];
+					}
+				}
+
+			}
 		}
 
 		//move any animations past this frame down 1, delete any animation on the deleted frame
@@ -481,35 +563,26 @@ public class Sprite implements GameObject
 	//===============================================================================================
 	public void insertFrame(int insertFrame)
 	{//===============================================================================================
-		//this inserts a frame before the one we are on and selects it.
-		//we want to insert a frame after the one we are on and select it.
+
 		setNumFrames(frames() + 1);
 
-		//num_frames was 1
-		//now num_frames is 2
-
-		//f=0;f>=0;f--;
-		//data[1]=data[0];
-		//data[0]=0;
-
-		//i guess this makes sense if we want to add frames before frame 0
-		//but for most cases it seems to make more sense to add a frame after the currently selected one
-
-		for(int f = frames() - 2; f >= insertFrame; f--)
-		{
+		for(Layer layer : layers) {
+			for(int f = frames() - 2; f >= insertFrame; f--)
+			{
+				for(int y = 0; y < hP(); y++)
+				{
+					for(int x = 0; x < wP(); x++)
+					{
+						layer.pixels[f + 1][x][y] = layer.pixels[f][x][y];
+					}
+				}
+			}
 			for(int y = 0; y < hP(); y++)
 			{
 				for(int x = 0; x < wP(); x++)
 				{
-					pixels[f + 1][x][y] = pixels[f][x][y];
+					layer.pixels[insertFrame][x][y] = 0;
 				}
-			}
-		}
-		for(int y = 0; y < hP(); y++)
-		{
-			for(int x = 0; x < wP(); x++)
-			{
-				pixels[insertFrame][x][y] = 0;
 			}
 		}
 
@@ -528,22 +601,24 @@ public class Sprite implements GameObject
 		//we want to insert a frame after the one we are on and select it.
 		setNumFrames(frames() + 1);
 
-		for(int f = frames() - 2; f > insertFrame; f--)
-		{
+		for(Layer layer : layers) {
+			for(int f = frames() - 2; f > insertFrame; f--)
+			{
+				for(int y = 0; y < hP(); y++)
+				{
+					for(int x = 0; x < wP(); x++)
+					{
+						layer.pixels[f + 1][x][y] = layer.pixels[f][x][y];
+					}
+				}
+			}
+
 			for(int y = 0; y < hP(); y++)
 			{
 				for(int x = 0; x < wP(); x++)
 				{
-					pixels[f + 1][x][y] = pixels[f][x][y];
+					layer.pixels[insertFrame+1][x][y] = 0;
 				}
-			}
-		}
-
-		for(int y = 0; y < hP(); y++)
-		{
-			for(int x = 0; x < wP(); x++)
-			{
-				pixels[insertFrame+1][x][y] = 0;
 			}
 		}
 
@@ -564,11 +639,13 @@ public class Sprite implements GameObject
 
 		insertFrameAfter(frame);
 
-		for(int y = 0; y < hP(); y++)
-		{
-			for(int x = 0; x < wP(); x++)
+		for(Layer layer : layers) {
+			for(int y = 0; y < hP(); y++)
 			{
-				pixels[frame+1][x][y] = pixels[frame][x][y];
+				for(int x = 0; x < wP(); x++)
+				{
+					layer.pixels[frame+1][x][y] = layer.pixels[frame][x][y];
+				}
 			}
 		}
 
@@ -580,11 +657,13 @@ public class Sprite implements GameObject
 		if(frame > 0 && frames() > 1)
 		{
 			insertFrame(frame - 1);
-			for(int y = 0; y < hP(); y++)
-			{
-				for(int x = 0; x < wP(); x++)
+			for(Layer layer : layers) {
+				for(int y = 0; y < hP(); y++)
 				{
-					pixels[frame - 1][x][y] = pixels[frame + 1][x][y];
+					for(int x = 0; x < wP(); x++)
+					{
+						layer.pixels[frame - 1][x][y] = layer.pixels[frame + 1][x][y];
+					}
 				}
 			}
 
@@ -611,11 +690,13 @@ public class Sprite implements GameObject
 		{
 			insertFrame(frame + 2);
 
-			for(int y = 0; y < hP(); y++)
-			{
-				for(int x = 0; x < wP(); x++)
+			for(Layer layer : layers) {
+				for(int y = 0; y < hP(); y++)
 				{
-					pixels[frame + 2][x][y] = pixels[frame][x][y];
+					for(int x = 0; x < wP(); x++)
+					{
+						layer.pixels[frame + 2][x][y] = layer.pixels[frame][x][y];
+					}
 				}
 			}
 
@@ -719,28 +800,30 @@ public class Sprite implements GameObject
 	//===============================================================================================
 	public int getPixel(int x, int y)
 	{//===============================================================================================
-		return pixels[selectedFrameIndex][x][y];
+		return getActiveLayer().pixels[selectedFrameIndex][x][y];
 	}
 
 
 	//===============================================================================================
 	public void setPixel(int x, int y, int color)
 	{//===============================================================================================
-		pixels[selectedFrameIndex][x][y] = color;
+		getActiveLayer().pixels[selectedFrameIndex][x][y] = color;
 	}
 
 
 	//===============================================================================================
 	public int getPixel(int frame, int x, int y)
 	{//===============================================================================================
-		return pixels[frame][x][y];
+		// NOTE: This legacy accessor is ambiguous with layers.
+		// We will default to active layer to allow tools to work on current layer.
+		return getActiveLayer().pixels[frame][x][y];
 	}
 
 
 	//===============================================================================================
 	public void setPixel(int frame, int x, int y, int color)
 	{//===============================================================================================
-		pixels[frame][x][y] = color;
+		getActiveLayer().pixels[frame][x][y] = color;
 	}
 
 
@@ -772,9 +855,19 @@ public class Sprite implements GameObject
 					{
 						for(int xx = 0; xx < 8; xx++)
 						{
-							int r = Project.getSelectedSpritePalette().data[pixels[selectedFrameIndex][x + xx][y + yy]][0];
-							int g = Project.getSelectedSpritePalette().data[pixels[selectedFrameIndex][x + xx][y + yy]][1];
-							int b = Project.getSelectedSpritePalette().data[pixels[selectedFrameIndex][x + xx][y + yy]][2];
+							// Composite layers
+							int compositePixel = 0;
+							for(Layer layer : layers) {
+								if(!layer.visible) continue;
+								int p = layer.pixels[selectedFrameIndex][x + xx][y + yy];
+								if(p != 0) {
+									compositePixel = p;
+								}
+							}
+
+							int r = Project.getSelectedSpritePalette().data[compositePixel][0];
+							int g = Project.getSelectedSpritePalette().data[compositePixel][1];
+							int b = Project.getSelectedSpritePalette().data[compositePixel][2];
 
 							int palcol = Project.getSelectedPalette().getColorIfExistsOrAddColor(r, g, b, 4);
 
@@ -809,8 +902,18 @@ public class Sprite implements GameObject
 			{
 				for(int x = 0; x < wP(); x++)
 				{
-					if(getPixel(frame, x, y)!=0)
-					bufferedImage.setRGB(x, y, (Project.getSelectedSpritePalette().getColor(getPixel(frame, x, y))).getRGB());
+					// Composite layers
+					int compositePixel = 0;
+					for(Layer layer : layers) {
+						if(!layer.visible) continue;
+						int p = layer.pixels[frame][x][y];
+						if(p != 0) {
+							compositePixel = p;
+						}
+					}
+
+					if(compositePixel!=0)
+					bufferedImage.setRGB(x, y, (Project.getSelectedSpritePalette().getColor(compositePixel)).getRGB());
 				}
 			}
 
@@ -827,9 +930,19 @@ public class Sprite implements GameObject
 			{
 				for(int x = 0; x < wP(); x++)
 				{
-					if(getPixel(frame, x, y)!=0)
+					// Composite layers
+					int compositePixel = 0;
+					for(Layer layer : layers) {
+						if(!layer.visible) continue;
+						int p = layer.pixels[frame][x][y];
+						if(p != 0) {
+							compositePixel = p;
+						}
+					}
+
+					if(compositePixel!=0)
 					{
-						Color c = Project.getSelectedSpritePalette().getColor(getPixel(frame, x, y));
+						Color c = Project.getSelectedSpritePalette().getColor(compositePixel);
 						Color ct = new Color(c.getRed(),c.getGreen(),c.getBlue(),127);
 						bufferedImage.setRGB(x, y, ct.getRGB());
 					}
@@ -861,8 +974,18 @@ public class Sprite implements GameObject
 				{
 					for(int x = 0; x < wP(); x++)
 					{
-						if(getPixel(f, x, y)!=0)
-						bufferedImage.setRGB(x, y + (hP() * f), (Project.getSelectedSpritePalette().getColor(getPixel(f, x, y))).getRGB());
+						// Composite layers
+						int compositePixel = 0;
+						for(Layer layer : layers) {
+							if(!layer.visible) continue;
+							int p = layer.pixels[f][x][y];
+							if(p != 0) {
+								compositePixel = p;
+							}
+						}
+
+						if(compositePixel!=0)
+						bufferedImage.setRGB(x, y + (hP() * f), (Project.getSelectedSpritePalette().getColor(compositePixel)).getRGB());
 					}
 				}
 			}
@@ -885,7 +1008,17 @@ public class Sprite implements GameObject
 				{
 					for(int x = 0; x < wP(); x++)
 					{
-						if(getPixel(f, x, y)!=0)
+						// Composite layers for shadow calculation
+						int compositePixel = 0;
+						for(Layer layer : layers) {
+							if(!layer.visible) continue;
+							int p = layer.pixels[f][x][y];
+							if(p != 0) {
+								compositePixel = p;
+							}
+						}
+
+						if(compositePixel!=0)
 						{
 
 							int bottom_pixel_y=hP()-1;
@@ -894,8 +1027,17 @@ public class Sprite implements GameObject
 							for(int yy=hP()-1;yy>=0;yy--)
 								for(int xx=0;xx<wP();xx++)
 								{
+									// Composite layers for shadow check
+									int compositePixelCheck = 0;
+									for(Layer layer : layers) {
+										if(!layer.visible) continue;
+										int p = layer.pixels[f][xx][yy];
+										if(p != 0) {
+											compositePixelCheck = p;
+										}
+									}
 
-									if(getPixel(f, xx, yy)!=0)
+									if(compositePixelCheck!=0)
 									{
 										bottom_pixel_y = yy;
 										yy=-1;
@@ -965,12 +1107,21 @@ public class Sprite implements GameObject
 				{
 					for(int x = 0; x < wP(); x++)
 					{
+						// Composite layers
+						int compositePixel = 0;
+						for(Layer layer : layers) {
+							if(!layer.visible) continue;
+							int p = layer.pixels[f][x][y];
+							if(p != 0) {
+								compositePixel = p;
+							}
+						}
 
 						int offsetX = (f/8)*(wP()+1);
 						int offsetY = (f%8)*(hP()+1);
 
 
-						bufferedImage.setRGB(offsetX+x, offsetY+y, (Project.getSelectedSpritePalette().getColor(getPixel(f, x, y))).getRGB());
+						bufferedImage.setRGB(offsetX+x, offsetY+y, (Project.getSelectedSpritePalette().getColor(compositePixel)).getRGB());
 					}
 
 				}
@@ -1024,12 +1175,21 @@ public class Sprite implements GameObject
 				{
 					for(int x = 0; x < wP(); x++)
 					{
+						// Composite layers
+						int compositePixel = 0;
+						for(Layer layer : layers) {
+							if(!layer.visible) continue;
+							int p = layer.pixels[f][x][y];
+							if(p != 0) {
+								compositePixel = p;
+							}
+						}
 
 						int offsetX = column*wP();
 						int offsetY = row*hP();
 
-						if(getPixel(f, x, y)>0)//no clear
-						bufferedImage.setRGB(offsetX+x, offsetY+y, (Project.getSelectedSpritePalette().getColor(getPixel(f, x, y))).getRGB());
+						if(compositePixel>0)//no clear
+						bufferedImage.setRGB(offsetX+x, offsetY+y, (Project.getSelectedSpritePalette().getColor(compositePixel)).getRGB());
 					}
 
 				}
@@ -1215,8 +1375,18 @@ public class Sprite implements GameObject
 				{
 					for(int x = 0; x < wP(); x++)
 					{
-						if(getPixel(f, x, y)!=0)
-						bufferedImage.setRGB(x, y + (hP() * f), (Project.getSelectedSpritePalette().getColor(getPixel(f, x, y))).getRGB());
+						// Composite layers
+						int compositePixel = 0;
+						for(Layer layer : layers) {
+							if(!layer.visible) continue;
+							int p = layer.pixels[f][x][y];
+							if(p != 0) {
+								compositePixel = p;
+							}
+						}
+
+						if(compositePixel!=0)
+						bufferedImage.setRGB(x, y + (hP() * f), (Project.getSelectedSpritePalette().getColor(compositePixel)).getRGB());
 					}
 				}
 			}
@@ -1251,7 +1421,17 @@ public class Sprite implements GameObject
 				{
 					for(int x = 0; x < wP(); x++)
 					{
-						if(getPixel(f, x, y)!=0)
+						// Composite layers for shadow
+						int compositePixel = 0;
+						for(Layer layer : layers) {
+						if(!layer.visible || layer.isReference) continue;
+							int p = layer.pixels[f][x][y];
+							if(p != 0) {
+								compositePixel = p;
+							}
+						}
+
+						if(compositePixel!=0)
 						{
 
 							int bottom_pixel_y=hP()-1;
@@ -1260,8 +1440,17 @@ public class Sprite implements GameObject
 							for(int yy=hP()-1;yy>=0;yy--)
 								for(int xx=0;xx<wP();xx++)
 								{
+									// Composite layers for shadow check
+									int compositePixelCheck = 0;
+									for(Layer layer : layers) {
+										if(!layer.visible) continue;
+										int p = layer.pixels[f][xx][yy];
+										if(p != 0) {
+											compositePixelCheck = p;
+										}
+									}
 
-									if(getPixel(f, xx, yy)!=0)
+									if(compositePixelCheck!=0)
 									{
 										bottom_pixel_y = yy;
 										yy=-1;
@@ -1327,8 +1516,18 @@ public class Sprite implements GameObject
 				{
 					for(int x = 0; x < wP(); x++)
 					{
-						if(getPixel(f, x, y)!=0)
-						bufferedImage.setRGB(x, y + (hP() * f), (Project.getSelectedSpritePalette().getColor(getPixel(f, x, y))).getRGB());
+						// Composite layers
+						int compositePixel = 0;
+						for(Layer layer : layers) {
+							if(!layer.visible) continue;
+							int p = layer.pixels[f][x][y];
+							if(p != 0) {
+								compositePixel = p;
+							}
+						}
+
+						if(compositePixel!=0)
+						bufferedImage.setRGB(x, y + (hP() * f), (Project.getSelectedSpritePalette().getColor(compositePixel)).getRGB());
 					}
 				}
 			}
@@ -1444,11 +1643,5 @@ public class Sprite implements GameObject
 	public void setGamePrice(float s){data.setGamePrice(s);}
 	public void setUtilityOffsetXPixels1X(int s){data.setUtilityOffsetXPixels1X(s);}
 	public void setUtilityOffsetYPixels1X(int s){data.setUtilityOffsetYPixels1X(s);}
-
-
-
-
-
-
 
 }

@@ -115,6 +115,8 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 		toggleAreaSpriteInfo,
 		toggleAreaOutlines,
 		toggleRandomPointOfInterestLines,
+		toggleTileEditMode,
+		toggleAutoTileMode,
 
 
 
@@ -768,6 +770,13 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 				toggleRandomPointOfInterestLines = new JCheckBoxMenuItem("Show Random Point Of Interest Lines", false);
 				toggleRandomPointOfInterestLines.addItemListener(this);
 
+				toggleTileEditMode = new JCheckBoxMenuItem("Edit Tiles Instanced", false);
+				toggleTileEditMode.addItemListener(this);
+				toggleTileEditMode.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.CTRL_DOWN_MASK));
+
+				toggleAutoTileMode = new JCheckBoxMenuItem("Auto-Tile (4-bit)", false);
+				toggleAutoTileMode.addItemListener(this);
+
 				mapMenu.add(previewMapInClient);
 				//--------------------------------------------------------------
 				mapMenu.add(new JMenuSpacer("---"));
@@ -823,6 +832,8 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 				mapMenu.add(toggleAreaSpriteInfo);
 				mapMenu.add(toggleAreaOutlines);
 				mapMenu.add(toggleRandomPointOfInterestLines);
+				mapMenu.add(toggleTileEditMode);
+				mapMenu.add(toggleAutoTileMode);
 
 
 				//--------------------------------------------------------------
@@ -2461,6 +2472,8 @@ public class EditorMain extends JFrame implements ActionListener, ItemListener, 
 		else if(ie.getSource() == toggleAreaSpriteInfo) {MapCanvas.alwaysShowAreaAndSpriteInfo = !MapCanvas.alwaysShowAreaAndSpriteInfo;mapCanvas.repaint();}
 		else if(ie.getSource() == toggleAreaOutlines) {MapCanvas.alwaysShowAreaOutlines = !MapCanvas.alwaysShowAreaOutlines;mapCanvas.repaint();}
 		else if(ie.getSource() == toggleRandomPointOfInterestLines) {MapCanvas.drawRandomPointOfInterestLines = !MapCanvas.drawRandomPointOfInterestLines;mapCanvas.repaint();}
+		else if(ie.getSource() == toggleTileEditMode) {MapCanvas.tileEditMode = !MapCanvas.tileEditMode;}
+		else if(ie.getSource() == toggleAutoTileMode) {MapCanvas.autoTileMode = !MapCanvas.autoTileMode;}
 	}
 
 
