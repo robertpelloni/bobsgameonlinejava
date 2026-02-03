@@ -1,6 +1,3 @@
-[submodule "libs/GeoIP2-java"]
-	path = libs/GeoIP2-java
-	url = https://github.com/maxmind/GeoIP2-java
 [submodule "libs/lwjgl3"]
 	path = libs/lwjgl3
 	url = https://github.com/LWJGL/lwjgl3
