@@ -15,7 +15,6 @@ The project uses the following submodules located in `libs/`:
 
 | Path | URL | Description |
 | :--- | :--- | :--- |
-| `libs/GeoIP2-java` | https://github.com/maxmind/GeoIP2-java | GeoIP lookup |
 | `libs/lwjgl3` | https://github.com/LWJGL/lwjgl3 | Lightweight Java Game Library 3 |
 | `libs/lz4-java` | https://github.com/lz4/lz4-java | LZ4 Compression |
 | `libs/jinput` | https://github.com/jinput/jinput | Java Input API |
@@ -27,6 +26,6 @@ The project uses the following submodules located in `libs/`:
 | `libs/commons-lang` | https://github.com/apache/commons-lang | Apache Commons Lang |
 
 ## Build Status
-- **Current Version:** 0.0.2
+- **Current Version:** 0.1.7
 - **Build System:** Gradle
 - **Command:** `./gradlew clean build`

@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.7] - 2026-02-07
+
+### Fixed
+- **Submodules**: Fixed `libs/aseprite-file` submodule pointer to a valid commit (`06b6189`) as the previous one was missing on the remote, causing clone failures.
+
+## [0.1.6] - 2026-02-03
+
+### Changed
+- **Maintenance**: Automated cleanup and merge of feature branches.
+- **Submodules**: Removed broken `GeoIP2-java` submodule.
+
 ## [0.1.5] - 2025-12-27
 
 ### Changed

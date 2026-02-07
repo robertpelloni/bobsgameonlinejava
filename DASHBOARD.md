@@ -14,7 +14,6 @@ This dashboard lists the status of all submodules and the project structure.
 
 | Path | Branch | Commit | Date | Version/Build |
 | --- | --- | --- | --- | --- |
-| libs/GeoIP2-java | HEAD | 10d5699 | 2025-12-22 | build-1 |
 | libs/aseprite-file | HEAD | 06b6189 | 2018-12-01 | build-23 |
 | libs/commons-lang | HEAD | 8b91981 | 2025-12-27 | build-1 |
 | libs/jinput | HEAD | 45fe725 | 2025-12-01 | build-1 |
