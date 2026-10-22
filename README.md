@@ -1,57 +1,29 @@
-# Jules Autopilot (Go Primary Runtime)
+# bobsgameonlinejava — the original Java engine for bob's game online
 
-> **The ultra-fast, autonomous command center for Google Jules.**
+The original **Java client and server for "bob's game online"**: a 2D MMORPG engine and world (Gradle build, `client.iml`, `bobsgame.sql` schema, `bobsgame_v8830.zip` — the v8830 archive the modern ports are restoring from). This is the codebase the newer bob's game engines derive from:
 
-Jules Autopilot is a high-performance, minimalist orchestration platform for the Google Jules AI agent. It replaces slow official interfaces with a unified, real-time dashboard, powered by a robust Go backend runtime.
+- [`bobsgameweb`](https://github.com/robertpelloni/bobsgameweb) — TypeScript/PixiJS engine ("okgame"), the active build
+- [`okgame`](https://github.com/robertpelloni/okgame) — C++ engine
+- [`bg`](https://github.com/robertpelloni/bg) — umbrella workspace; this repo is one of its submodules
 
-## 🚀 The Stack
+## ⚠️ About the previous README
 
-This project has been pivoted to a Go-first architecture to ensure maximum performance, operational reliability, and zero friction:
+Until this rewrite, this repo's README described a completely different project ("Jules Autopilot — a command center for Google Jules"). That text belonged to the `backend-go/` experiment directory in this tree (a Go dashboard/orchestration side-project that was developed here) and was pasted over the repo README by a bot. It said nothing about the Java engine that is this repo's actual content. If you came here from that README: the Java engine is the repo; `backend-go/` is a side experiment inside it.
 
-- **Backend/Runtime:** [Go](https://go.dev) (High-performance API, WebSocket server, Scheduler, and Static SPA host)
-- **Frontend:** [Vite](https://vitejs.dev) + [React 19](https://react.dev) (Pure SPA, no SSR overhead)
-- **Database:** [GORM](https://gorm.io) + SQLite (Zero-config local persistence)
-- **Queue & Automation:** Native Go task queue and RAG indexer
-- **Styling:** [TailwindCSS v4](https://tailwindcss.com)
-
-## 🛠️ Getting Started
-
-### Prerequisites
-- [Go 1.21+](https://go.dev) installed.
-- [Node.js](https://nodejs.org) and [pnpm](https://pnpm.io) for frontend development.
-
-### Installation
-```bash
-# Clone the repository
-git clone https://github.com/your-repo/jules-autopilot.git
-cd jules-autopilot
-
-# Install frontend dependencies
-pnpm install
-
-# Build the frontend and shared packages
-pnpm run build
-```
-
-### Running the Command Center
-You can run the entire stack via the Go backend (which serves the built frontend):
-
-1. **Start the Go Runtime:**
-   ```bash
-   cd backend-go
-   go run main.go
-   ```
-   *The dashboard will be available at `http://localhost:8080`.*
-
-2. **Frontend Dev Mode (Optional):**
-   ```bash
-   pnpm run dev
-   ```
-
-## 🏗️ Architecture
+## Layout
 
 ```
-┌──────────────────────────────────────────┐
-│          Browser (Vite SPA)              │
-│  http://localhost:3006 (Dev)             │
-│  http://localhost:8080 (Prod)
+build.gradle, gradle.properties   Java build
+client.iml                        IntelliJ module for the client
+bobsgame.sql                      Database schema
+bobsgame_v8830.zip                The v8830 release archive (restoration source)
+docs/                             Design and engine documentation
+backend-go/                       Unrelated Go experiment (see note above)
+Dockerfile, docker-compose.yml    Container setup
+```
+
+Project docs: `VISION.md`, `ROADMAP.md`, `ROADMAP_EDITOR.md`, `STRUCTURE.md`, `FEATURES_RESEARCH.md`, `TODO.md`, `DEPLOY.md`.
+
+## Status
+
+Legacy engine, kept as the reference implementation and restoration source. Active development happens in `bobsgameweb`; this tree changes mainly when the porting work in `bg` needs something from the original.
