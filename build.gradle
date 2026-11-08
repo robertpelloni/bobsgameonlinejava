@@ -103,6 +103,11 @@ sourceSets {
             srcDirs = ['src/main/resources', 'res']
         }
     }
+    test {
+        java {
+            srcDirs = ['shared/src/test/java']
+        }
+    }
 }
 
 java {
