@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.33] - 2026-11-08
+### Added
+- Configured Gradle `test` source set to include `shared/src/test/java`, enabling automated CI and local execution of shared engine parity test suites.
+- Added comprehensive unit tests for `Grid` initialization, dimensions, boundary bounds, and garbage pattern toggling in `GridLogicTest` and `ParityTest`.
+- Made `Grid.getWidth()` and `Grid.getHeight()` null-safe to support standalone grid instances when running unit tests outside of full `GameLogic` runtime.
+- Refactored `tools/generate_dashboard.sh` to resolve root paths dynamically and regenerate `DASHBOARD.md` cleanly without polluting submodules.
+
 ## [2.0.32] - 2026-05-01
 ### Added
 - Implemented Polygon Lasso tool in Sprite Editor using ray-casting point-in-polygon mask generation. Added `onMouseMove` to `Brush` interface to support interactive previews.

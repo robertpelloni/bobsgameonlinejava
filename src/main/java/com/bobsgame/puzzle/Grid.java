@@ -20,8 +20,16 @@ public class Grid {
         this.game = game;
     }
 
-    public int getWidth() { return game.gridW(); }
-    public int getHeight() { return game.gridH(); }
+    public int getWidth() {
+        if (game != null) return game.gridW();
+        if (blocks != null && blocks.length > 0 && blocks[0] != null) return blocks[0].length;
+        return 0;
+    }
+    public int getHeight() {
+        if (game != null) return game.gridH();
+        if (blocks != null) return blocks.length;
+        return 0;
+    }
 
     public void reformat(int w, int h) {
         blocks = new Block[h][w];

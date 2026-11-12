@@ -203,9 +203,10 @@ This session focused on modernizing the internal Swing-based Editor tools (`Spri
 ## Handoff - Google Jules (Version 2.0.33)
 
 ### Action Taken
-1.  **Polygon Lasso Feature:** Implemented `PolygonLassoBrush` for the Sprite Editor, including `onMouseMove` wiring in `SECanvas` and `Brush` interface for interactive previews.
-2.  **Map Editor Undo/Redo:** Added `MapHistoryPanel` to the `EditorMain` control tabs so MapCanvas users can see and interact with their undo stack just like in SpriteEditor. Verified `UndoManager` stack size constraint limit.
-3.  **Documentation:** Updated `TODO.md`, `ROADMAP_EDITOR.md`, `CHANGELOG.md`, `VERSION.md`, and `HANDOFF.md` to reflect the completed features.
+1.  **Submodule Protocol & Dashboard Generator:** Audited submodule status across `libs/*`, `references/`, and `bobcoin`. Fixed `tools/generate_dashboard.sh` to safely execute from anywhere and update `DASHBOARD.md` without polluting submodules.
+2.  **Test Source Set Configuration:** Configured `sourceSets.test.java.srcDirs = ['shared/src/test/java']` in `build.gradle` so Gradle automates discovery and execution of JUnit 5 test suites.
+3.  **Parity & Regression Unit Tests:** Added `GridLogicTest` and expanded `ParityTest` with assertions for dimension bounds, 2D block arrays, and garbage hole zigzag toggling. Made `Grid.getWidth()` and `Grid.getHeight()` null-safe.
+4.  **Documentation:** Updated `VERSION.md` to `2.0.33`, `CHANGELOG.md`, `TODO.md`, and `HANDOFF.md`.
 
 ### Next Steps
 - Port the legacy Swing `bgeditor` to JavaFX and/or C++ (Qt6) using `bobui`.
