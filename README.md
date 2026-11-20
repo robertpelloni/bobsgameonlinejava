@@ -1,5 +1,13 @@
 # bobsgameonlinejava — the original Java engine for bob's game online
 
+> **FROZEN — PORT SOURCE ONLY (decision 2026-11-19, Robert Pelloni).**
+> This engine is no longer developed in parallel. The canonical bob's game build is
+> [`bobsgameweb`](https://github.com/robertpelloni/bobsgameweb) (TypeScript/PixiJS, live at bobsgame.com).
+> Everything worthwhile in this tree is to be ported to the web build as efficiently as
+> reasonable — rules, data, and playable features, not file structures — and this repo
+> then serves as reference only. No new features, build-out, or porting scripts here.
+
+
 The original **Java client and server for "bob's game online"**: a 2D MMORPG engine and world (Gradle build, `client.iml`, `bobsgame.sql` schema, `bobsgame_v8830.zip` — the v8830 archive the modern ports are restoring from). This is the codebase the newer bob's game engines derive from:
 
 - [`bobsgameweb`](https://github.com/robertpelloni/bobsgameweb) — TypeScript/PixiJS engine ("okgame"), the active build
